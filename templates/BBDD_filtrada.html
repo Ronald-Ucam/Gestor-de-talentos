@@ -1,0 +1,247 @@
+{# templates/BBDD_filtrada.html #}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Jugadores Filtrados</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+
+  <!-- ESTILOS ESPECÍFICOS PARA LA TABLA (IN-IFRAME) Y SELECCIÓN -->
+  <style>
+    /* Área de comparación: botón + lista */
+    .compare-area {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 12px;
+    }
+    .compare-btn {
+      background: var(--clr-accent);
+      color: var(--clr-primary);
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: var(--radius);
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .compare-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    /* Lista de jugadores seleccionados */
+    .selected-list {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .selected-item {
+      background: #E8F5E9;
+      color: #388E3C;
+      border: 1px solid #388E3C;
+      padding: 0.4rem 0.8rem;
+      border-radius: var(--radius);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      font-size: 0.95rem;
+    }
+    .remove-btn {
+      background: transparent;
+      border: none;
+      color: #e53935;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    /* Compactamos columna de checkboxes */
+    table th.select-col,
+    table td.select-col {
+      width: 40px;
+      padding: 4px 6px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" style="margin-top:20px;">
+
+    <!-- ÁREA DE BOTÓN + LISTA SELECCIONADOS -->
+    <div class="compare-area">
+      <button id="btnCompareTable" class="compare-btn">
+        Comparar Seleccionados
+      </button>
+      <div id="selectedList" class="selected-list"></div>
+    </div>
+
+    <!-- LA TABLA QUE VIENE DEL IFRAME -->
+    <div class="table-responsive">
+      {{ table_html | safe }}
+    </div>
+
+    <!-- PAGINACIÓN (igual que antes) -->
+    <nav aria-label="Paginación de jugadores" style="margin-top:20px;">
+          <ul class="pagination justify-content-center">
+            {# << Anterior #}
+            {% if page > 1 %}
+              <li class="page-item">
+                <a class="page-link"
+                  href="{{ url_for('mostrar_bd') }}?{% for k,v in filtros.items() %}{{k}}={{v}}&{% endfor %}page={{ page-1 }}">
+                  &laquo; Anterior
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">&laquo; Anterior</span></li>
+            {% endif %}
+
+            {# Siempre mostramos el 1 #}
+            <li class="page-item {% if page == 1 %}active{% endif %}">
+              {% if page == 1 %}
+                <span class="page-link">1</span>
+              {% else %}
+                <a class="page-link"
+                  href="{{ url_for('mostrar_bd') }}?{% for k,v in filtros.items() %}{{k}}={{v}}&{% endfor %}page=1">1</a>
+              {% endif %}
+            </li>
+
+            {# Ventana de páginas #}
+            {% set window = 2 %}
+            {% set start = (page - window if page - window > 2 else 2) %}
+            {% set end   = (page + window if page + window < total_pages -1 else total_pages -1) %}
+
+            {% if start > 2 %}
+              <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+
+            {% for p in range(start, end+1) %}
+              <li class="page-item {% if p == page %}active{% endif %}">
+                {% if p == page %}
+                  <span class="page-link">{{ p }}</span>
+                {% else %}
+                  <a class="page-link"
+                    href="{{ url_for('mostrar_bd') }}?{% for k,v in filtros.items() %}{{k}}={{v}}&{% endfor %}page={{ p }}">
+                    {{ p }}
+                  </a>
+                {% endif %}
+              </li>
+            {% endfor %}
+
+            {% if end < total_pages - 1 %}
+              <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+
+            {% if total_pages > 1 %}
+              <li class="page-item {% if page == total_pages %}active{% endif %}">
+                {% if page == total_pages %}
+                  <span class="page-link">{{ total_pages }}</span>
+                {% else %}
+                  <a class="page-link"
+                    href="{{ url_for('mostrar_bd') }}?{% for k,v in filtros.items() %}{{k}}={{v}}&{% endfor %}page={{ total_pages }}">
+                    {{ total_pages }}
+                  </a>
+                {% endif %}
+              </li>
+            {% endif %}
+
+            {% if page < total_pages %}
+              <li class="page-item">
+                <a class="page-link"
+                  href="{{ url_for('mostrar_bd') }}?{% for k,v in filtros.items() %}{{k}}={{v}}&{% endfor %}page={{ page+1 }}">
+                  Siguiente &raquo;
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item disabled">
+                <span class="page-link">Siguiente &raquo;</span>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const table = document.querySelector('.table-responsive table');
+      if (!table) return;
+
+      // 1) ELIMINAR "Inf" (columna 0) del <thead>
+      const headerRow = table.querySelector('thead tr');
+      if (headerRow && headerRow.cells.length) {
+        headerRow.deleteCell(0);
+      }
+      // 2) INSERTAR nueva cabecera "Seleccionar" en posición 0
+      const thSel = document.createElement('th');
+      thSel.textContent = 'Seleccionar';
+      thSel.classList.add('select-col');
+      headerRow.insertBefore(thSel, headerRow.firstChild);
+
+      const maxAllowed = 2;
+      let selected = [];
+
+      // 3) Para cada fila: eliminar celda Inf y añadir checkbox
+      table.querySelectorAll('tbody tr').forEach(row => {
+        // eliminar la primera celda (Inf)
+        if (row.cells.length) row.deleteCell(0);
+
+        // insertar celda de selección
+        const td = row.insertCell(0);
+        td.classList.add('select-col');
+        const chk = document.createElement('input');
+        chk.type = 'checkbox';
+        // ahora el nombre está en row.cells[1]
+        chk.value = row.cells[1]?.textContent.trim() || '';
+        td.appendChild(chk);
+
+        chk.addEventListener('change', () => {
+          if (chk.checked) {
+            selected.push(chk);
+            if (selected.length > maxAllowed) {
+              const old = selected.shift();
+              old.checked = false;
+            }
+          } else {
+            selected = selected.filter(c => c !== chk);
+          }
+          renderSelected();
+        });
+      });
+
+      const selectedListDiv = document.getElementById('selectedList');
+      const btnCompare = document.getElementById('btnCompareTable');
+
+      // 4) Mostrar la lista de seleccionados
+      function renderSelected() {
+        selectedListDiv.innerHTML = '';
+        selected.forEach(chk => {
+          const span = document.createElement('span');
+          span.classList.add('selected-item');
+          span.textContent = chk.value;
+          const xbtn = document.createElement('button');
+          xbtn.classList.add('remove-btn');
+          xbtn.textContent = '×';
+          xbtn.addEventListener('click', () => {
+            chk.checked = false;
+            chk.dispatchEvent(new Event('change'));
+          });
+          span.appendChild(xbtn);
+          selectedListDiv.appendChild(span);
+        });
+      }
+
+      // 5) Al hacer clic en Comparar, abrimos la ventana de comparación
+      btnCompare.addEventListener('click', () => {
+        if (selected.length !== maxAllowed) {
+          alert(`Selecciona exactamente ${maxAllowed} jugadores.`);
+          return;
+        }
+        const [j1, j2] = selected.map(c => encodeURIComponent(c.value));
+        window.open(`/comparacion?players[]=${j1}&players[]=${j2}`, '_blank');
+      });
+    });
+  </script>
+</body>
+</html>

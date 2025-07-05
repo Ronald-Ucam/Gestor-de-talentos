@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Preguntas Frecuentes – Gestor de Talentos FM</title>
+
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <!-- CSS externo -->
+  <link rel="stylesheet" href="/static/css/style.css" />
+
+  <style>
+    /* FAQ: Acordeón */
+    .faq-section {
+      max-width: 900px;
+      margin: 40px auto;
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(8px);
+      border-radius: var(--radius);
+      padding: 30px;
+    }
+    .faq-item + .faq-item {
+      margin-top: 16px;
+    }
+    .faq-question {
+      font-weight: 600;
+      color: var(--clr-primary);
+      cursor: pointer;
+      position: relative;
+      padding-right: 24px;
+    }
+    .faq-question::after {
+      content: 'expand_more';
+      font-family: 'Material Icons';
+      position: absolute;
+      right: 0;
+      top: 0;
+      transition: transform var(--transition);
+    }
+    .faq-question.active::after {
+      transform: rotate(180deg);
+    }
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      margin-top: 8px;
+      color: var(--clr-text);
+      line-height: 1.6;
+    }
+    .faq-answer.open {
+      max-height: 500px; /* suficientemente alto para tu contenido */
+    }
+  </style>
+
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="logo">
+        <span class="logo-img-wrapper">
+          <img src="{{ url_for('static', filename='images/logo1.png') }}"
+               alt="Gestor de Talentos FM" class="logo-img" />
+        </span>
+      </a>
+      <nav class="main-nav">
+        <a href="/"><span class="material-icons">home</span>Inicio</a>
+        <a href="/faqs"><span class="material-icons">help_outline</span>Preguntas Frecuentes</a>
+        <a href="/comparacion"><span class="material-icons">compare_arrows</span>Comparación</a>
+        <a href="/clustering"><span class="material-icons">scatter_plot</span>Clustering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-background"></div>
+    <div class="hero-content container">
+      <h1 class="hero-title">Preguntas Frecuentes</h1>
+      <p class="hero-subtitle">Aquí encontrarás respuestas a las dudas más comunes.</p>
+    </div>
+  </section>
+
+  <!-- SECCIÓN FAQ -->
+  <main class="container main-content">
+    <div class="faq-section">
+      <div class="faq-item">
+        <div class="faq-question">¿Cómo importo mi lista de jugadores desde Football Manager?</div>
+        <div class="faq-answer">
+          Sube tu archivo CSV o JSON desde la sección de “Importar” en la página principal. Asegúrate de seguir el formato de columnas que encontrarás en nuestra <a href="#leyenda">leyenda de columnas</a>.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">¿Puedo comparar más de dos jugadores a la vez?</div>
+        <div class="faq-answer">
+          Actualmente el sistema permite comparar **dos** jugadores simultáneamente. Si seleccionas un tercer jugador, la selección más antigua se desmarcará automáticamente.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">¿Por qué no veo la columna “Inf” en la tabla?</div>
+        <div class="faq-answer">
+          Hemos reemplazado la columna “Inf” por una columna de selección para que puedas marcar los jugadores que quieres comparar sin confusiones.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">¿Cómo funciona la paginación?</div>
+        <div class="faq-answer">
+          La tabla carga 20 jugadores por página. Usa las flechas «Anterior» y «Siguiente» o haz clic en el número de página para navegar.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">¿Qué significan las siglas xG, xA y otros indicadores avanzados?</div>
+        <div class="faq-answer">
+          Visita la <a href="#leyenda">leyenda de columnas</a> para ver la descripción de cada estadística avanzada como xG (Goles Esperados), xA (Asistencias Esperadas) y más.
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-links">
+        <a href="/"><span class="material-icons">home</span>Inicio</a>
+        <a href="/faqs"><span class="material-icons">help_outline</span>FAQ</a>
+        <a href="/comparacion"><span class="material-icons">compare_arrows</span>Comparación</a>
+        <a href="/clustering"><span class="material-icons">scatter_plot</span>Clustering</a>
+      </div>
+      <p>© 2025 FootballManager. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Lógica acordeón FAQ
+    document.querySelectorAll('.faq-question').forEach(q => {
+      q.addEventListener('click', () => {
+        const answer = q.nextElementSibling;
+        q.classList.toggle('active');
+        answer.classList.toggle('open');
+      });
+    });
+  </script>
+</body>
+</html>

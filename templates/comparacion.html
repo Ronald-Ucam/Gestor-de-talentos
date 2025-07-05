@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Comparar Jugadores – Gestor de Talentos FM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- Tu CSS habitual -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* Ajustes específicos para la comparación */
+    #info-comparacion {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      margin-top: 30px;
+    }
+    .perfil-col {
+      flex: 1 1 300px;
+      background: var(--clr-glass);
+      backdrop-filter: blur(8px);
+      border-radius: var(--radius);
+      padding: 20px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+    .perfil-col h3 {
+      margin-top: 0;
+      font-size: 1.4rem;
+      color: var(--clr-primary);
+      border-bottom: 2px solid var(--clr-primary-hover);
+      padding-bottom: 8px;
+    }
+    .perfil-list dt {
+      font-weight: 600;
+      margin-top: 12px;
+      color: var(--clr-primary-hover);
+    }
+    .perfil-list dd {
+      margin: 0 0 10px 0;
+      color: var(--clr-text);
+    }
+    #radarChartContainer {
+      position: relative;
+      max-width: 700px;
+      margin: 40px auto 0;
+      background: var(--clr-glass);
+      backdrop-filter: blur(8px);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+    #radarChart {
+      width: 100% !important;
+      height: auto !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="logo">
+        <span class="logo-img-wrapper">
+          <img src="{{ url_for('static', filename='images/logo1.png') }}"
+               alt="Gestor de Talentos FM"
+               class="logo-img" />
+        </span>
+      </a>
+      <nav class="main-nav">
+        <a href="/"><span class="material-icons">home</span>Inicio</a>
+        <a href="/faqs"><span class="material-icons">help_outline</span>Preguntas Frecuentes</a>
+        <a href="/comparacion"><span class="material-icons">compare_arrows</span>Comparación</a>
+        <a href="/clustering"><span class="material-icons">scatter_plot</span>Clustering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-background"></div>
+    <div class="hero-content container">
+      <h1 class="hero-title">Comparar Jugadores</h1>
+      <p class="hero-subtitle">Analiza el rendimiento de dos futbolistas lado a lado</p>
+    </div>
+  </section>
+
+  <!-- SECCIÓN PRINCIPAL -->
+  <main class="container main-content">
+    <h2 class="page-title">Selecciona dos jugadores</h2>
+
+    <section class="filters" style="justify-content:center; gap:1rem;">
+      <label>Jugador A:
+        <select id="selectA">
+          {% for j in jugadores_list %}
+            <option value="{{ j }}" {% if j == selected1 %}selected{% endif %}>{{ j }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Jugador B:
+        <select id="selectB">
+          {% for j in jugadores_list %}
+            <option value="{{ j }}" {% if j == selected2 %}selected{% endif %}>{{ j }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <button id="btnComparar" class="filters button">Comparar</button>
+    </section>
+
+    <div id="info-comparacion">
+      <div id="perfilA" class="perfil-col">
+        <h3>Jugador A</h3>
+        <dl class="perfil-list" id="datosA"></dl>
+      </div>
+      <div id="perfilB" class="perfil-col">
+        <h3>Jugador B</h3>
+        <dl class="perfil-list" id="datosB"></dl>
+      </div>
+    </div>
+
+    <div id="radarChartContainer">
+      <canvas id="radarChart"></canvas>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-links">
+        <a href="/"><span class="material-icons">home</span>Inicio</a>
+        <a href="/faqs"><span class="material-icons">help_outline</span>FAQ</a>
+        <a href="/comparacion"><span class="material-icons">compare_arrows</span>Comparación</a>
+        <a href="/clustering"><span class="material-icons">scatter_plot</span>Clustering</a>
+      </div>
+      <p>© 2025 FootballManager. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <script>
+    const ctx = document.getElementById('radarChart').getContext('2d');
+    let radarChart = null;
+    const camposPerfil = [
+      "Edad","Altura","Peso","Posición","Club",
+      "ValorNum","Sueldo","Media","Gol/90","Asis/90",
+      "Reg/90","% Pase","Disparos","Min/Par"
+    ];
+
+    document.getElementById('btnComparar').addEventListener('click', () => {
+      const j1 = encodeURIComponent(document.getElementById('selectA').value);
+      const j2 = encodeURIComponent(document.getElementById('selectB').value);
+
+      fetch(`/api/comparar?jugador1=${j1}&jugador2=${j2}`)
+        .then(res => res.json())
+        .then(data => {
+          const { labels, statsA, statsB, nameA, nameB, perfilA, perfilB } = data;
+          document.querySelector('#perfilA h3').textContent = nameA;
+          document.querySelector('#perfilB h3').textContent = nameB;
+
+          function renderDatos(id, perfil) {
+            const dl = document.getElementById(id);
+            dl.innerHTML = '';
+            camposPerfil.forEach(c => {
+              if (perfil[c] !== undefined) {
+                let val = perfil[c];
+                if (typeof val === 'number') val = val.toLocaleString();
+                if (c==="ValorNum"||c==="Sueldo") val += ' €';
+                const dt = document.createElement('dt'); dt.textContent = c;
+                const dd = document.createElement('dd'); dd.textContent = val;
+                dl.appendChild(dt); dl.appendChild(dd);
+              }
+            });
+          }
+          renderDatos('datosA', perfilA);
+          renderDatos('datosB', perfilB);
+
+          if (radarChart) radarChart.destroy();
+          radarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+              labels,
+              datasets: [
+                {
+                  label: nameA, data: statsA,
+                  fill: true,
+                  backgroundColor: 'rgba(0,77,153,0.2)',
+                  borderColor: '#004d99',
+                  pointBackgroundColor: '#004d99'
+                },
+                {
+                  label: nameB, data: statsB,
+                  fill: true,
+                  backgroundColor: 'rgba(255,153,51,0.2)',
+                  borderColor: '#ff9933',
+                  pointBackgroundColor: '#ff9933'
+                }
+              ]
+            },
+            options: {
+              scales: {
+                r: {
+                  beginAtZero: true,
+                  suggestedMax: 100,
+                  ticks: { stepSize: 20 },
+                  pointLabels: { font: { size: 14 } }
+                }
+              },
+              plugins: { legend: { position: 'top' } },
+              responsive: true,
+              maintainAspectRatio: false
+            }
+          });
+        })
+        .catch(err => console.error('Error al comparar:', err));
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('btnComparar').click();
+    });
+  </script>
+</body>
+</html>

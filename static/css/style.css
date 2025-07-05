@@ -1,0 +1,447 @@
+/* style.css */
+
+/* === Variables y reset global === */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+:root {
+  --clr-primary:        #003366;
+  --clr-primary-hover:  #0059b3;
+  --clr-accent:         #ffb347;
+  --clr-glass:          rgba(255,255,255,0.5);
+  --clr-text:           #333;
+  --radius:             8px;
+  --transition:         0.2s;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* === BODY Y FONDO GLOBAL === */
+body {
+  font-family: 'Inter', sans-serif;
+  color: var(--clr-text);
+  line-height: 1.5;
+  background:
+    linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
+    url('../images/grass.png') center/cover fixed;
+}
+
+/* === CONTENEDOR CENTRAL === */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* === HEADER / NAVBAR === */
+.site-header {
+  background: var(--clr-primary);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.site-header .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+}
+.logo {
+  color: #fff;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+.main-nav {
+  display: flex;
+  gap: 1rem;
+}
+.main-nav a {
+  display: inline-flex;
+  align-items: center;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  position: relative;
+  padding-bottom: 2px;
+  transition: opacity var(--transition);
+}
+.main-nav a .material-icons {
+  margin-right: 4px;
+}
+.main-nav a:hover {
+  opacity: 0.8;
+}
+.main-nav a:hover::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--clr-accent);
+}
+
+/* === HERO PROFESIONAL & DINÁMICO === */
+/* 1) Elimina cualquier fondo heredado en el hero */
+.hero {
+  position: relative;
+  height: 60vh;
+  min-height: 350px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: none; /* quita el grass.png del body */
+}
+
+/* 2) Aplica tu fondo de estadio, opaco, cubriendo todo */
+.hero-background {
+  position: absolute;
+  inset: 0;
+  background: 
+    linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
+    url('../images/football-stadium.jpg') center top / cover no-repeat;
+  /* quita blur u opacity si asoman transparencias */
+}
+
+/* 3) Capa oscura encima para contraste */
+.hero-background::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+/* 4) Tu contenido sobre todo esto */
+.hero-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  color: #fff;
+  padding: 0 var(--gap-md);
+  animation: fadeInUp 0.8s ease-out both;
+}
+
+/* Títulos más compactos */
+.hero-title {
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  margin-bottom: var(--gap-sm);
+  text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+}
+
+.hero-subtitle {
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  margin-bottom: var(--gap-md);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+}
+
+/* Botón CTA igual que antes */
+.btn-hero {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5ch;
+  background: var(--clr-accent);
+  color: var(--clr-primary);
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: transform var(--transition), box-shadow var(--transition);
+  margin-top: 20px;
+}
+.btn-hero:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+}
+
+/* Animación de entrada */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+
+/* === SECCIÓN PRINCIPAL “CRISTAL” === */
+.main-content {
+  background: var(--clr-glass);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius);
+  padding: 30px;
+  margin: 20px auto 40px;
+  max-width: 1100px;
+}
+.page-title {
+  text-align: center;
+  font-size: 1.8rem;
+  color: var(--clr-primary);
+  margin: 20px 0;
+}
+
+/* === FILTROS (GRID RESPONSIVE) === */
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 15px 20px;
+  justify-items: center;
+  margin-bottom: 20px;
+}
+.filters label {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.filters input,
+.filters select {
+  margin-top: 5px;
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: var(--radius);
+  width: 100%;
+}
+.filters button {
+  justify-self: end;
+  background: var(--clr-primary);
+  color: #fff;
+  padding: 10px 18px;
+  border: none;
+  border-radius: var(--radius);
+  font-weight: bold;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+}
+.filters button:hover {
+  background: var(--clr-primary-hover);
+  transform: translateY(-2px);
+}
+
+/* === PITCH FRAME (CONTENEDOR DEL IFRAME) === */
+.pitch-frame {
+  position: relative;
+  background: url('../images/pitch.png') center/contain no-repeat;
+  background-size: cover;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  margin-bottom: 40px;
+}
+.pitch-frame iframe {
+  background-color: #fff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background-color: rgba(255,255,255,0.85) !important;
+
+}
+
+/* === PAGINACIÓN === */
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  padding: 0;
+  margin: 20px 0;
+  list-style: none;
+}
+.pagination .page-item { display: inline; }
+.pagination .page-link {
+  display: inline-block;
+  padding: 8px 12px;
+  color: var(--clr-primary);
+  text-decoration: none;
+  background-color: rgba(255,255,255,0.7);
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  transition: background var(--transition), color var(--transition);
+}
+.pagination .page-link:hover {
+  background-color: rgba(255,255,255,0.9);
+}
+.pagination .page-item.active .page-link {
+  background-color: var(--clr-primary);
+  color: #fff;
+  border-color: var(--clr-primary-hover);
+  cursor: default;
+}
+.pagination .page-item.disabled .page-link {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* === TABLA (fallback) === */
+iframe {
+  width: 100%;
+  height: 600px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #fff;
+}
+
+/* Estilos GLOBALES PARA <table> */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+th, td {
+  padding: 8px 12px;
+  text-align: left;
+}
+
+/* Encabezado de tabla */
+th {
+  background-color: #003366;
+  color: white;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* Filas alternas: impares blancas, pares gris claro */
+tr:nth-child(odd) td {
+  background-color: #ffffff;
+}
+tr:nth-child(even) td {
+  background-color: #f2f2f2;
+}
+
+
+
+/* ─── Tipografía mejorada para la tabla ─── */
+
+/* Fuente para toda la tabla */
+.pitch-frame table,
+.pitch-frame table th,
+.pitch-frame table td {
+  font-family: 'Inter', sans-serif;
+  color: #2c3e50;           /* gris muy oscuro */
+  line-height: 1.4;
+}
+
+/* Cabeceras: mayúsculas, seguimiento y peso */
+.pitch-frame th {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ecf0f1;           /* texto claro sobre fondo azul */
+}
+
+/* Celdas: tamaño cómodo y color secundario */
+.pitch-frame td {
+  font-size: 0.875rem;
+  color: #34495e;           /* gris azulado */
+}
+
+/* Subtleo bordes de separación con menos contraste */
+.pitch-frame td + td {
+  border-left: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Hover en texto: ligero cambio de color */
+.pitch-frame tbody tr:hover td {
+  color: #003366;           /* acentúa el texto al pasar */
+  transition: color 0.2s;
+}
+
+/* Paginación: texto más limpio */
+.pagination .page-link {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+}
+
+
+/* === FOOTER “CRISTAL” === */
+.site-footer {
+  margin-top: 40px;
+  border-top: 1px solid #ddd;
+  background-color: var(--clr-glass);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 20px 0;
+}
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+.footer-links a {
+  margin-right: 15px;
+  color: var(--clr-primary);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+.footer-links a:hover {
+  text-decoration: underline;
+}
+.site-footer p {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  color: var(--clr-primary);
+}
+
+/* === MOBILE-FIRST TWEAKS === */
+@media (min-width: 768px) {
+  .main-content {
+    padding: 40px;
+  }
+  .filters {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+}
+
+
+/* 1) Barra fija de, digamos, 120px de alto */
+.site-header {
+  background: var(--clr-primary);
+  height: 65px;
+}
+
+/* 2) Contenedor que ocupa toda la altura */
+.site-header .container {
+  display: flex;
+  align-items: center;        /* centra todo vertical dentro de 120px */
+  justify-content: space-between;
+  height: 100%;               /* ocupa los 120px */
+  padding: 0 1rem;            /* separa de los lados */
+}
+
+/* 3) Logo: que nunca supere los 100px de alto */
+.logo-img {
+  max-height: 150px;          /* ajusta aquí el tamaño máximo */
+  width: auto;
+  filter: brightness(0) invert(1);
+  transform: translateY(8px);  /* ajusta este valor a tu gusto */
+}
+
+/* 4) Si sigues usando wrapper, quitasle altura extra */
+.logo-img-wrapper {
+  padding: 0;
+  margin-right: 12px;
+  background: transparent;
+}
+
+/* 5) Texto del logo, un poco más grande si quieres */
+.logo-text {
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+
+
+/* 1) Scroll suave para todo el documento */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 2) Evita que el navbar tape la cabecera de la sección */
+#players {
+  scroll-margin-top: 80px; /* iguala o supera la altura de tu navbar */
+}

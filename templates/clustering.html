@@ -1,0 +1,182 @@
+<!-- templates/clustering.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestor de Talentos FM – Clustering</title>
+
+  <!-- Material Icons para los iconos de fútbol en el nav -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+  <!-- CSS externo -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+
+
+
+<style>/* Textos introductorios */
+.intro-italic {
+  text-align: center;
+  font-style: italic;
+  color: var(--clr-text);
+  margin-bottom: 0.5rem;
+}
+.intro-text {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  text-align: justify;
+  color: var(--clr-text);
+  line-height: 1.6;
+}
+
+/* Fila de botones centrada */
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+/* Ajustes a los botones */
+.btn-hero {
+  background: var(--clr-accent);
+  color: var(--clr-primary);
+  padding: 0.8rem 1.6rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5ch;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.btn-hero .material-icons {
+  font-size: 1.2rem;
+}
+.btn-hero:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+}
+
+
+.intro {
+  text-align: justify;
+  margin-bottom: 1.5rem;
+  color: var(--clr-text);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.clustering-image {
+  text-align: center;
+  margin: 1.5rem 0;
+}
+.clustering-image img {
+  max-width: 60%;              /* reduce su tamaño al 80% del contenedor */
+  height: auto;
+  display: block;
+  margin: 1.5rem auto;         /* centrada horizontalmente y separada verticalmente */
+  border-radius: 16px;         /* esquinas suaves */
+  box-shadow: 0 0 30px rgba(0,0,0,0.4); /* halo difuminado alrededor */
+  opacity: 0.95;               /* levemente traslúcida para fundirse */
+}
+
+
+
+</style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="logo">
+        <span class="logo-img-wrapper">
+          <img
+            src="{{ url_for('static', filename='images/logo1.png') }}"
+            alt="Gestor de Talentos FM"
+            class="logo-img"
+          />
+        </span>
+      </a>
+      <nav class="main-nav">
+        <a href="/"><span class="material-icons">home</span>Inicio</a>
+        <a href="/faqs"><span class="material-icons">help_outline</span>Preguntas Frecuentes</a>
+        <a href="/comparacion"><span class="material-icons">compare_arrows</span>Comparación</a>
+        <a href="/clustering"><span class="material-icons">scatter_plot</span>Clustering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+  <div class="hero-background"></div>
+    <div class="hero-content container">
+      <h1 class="hero-title">Clustering</h1>
+      <p class="hero-subtitle">
+        ¡Encuentra y compara talentos de Football Manager!
+      </p>
+    </div>
+  </section>
+
+  <!-- SECCIÓN PRINCIPAL “CRISTAL” -->
+<!-- SECCIÓN PRINCIPAL “CRISTAL” -->
+<main class="container main-content">
+  <h2 class="page-title">Análisis por Posición</h2>
+  <p class="intro-italic">
+    Descubre grupos de jugadores con perfiles estadísticos parecidos dentro de cada posición.
+  </p>
+  <p class="intro-text">
+    Empleamos técnicas de <strong>K-Means clustering</strong> junto con 
+    <strong>PCA</strong> (Análisis de Componentes Principales) para reducir la 
+    dimensionalidad y luego agrupar a los futbolistas según métricas clave: 
+    goles, asistencias, precisión de pase, regates y aportes defensivos. Así 
+    podrás identificar patrones de rendimiento y comparar estilos de juego dentro 
+    de cada rol.
+  </p>
+
+  
+
+  <div class="button-row">
+    <button class="btn-hero"
+            onclick="window.open(`{{ url_for('clustering_porteros') }}`, '_blank', 'width=1000,height=700,scrollbars=yes')">
+      <span class="material-icons">sports_soccer</span>Porteros
+    </button>
+    <button class="btn-hero"
+            onclick="window.open(`{{ url_for('clustering_defensas') }}`, '_blank', 'width=1000,height=700,scrollbars=yes')">
+      <span class="material-icons">security</span>Defensas
+    </button>
+    <button class="btn-hero"
+            onclick="window.open(`{{ url_for('clustering_centrocampistas') }}`, '_blank', 'width=1000,height=700,scrollbars=yes')">
+      <span class="material-icons">sports_kabaddi</span>Centrocampistas
+    </button>
+    <button class="btn-hero"
+            onclick="window.open(`{{ url_for('clustering_delanteros') }}`, '_blank', 'width=1000,height=700,scrollbars=yes')">
+      <span class="material-icons">flag</span>Delanteros
+    </button>
+  </div>
+
+
+  <!-- Ilustración Clustering -->
+  <div class="clustering-image">
+    <img src="/static/images/cluster1.png"
+         alt="Ilustración de clustering de jugadores en estadio" />
+  </div>
+</main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-links">
+        <a href="/"><span class="material-icons">home</span>Inicio</a>
+        <a href="/faqs"><span class="material-icons">help_outline</span>FAQ</a>
+        <a href="/comparacion"><span class="material-icons">compare_arrows</span>Comparación</a>
+        <a href="/clustering"><span class="material-icons">scatter_plot</span>Clustering</a>
+      </div>
+      <p>© 2025 FootballManager. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

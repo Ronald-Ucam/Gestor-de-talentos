@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Clustering de Centrocampistas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <!-- Tu CSS principal -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <!-- Chart.js y plugin de zoom/pan -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2"></script>
+
+  <style>
+    /* Fondo completo con imagen */
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background:
+        linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)),
+        url('{{ url_for("static", filename="images/clusteringwin.png") }}') center/cover fixed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    /* Contenedor cristal */
+    .main-content {
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(8px);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin: 2rem;
+      max-width: 900px;
+      width: 100%;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+    /* Título */
+    .page-title {
+      text-align: center;
+      color: var(--clr-primary);
+      font-size: clamp(1.5rem, 2.5vw, 2rem);
+      margin-bottom: 1.5rem;
+    }
+    /* Formulario filtros */
+    .cluster-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    .cluster-form label {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      color: var(--clr-text);
+    }
+    .cluster-form input[type="number"],
+    .cluster-form input[type="text"] {
+      padding: 0.4rem 0.6rem;
+      border: 1px solid #ccc;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+    }
+    .cluster-form input[type="checkbox"] {
+      transform: scale(1.2);
+      margin-right: 0.3rem;
+    }
+    .cluster-form button {
+      background: var(--clr-primary);
+      color: #fff;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: var(--radius);
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: transform var(--transition), box-shadow var(--transition);
+      cursor: pointer;
+    }
+    .cluster-form button:hover {
+      background: var(--clr-primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    /* Chart container */
+    #chart-container {
+      position: relative;
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(4px);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      height: 400px;
+    }
+    #clusterChart {
+      width: 100% !important;
+      height: 100% !important;
+    }
+    /* Pan buttons */
+    .pan-btn {
+      position: absolute;
+      width: 32px; height: 32px;
+      background: var(--clr-accent);
+      color: var(--clr-primary);
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      line-height: 32px;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      transition: background var(--transition);
+      z-index: 10;
+    }
+    .pan-btn:hover {
+      background: var(--clr-primary-hover);
+      color: #fff;
+    }
+    #panUp    { top:21%; left:50%;  transform:translate(-50%,-50%); }
+    #panDown  { bottom:21%; left:50%;transform:translate(-50%,50%); }
+    #panLeft  { left:10.5%;top:50%;  transform:translate(-50%,-50%); }
+    #panRight { right:6%;   top:50%;  transform:translate(50%,-50%); }
+    /* Tabla resultados */
+    table#table-clusters {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(4px);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+    }
+    th {
+      background: var(--clr-primary);
+      color: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    tr:nth-child(even) td {
+      background: rgba(0,0,0,0.03);
+    }
+    /* Paginación front */
+    .pagination-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .pagination-controls button {
+      background: var(--clr-accent);
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-weight: 600;
+      transition: background var(--transition);
+    }
+    .pagination-controls button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="main-content">
+    <h2 class="page-title">Clustering de Centrocampistas</h2>
+
+    <form id="clusterForm" class="cluster-form">
+      <label><span class="material-icons">filter_alt</span>K:
+        <input type="number" id="inputK" value="4" min="1" max="7" />
+      </label>
+      <label><span class="material-icons">person_search</span>Mediocentro ref:
+        <input type="text" id="inputRef" list="midfieldersList" placeholder="Escribe nombre…" autocomplete="off"/>
+      </label>
+      <label><input type="checkbox" id="ageFilter"/> Edad ±4 años</label>
+      <label><input type="checkbox" id="heightFilter"/> Altura ±5 cm</label>
+      <label><input type="checkbox" id="valueFilter"/> Valor ±10 M€</label>
+      <button type="submit"><span class="material-icons">play_arrow</span>Clustear</button>
+    </form>
+
+    <datalist id="midfieldersList">
+      {% for m in midfielders_list %}
+        <option value="{{ m }}"></option>
+      {% endfor %}
+    </datalist>
+
+    <div id="chart-container">
+      <div id="panUp"    class="pan-btn">↑</div>
+      <div id="panDown"  class="pan-btn">↓</div>
+      <div id="panLeft"  class="pan-btn">←</div>
+      <div id="panRight" class="pan-btn">→</div>
+      <canvas id="clusterChart"></canvas>
+    </div>
+
+    <table id="table-clusters">
+      <thead>
+        <tr>
+          <th>Centrocampista</th>
+          <th>Clúster</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="pagination-controls">
+      <button id="prevPage" disabled>« Anterior</button>
+      <span id="pageInfo">Página 1</span>
+      <button id="nextPage" disabled>Siguiente »</button>
+    </div>
+  </main>
+
+  <script>
+    Chart.register(ChartZoom);
+
+    const form         = document.getElementById('clusterForm');
+    const inputK       = document.getElementById('inputK');
+    const inputRef     = document.getElementById('inputRef');
+    const ageFilter    = document.getElementById('ageFilter');
+    const heightFilter = document.getElementById('heightFilter');
+    const valueFilter  = document.getElementById('valueFilter');
+    const panUp        = document.getElementById('panUp');
+    const panDown      = document.getElementById('panDown');
+    const panLeft      = document.getElementById('panLeft');
+    const panRight     = document.getElementById('panRight');
+    const ctx          = document.getElementById('clusterChart').getContext('2d');
+    const tbody        = document.querySelector('#table-clusters tbody');
+    const prevBtn      = document.getElementById('prevPage');
+    const nextBtn      = document.getElementById('nextPage');
+    const pageInfo     = document.getElementById('pageInfo');
+
+    const midfieldersList = JSON.parse('{{ midfielders_list | tojson }}');
+    const ageMap          = JSON.parse('{{ age_map          | tojson }}');
+    const heightMap       = JSON.parse('{{ height_map       | tojson }}');
+    const valueMap        = JSON.parse('{{ value_map        | tojson }}');
+
+    let chart, rawData, filteredData;
+    const perPage = 20;
+    let currentPage = 1;
+
+    async function runClustering(K, ref) {
+      const qs  = new URLSearchParams({ k: K, jugador: ref });
+      const res = await fetch('/api/cluster_mid?' + qs);
+      const d   = await res.json();
+      if (d.error) throw new Error(d.error);
+      return d;
+    }
+
+    function filterBy(data, arrKey, lblKey, coordKey, pred) {
+      const idxs = data[arrKey].map((j,i)=> pred(j)? i:-1).filter(i=>i>=0);
+      return {
+        ...data,
+        jugadores:    idxs.map(i=>data[arrKey][i]),
+        labels:       idxs.map(i=>data[lblKey][i]),
+        coords2:      idxs.map(i=>data[coordKey][i]),
+        clusterNames: data.clusterNames
+      };
+    }
+
+    function applyFilters(data, ref) {
+      let d = data;
+      if (ageFilter.checked && ref) {
+        const b = ageMap[ref];
+        d = filterBy(d,'jugadores','labels','coords2',
+          j => Math.abs((ageMap[j]||0)-b) <= 4
+        );
+      }
+      if (heightFilter.checked && ref) {
+        const b = heightMap[ref];
+        d = filterBy(d,'jugadores','labels','coords2',
+          j => Math.abs((heightMap[j]||0)-b) <= 5
+        );
+      }
+      if (valueFilter.checked && ref) {
+        const b = valueMap[ref];
+        d = filterBy(d,'jugadores','labels','coords2',
+          j => Math.abs((valueMap[j]||0)-b) <= 10
+        );
+      }
+      return d;
+    }
+
+    function renderTablePage() {
+      const total = filteredData.jugadores.length;
+      const maxP  = Math.ceil(total / perPage);
+      const start = (currentPage - 1) * perPage;
+      const sliceJ = filteredData.jugadores.slice(start, start + perPage);
+      const sliceL = filteredData.labels.slice(start, start + perPage);
+
+      tbody.innerHTML = '';
+      sliceJ.forEach((j,i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${j}</td><td>${filteredData.clusterNames[sliceL[i]]}</td>`;
+        tbody.appendChild(tr);
+      });
+
+      pageInfo.textContent = `Página ${currentPage} / ${maxP}`;
+      prevBtn.disabled = (currentPage === 1);
+      nextBtn.disabled = (currentPage === maxP);
+    }
+
+    function drawChart(data, ref) {
+      rawData      = data;
+      filteredData = applyFilters(data, ref);
+      currentPage  = 1;
+
+      // preparar datasets
+      const { coords2, labels, clusterNames } = filteredData;
+      const sets = clusterNames.map((nm,id) => ({
+        label: nm,
+        data: coords2.map((c,i)=>({ x:c[0], y:c[1], cid: labels[i] }))
+                    .filter(pt => pt.cid === id),
+        pointRadius:6, showLine:false
+      }));
+      // punto ref
+      if (ref && rawData.jugadores.includes(ref)) {
+        const idx = rawData.jugadores.indexOf(ref);
+        const [x,y] = rawData.coords2[idx];
+        sets.push({
+          label:`Ref: ${ref}`,
+          data:[{x,y}],
+          pointRadius:12,
+          pointBackgroundColor:'#fff',
+          pointBorderColor:'#000',
+          pointBorderWidth:2,
+          showLine:false
+        });
+      }
+
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type:'scatter',
+        data:{datasets:sets},
+        options:{
+          plugins:{
+            legend:{position:'top'},
+            tooltip:{callbacks:{label:pt=>
+              rawData.jugadores[
+                rawData.coords2.findIndex(c=>c[0]===pt.raw.x&&c[1]===pt.raw.y)
+              ]
+            }},
+            zoom:{pan:{enabled:true,mode:'xy'},
+                  zoom:{wheel:{enabled:true},pinch:{enabled:true},drag:{enabled:true},mode:'xy'}}
+          },
+          scales:{
+            x:{title:{display:true,text:'PCA 1'}},
+            y:{title:{display:true,text:'PCA 2'}}
+          },
+          responsive:true, maintainAspectRatio:false
+        }
+      });
+
+      renderTablePage();
+    }
+
+    function pan(dx,dy) {
+      if (!chart) return;
+      const xs = chart.scales.x, ys = chart.scales.y;
+      const xr = xs.max - xs.min, yr = ys.max - ys.min;
+      chart.options.scales.x.min = xs.min + dx * xr;
+      chart.options.scales.x.max = xs.max + dx * xr;
+      chart.options.scales.y.min = ys.min + dy * yr;
+      chart.options.scales.y.max = ys.max + dy * yr;
+      chart.update();
+    }
+
+    prevBtn.addEventListener('click', ()=> {
+      if (currentPage > 1) {
+        currentPage--;
+        renderTablePage();
+      }
+    });
+    nextBtn.addEventListener('click', ()=> {
+      const maxP = Math.ceil(filteredData.jugadores.length / perPage);
+      if (currentPage < maxP) {
+        currentPage++;
+        renderTablePage();
+      }
+    });
+
+    panUp.addEventListener('click', ()=>pan(0,  0.1));
+    panDown.addEventListener('click', ()=>pan(0, -0.1));
+    panLeft.addEventListener('click', ()=>pan(-0.1, 0));
+    panRight.addEventListener('click', ()=>pan( 0.1, 0));
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const k   = +inputK.value;
+      const ref = inputRef.value.trim();
+      if (ref && !midfieldersList.includes(ref)) {
+        return alert('Selecciona un centrocampista válido.');
+      }
+      try {
+        const data = await runClustering(k, ref);
+        drawChart(data, ref);
+      } catch(err) {
+        alert('Error: ' + err.message);
+      }
+    });
+
+    [ageFilter, heightFilter, valueFilter].forEach(chk =>
+      chk.addEventListener('change', () => {
+        if (rawData) drawChart(rawData, inputRef.value.trim());
+      })
+    );
+
+    window.addEventListener('DOMContentLoaded', ()=> {
+      form.dispatchEvent(new Event('submit'));
+    });
+  </script>
+</body>
+</html>

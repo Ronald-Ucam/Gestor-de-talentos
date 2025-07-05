@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestor de Talentos FM</title>
+
+  <!-- Material Icons para los iconos de fútbol en el nav -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+  <!-- CSS externo -->
+  <link rel="stylesheet" href="/static/css/style.css" />
+
+  <script>
+    function aplicarFiltros() {
+      // Recogemos todos los valores de los filtros4
+      let nombre = document.getElementById("filtroNombre").value.trim();
+      let edad = document.getElementById("filtroEdad").value;
+      let posicion = document.getElementById("filtroPosicion").value;
+      let partidos = document.getElementById("filtroPartidos").value;
+      let golesMin     = document.getElementById("filtroGolesMin").value;
+      let golesMax     = document.getElementById("filtroGolesMax").value;
+      let asisMin      = document.getElementById("filtroAsistMin").value;
+      let asisMax      = document.getElementById("filtroAsistMax").value;
+      let disparosMin = document.getElementById("filtroDisparosMin").value;
+      let disparosMax = document.getElementById("filtroDisparosMax").value;
+
+      // Construimos la URL base para mostrar_bd (página 1 por defecto)
+      let url = "/mostrar_bd?page=1";
+      let params = [];
+
+      if (nombre)       params.push(`nombre=${encodeURIComponent(nombre)}`);
+      if (edad)        params.push(`edad=${encodeURIComponent(edad)}`);
+      if (posicion)    params.push(`posicion=${encodeURIComponent(posicion)}`);
+      if (partidos)    params.push(`partidos=${encodeURIComponent(partidos)}`);
+
+      if (golesMin)    params.push(`goles_min=${encodeURIComponent(golesMin)}`);
+      if (golesMax)    params.push(`goles=${encodeURIComponent(golesMax)}`);
+
+      if (asisMin)     params.push(`asistencias_min=${encodeURIComponent(asisMin)}`);
+      if (asisMax)     params.push(`asistencias=${encodeURIComponent(asisMax)}`);
+
+      if (disparosMin) params.push(`disparos_min=${encodeURIComponent(disparosMin)}`);
+      if (disparosMax) params.push(`disparos=${encodeURIComponent(disparosMax)}`);
+
+      if (params.length) {
+        url += "&" + params.join("&");
+      }
+
+      // Asignamos esta URL como src del iframe para recargarlo con filtros y paginación
+      document.getElementById("tablaJugadores").src = url;
+    }
+  </script>
+
+  <style>
+    /* Leyenda de columnas */
+.legend {
+  background: var(--clr-glass);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 1100px;
+}
+.legend h3 {
+  margin-bottom: 12px;
+  font-size: 1.4rem;
+  color: var(--clr-primary);
+  text-align: center;
+}
+.legend-content {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+.legend-content dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px 16px;
+}
+.legend-content dt {
+  font-weight: 600;
+  color: var(--clr-primary-hover);
+}
+.legend-content dd {
+  margin: 0 0 8px;
+  color: var(--clr-text);
+  font-size: 0.9rem;
+}
+
+/* ===== Rejilla principal ===== */
+section.filters {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: auto auto;    /* dos filas */
+  gap: 1rem;
+  padding: 1rem;
+  align-items: center;
+}
+
+/* Filtros principales (fila 1) */
+section.filters > label:nth-child(1) { grid-column: 1; grid-row: 1; }
+section.filters > label:nth-child(2) { grid-column: 2; grid-row: 1; }
+section.filters > label:nth-child(3) { grid-column: 3; grid-row: 1; }
+section.filters > label:nth-child(4) { grid-column: 4; grid-row: 1; }
+
+/* “Más filtros” (fila 2, col 1) */
+details.advanced-filters {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+/* Botón “Buscar” (fila 2, col 5) */
+section.filters .btn-search {
+  grid-column: 5;
+  grid-row: 2;
+  justify-self: end;
+  padding: 0.5rem 1rem;
+  background-color: #003366;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* ===== Detalles y filtros avanzados ===== */
+details.advanced-filters summary {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: rgba(255,255,255,0.9);
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+/* Contenedor horizontal SIN wrap */
+details.advanced-filters .adv-grid {
+  display: flex;
+  flex-direction: row;  /* forzamos en fila */
+  gap: 1rem;
+  /* eliminamos flex-wrap para que NUNCA caigan a la siguiente línea */
+  flex-wrap: nowrap;
+  overflow-x: auto;     /* si no caben, scroll horizontal */
+  padding-bottom: 0.5rem;
+}
+
+/* Cada bloque de filtro */
+details.advanced-filters .adv-grid label {
+  min-width: 140px;
+  background: rgba(255,255,255,0.9);
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Alineamos el contenido de los labels */
+details.advanced-filters .adv-grid label dr {
+  font-weight: bold;
+  margin-top: 0.5rem;
+}
+
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <!-- HEADER con logo -->
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="logo">
+        <span class="logo-img-wrapper">
+          <img
+            src="{{ url_for('static', filename='images/logo1.png') }}"
+            alt="Gestor de Talentos FM"
+            class="logo-img"
+          />
+        </span>
+      </a>
+
+      <nav class="main-nav">
+        <a href="#"><span class="material-icons">home</span>Inicio</a>
+        <a href="/faqs"><span class="material-icons">help_outline</span>Preguntas Frecuentes</a>
+        <a href="/comparacion"><span class="material-icons">compare_arrows</span>Comparación</a>
+        <a href="/clustering"><span class="material-icons">scatter_plot</span>Clustering</a>
+      </nav>
+    </div>
+  </header>
+
+
+  <!-- HERO -->
+  <section class="hero">
+  <div class="hero-background"></div>
+    <div class="hero-content container">
+      <h1 class="hero-title">Gestor de Jugadores</h1>
+      <p class="hero-subtitle">
+        ¡Encuentra y compara talentos de Football Manager!
+      </p>
+        <a href="#players" class="btn-hero">Ver Jugadores <span class="material-icons">arrow_forward</span></a>
+      </a>
+    </div>
+  </section>
+
+
+
+  <!-- SECCIÓN PRINCIPAL -->
+  <main class="container main-content" id="players">
+    <h2 class="page-title">Lista de Jugadores</h2>
+
+    <!-- FILTROS DE BÚSQUEDA -->
+    <section class="filters">
+
+      
+      <label>Nombre:
+        <input type="text" id="filtroNombre" placeholder="Ej. Messi">
+      </label>
+      <label>Edad:
+        <input type="number" id="filtroEdad" placeholder="Ej. 21" />
+      </label>
+      <label>Posición:
+        <select id="filtroPosicion">
+          <option value="">Todas</option>
+          <option value="Delantero">Delantero</option>
+          <option value="Centrocampista">Centrocampista</option>
+          <option value="Defensa">Defensa</option>
+          <option value="Portero">Portero</option>
+        </select>
+      </label>
+      <label>Titularidad:
+        <select id="filtroPartidos">
+          <option value="">Cualquiera</option>
+          <option value="0">No ha jugado</option>
+          <option value="1-5">Pocos (1-5)</option>
+          <option value="6-15">Rotación (6-15)</option>
+          <option value="16-25">Ocasional (16-25)</option>
+          <option value="26+">Indiscutible (26+)</option>
+        </select>
+      </label>
+
+
+    <details class="advanced-filters">
+      <summary>Más filtros ▾</summary>
+        <div class="adv-grid">
+
+          <label>Goles:
+            <dr>Max:</dr>
+            <input type="number" id="filtroGolesMax" placeholder="Máx. 30" style="width:8em" />
+            Min:
+            <input type="number" id="filtroGolesMin" placeholder="Mín. 0" style="width:8em" />
+            
+          </label>
+
+          <label>Asistencias:
+            <dr>Max:</dr>
+            <input type="number" id="filtroAsistMax" placeholder="Máx. 20" style="width:8em" />
+            Min:
+            <input type="number" id="filtroAsistMin" placeholder="Mín. 0" style="width:8em" />
+          </label>
+
+          <label>Disparos:
+            <dr>Max:</dr>
+            <input type="number" id="filtroDisparosMax" placeholder="Máx. 50" style="width:8em" />
+            Min:
+            <input type="number" id="filtroDisparosMin" placeholder="Mín. 0" style="width:8em" />
+          </label>
+        </div>
+    </details>
+    
+    <button onclick="aplicarFiltros()">Buscar</button>
+    </section>
+
+    <!-- RESULTADOS: iframe QUE MUESTRA EL HTML PAGINADO -->
+    <section class="results">
+      <div class="pitch-frame">
+        <!-- Por defecto carga la página 1 sin filtros -->
+        <iframe
+          id="tablaJugadores"
+          src="/mostrar_bd?page=1"
+          frameborder="0"
+        ></iframe>
+      </div>
+    </section>
+
+    <!-- Añádelo en index.html, justo antes de <main class="container main-content" id="players"> -->
+<section class="legend container">
+  <h3>Leyenda de columnas</h3>
+  <div class="legend-content">
+    <dl>
+      <dt>Nombre</dt><dd>Nombre completo del jugador</dd>
+      <dt>Edad</dt><dd>Años cumplidos</dd>
+      <dt>Valor de traspaso</dt><dd>Valor estimado de mercado (€)</dd>
+      <dt>Suledo</dt><dd>Salario anual (€)</dd>
+      <dt>Final</dt><dd>Fecha de fin de contrato</dd>
+      <dt>Altura</dt><dd>Altura en centímetros</dd>
+      <dt>Peso</dt><dd>Peso en kilogramos</dd>
+      <dt>Posición</dt><dd>Posición dominante en el campo</dd>
+      <dt>Club</dt><dd>Equipo actual</dd>
+      <dt>Cedido por</dt><dd>Club propietario (si está cedido)</dd>
+      <dt>Procedencia</dt><dd>Club de procedencia</dd>
+      <dt>Nac</dt><dd>País de nacimiento</dd>
+      <dt>2ª Nac</dt><dd>Segunda nacionalidad</dd>
+      <dt>Pierna buena</dt><dd>Pie dominante</dd>
+      <dt>Cláus. Resc.</dt><dd>Cláusula de rescisión (€)</dd>
+      <dt>Part</dt><dd>Partidos jugados</dd>
+      <dt>Titular</dt><dd>Partidos como titular</dd>
+      <dt>Min</dt><dd>Minutos totales jugados</dd>
+      <dt>Min/Par</dt><dd>Minutos por partido</dd>
+      <dt>Media</dt><dd>Calificación media de rendimiento</dd>
+      <dt>Gol</dt><dd>Goles marcados</dd>
+      <dt>xG</dt><dd>Goles esperados</dd>
+      <dt>xG-SP</dt><dd>xG sin penaltis</dd>
+      <dt>xG-HR</dt><dd>xG en jugadas de balón parado</dd>
+      <dt>Gol/90</dt><dd>Goles por 90 minutos</dd>
+      <dt>Asis</dt><dd>Asistencias</dd>
+      <dt>xA</dt><dd>Asistencias esperadas</dd>
+      <dt>Asis/90</dt><dd>Asistencias por 90 minutos</dd>
+      <dt>Disparos</dt><dd>Total de disparos</dd>
+      <dt>TaP</dt><dd>Tiros a puerta</dd>
+      <dt>TirP/90</dt><dd>Tiros a puerta por 90 min</dd>
+      <dt>% disparos</dt><dd>Porcentaje de tiros a puerta</dd>
+      <dt>Tir/90</dt><dd>Disparos por 90 min</dd>
+      <dt>Pen</dt><dd>Penaltis lanzados</dd>
+      <dt>Pen M</dt><dd>Penaltis marcados</dd>
+      <dt>Pen %</dt><dd>Éxito en penaltis (%)</dd>
+      <dt>Fdj</dt><dd>Faltas cometidas</dd>
+      <dt>OCG</dt><dd>Ocasiones de gol creadas</dd>
+      <dt>Oc C/90</dt><dd>Ocasiones creadas por 90 min</dd>
+      <dt>Pas Cl</dt><dd>Pases completados</dd>
+      <dt>Pas Clv/90</dt><dd>Pases clave por 90 min</dd>
+      <dt>Ps I/90</dt><dd>Pases interiores por 90 min</dd>
+      <dt>Ps C/90</dt><dd>Pases cruzados por 90 min</dd>
+      <dt>Pas I</dt><dd>Pases interiores totales</dd>
+      <dt>Pas C</dt><dd>Pases cruzados totales</dd>
+      <dt>% Pase</dt><dd>Precisión de pase (%)</dd>
+      <dt>Pases prog</dt><dd>Pases progresivos</dd>
+      <dt>Pases prog/90</dt><dd>Pases progresivos por 90 min</dd>
+      <dt>Cen.In</dt><dd>Centros interiores</dd>
+      <dt>Cen.Com</dt><dd>Centros completados</dd>
+      <dt>Cen.C/I</dt><dd>Centros con éxito (%)</dd>
+      <dt>Reg</dt><dd>Regates logrados</dd>
+      <dt>Reg/90</dt><dd>Regates por 90 min</dd>
+      <dt>Cab Int</dt><dd>Intercepciones</dd>
+      <dt>Bal aér/90</dt><dd>Duelo aéreo ganado por 90 min</dd>
+      <dt>Cab</dt><dd>Duelo aéreo ganado</dd>
+      <dt>Cab G/90</dt><dd>Duelo aéreo ganado por 90 min</dd>
+      <dt>Rcg %</dt><dd>Éxito duelos aéreos (%)</dd>
+      <dt>Ent Cl</dt><dd>Entradas limpiadoras</dd>
+      <dt>Ent C</dt><dd>Entradas totales</dd>
+      <dt>Entr/90</dt><dd>Entradas por 90 min</dd>
+      <dt>Ent P</dt><dd>Entradas precisas</dd>
+      <dt>FR</dt><dd>Faltas recibidas</dd>
+      <dt>FC</dt><dd>Faltas cometidas</dd>
+      <dt>Ama</dt><dd>Tarjetas amarillas</dd>
+      <dt>Roj.</dt><dd>Tarjetas rojas</dd>
+      <dt>Rob</dt><dd>Balones recuperados</dd>
+      <dt>Rob/90</dt><dd>Recuperaciones por 90 min</dd>
+      <dt>Desp</dt><dd>Despejes</dd>
+      <dt>Pos Gan/90</dt><dd>Posesión ganada por 90 min</dd>
+      <dt>Pos Perd/90</dt><dd>Posesión perdida por 90 min</dd>
+      <dt>Esprints/90</dt><dd>Esprints por 90 min</dd>
+      <dt>Distancia</dt><dd>Distancia total recorrida (km)</dd>
+      <dt>Enc</dt><dd>Entradas en campo rival</dd>
+      <dt>Enc/90</dt><dd>Entradas rival por 90 min</dd>
+      <dt>Portería imbatida</dt><dd>Partidos sin encajar gol</dd>
+      <dt>Pep %</dt><dd>Paradas efectivas (%)</dd>
+      <dt>BAt</dt><dd>Balones atrapados</dd>
+      <dt>BDs</dt><dd>Balones despejados</dd>
+      <dt>BRe</dt><dd>Balones rechazados</dd>
+      <dt>Rp %</dt><dd>Éxito paradas (%)</dd>
+      <dt>Pen. recibidos</dt><dd>Penaltis recibidos</dd>
+      <dt>Pen. parados</dt><dd>Penaltis detenidos</dd>
+      <dt>Prop. penaltis parados</dt><dd>Proporción de penaltis detenidos</dd>
+      <dt>JPar</dt><dd>Jugada de portero/parada</dd>
+      <dt>ValorNum</dt><dd>Valor numérico del jugador (€ sin formato)</dd>
+    </dl>
+  </div>
+</section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-links">
+        <a href="#"><span class="material-icons">home</span>Inicio</a>
+        <a href="#"><span class="material-icons">help_outline</span>FAQ</a>
+        <a href="#"><span class="material-icons">compare_arrows</span>Comparación</a>
+        <a href="#"><span class="material-icons">scatter_plot</span>Clustering</a>
+      </div>
+      <p>© 2025 FootballManager. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    // Configura cada par [minId, maxId]
+    const pairs = [
+      ["filtroValorMin",    "filtroValorMax"],
+      ["filtroGolesMin",    "filtroGolesMax"],
+      ["filtroAsistMin",    "filtroAsistMax"],
+      ["filtroDisparosMin", "filtroDisparosMax"]
+    ];
+
+    pairs.forEach(([minId, maxId]) => {
+      const minEl = document.getElementById(minId);
+      const maxEl = document.getElementById(maxId);
+
+      // Cuando cambie el mínimo…
+      minEl.addEventListener('input', () => {
+        const minV = Number(minEl.value);
+        // Asegura que max >= min
+        if (!isNaN(minV)) {
+          maxEl.min = minV;
+          if (Number(maxEl.value) < minV) {
+            maxEl.value = minV;
+          }
+        } else {
+          maxEl.min = "";
+        }
+      });
+
+      // Cuando cambie el máximo…
+      maxEl.addEventListener('input', () => {
+        const maxV = Number(maxEl.value);
+        // Asegura que min <= max
+        if (!isNaN(maxV)) {
+          minEl.max = maxV;
+          if (Number(minEl.value) > maxV) {
+            minEl.value = maxV;
+          }
+        } else {
+          minEl.max = "";
+        }
+      });
+    });
+  });
+</script>
+
+
+</body>
+</html>
