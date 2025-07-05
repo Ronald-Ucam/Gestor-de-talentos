@@ -14,8 +14,10 @@ from pyngrok import ngrok
 
 
 app = Flask(__name__)
-public_url = ngrok.connect(5000)
-print(" * Tunnel URL:", public_url)
+port = int(os.environ.get("PORT", 5000))
+app.run(host='0.0.0.0', port=port)
+# ---public_url = ngrok.connect(5000)---
+# ---print(" * Tunnel URL:", public_url)---
 
 # --- Carga del DataFrame desde pickle ---
 pickle_path = os.path.join(os.getcwd(), "jugadores.pkl")
