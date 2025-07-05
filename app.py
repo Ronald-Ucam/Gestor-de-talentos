@@ -10,7 +10,6 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.metrics import pairwise_distances
 from sklearn.neighbors import NearestNeighbors
-from pyngrok import ngrok
 
 
 app = Flask(__name__)
