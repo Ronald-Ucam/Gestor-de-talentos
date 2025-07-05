@@ -13,10 +13,7 @@ from sklearn.neighbors import NearestNeighbors
 
 
 app = Flask(__name__)
-port = int(os.environ.get("PORT", 5000))
-app.run(host='0.0.0.0', port=port)
-# ---public_url = ngrok.connect(5000)---
-# ---print(" * Tunnel URL:", public_url)---
+
 
 # --- Carga del DataFrame desde pickle ---
 pickle_path = os.path.join(os.getcwd(), "jugadores.pkl")
@@ -807,3 +804,5 @@ def cluster_forwards(df, k=4):
 
 if __name__ == "__main__":
     app.run(debug=False, use_reloader=False)
+port = int(os.environ.get("PORT", 5000))
+app.run(host='0.0.0.0', port=port)
