@@ -10,17 +10,25 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.metrics import pairwise_distances
 from sklearn.neighbors import NearestNeighbors
+import subprocess
+
 
 
 app = Flask(__name__)
 
 
-# --- Carga del DataFrame desde pickle ---
+# --- Carga del DataFrame desde pickle 
+# --- pickle_path = os.path.join(os.getcwd(), "jugadores.pkl")
+# --- if not os.path.exists(pickle_path):
+# ---     raise FileNotFoundError(
+# ---         "Falta jugadores.pkl. Ejecuta preprocesar_tabla.py primero para generarlo."
+# ---     )
+ # ---    subprocess.run(["python", "preprocesar_tabla.py"], check=True)
+# --- df_jugadores = pd.read_pickle(pickle_path)
+
 pickle_path = os.path.join(os.getcwd(), "jugadores.pkl")
 if not os.path.exists(pickle_path):
-    raise FileNotFoundError(
-        "Falta jugadores.pkl. Ejecuta preprocesar_tabla.py primero para generarlo."
-    )
+    # Genera el pickle automáticamente si falta
     subprocess.run(["python", "preprocesar_tabla.py"], check=True)
 df_jugadores = pd.read_pickle(pickle_path)
 
