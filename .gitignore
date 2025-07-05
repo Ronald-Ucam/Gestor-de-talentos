@@ -1,0 +1,18 @@
+# Virtualenv
+venv/
+# VSCode editor files
+.vscode/
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+
+# Data pickles y uploads pesados
+*.pkl
+uploads/
+
+# Logs
+*.log
+
+# Sistema
+Thumbs.db
