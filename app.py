@@ -21,6 +21,7 @@ if not os.path.exists(pickle_path):
     raise FileNotFoundError(
         "Falta jugadores.pkl. Ejecuta preprocesar_tabla.py primero para generarlo."
     )
+    subprocess.run(["python", "preprocesar_tabla.py"], check=True)
 df_jugadores = pd.read_pickle(pickle_path)
 
 
