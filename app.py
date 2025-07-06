@@ -298,29 +298,79 @@ def mostrar_bd():
 
 
 def buscar_foto_wikipedia(nombre):
-    url = "https://es.wikipedia.org/w/api.php"
-    params = {
-        "action":      "query",
-        "titles":      nombre,
-        "prop":        "pageimages",
-        "format":      "json",
-        "pithumbsize": 300
-    }
-    resp = requests.get(url, params=params, timeout=5)
-    if not resp.ok:
+    """
+    Busca la miniatura de Wikipedia para un jugador:
+    1) Query de búsqueda “<nombre> futbolista”
+    2) Si no hay resultado o no hay thumbnail, busca <nombre> con opensearch
+    """
+    WIKI_API = "https://es.wikipedia.org/w/api.php"
+
+    # Helper para extraer thumbnail de un título dado
+    def obtener_thumbnail(titulo):
+        params_img = {
+            "action": "query",
+            "titles": titulo,
+            "prop": "pageimages",
+            "format": "json",
+            "pithumbsize": 300
+        }
+        resp2 = requests.get(WIKI_API, params=params_img, timeout=5)
+        if not resp2.ok:
+            return None
+        pages = resp2.json().get("query", {}).get("pages", {})
+        for p in pages.values():
+            thumb = p.get("thumbnail", {})
+            if thumb.get("source"):
+                return thumb["source"]
         return None
-    pages = resp.json().get("query", {}).get("pages", {})
-    for page in pages.values():
-        thumb = page.get("thumbnail", {})
-        if thumb.get("source"):
-            return thumb["source"]
+
+    # 1) Búsqueda con “futbolista”
+    params_search = {
+        "action": "query",
+        "list": "search",
+        "srsearch": f"{nombre} futbolista",
+        "format": "json",
+        "srlimit": 1
+    }
+    resp = requests.get(WIKI_API, params=params_search, timeout=5)
+    if resp.ok:
+        results = resp.json().get("query", {}).get("search", [])
+        if results:
+            thumb = obtener_thumbnail(results[0]["title"])
+            if thumb:
+                return thumb
+
+    # 2) Fallback: opensearch puro
+    params_open = {
+        "action": "opensearch",
+        "search": nombre,
+        "limit": 1,
+        "namespace": 0,
+        "format": "json"
+    }
+    resp3 = requests.get(WIKI_API, params=params_open, timeout=5)
+    if not resp3.ok:
+        return None
+    data = resp3.json()
+    # data[1] es lista de títulos
+    if len(data) > 1 and data[1]:
+        titulo2 = data[1][0]
+        thumb2 = obtener_thumbnail(titulo2)
+        if thumb2:
+            return thumb2
+
     return None
+
+
 
 
 @app.route("/api/comparar")
 def api_comparar():
-    j1, j2 = request.args.get("jugador1"), request.args.get("jugador2")
-    attrs = ["Media", "Gol/90", "Asis/90", "Reg/90", "% Pase"]
+    j1 = request.args.get("jugador1")
+    j2 = request.args.get("jugador2")
+
+    # 1) Lista de métricas: pasamos de "% Pase" a "Pas Clv/90"
+    attrs = ["Media", "Gol/90", "Asis/90", "Reg/90", "Pas Clv/90"]
 
     p1 = df_jugadores[df_jugadores["Nombre"] == j1]
     p2 = df_jugadores[df_jugadores["Nombre"] == j2]
@@ -329,18 +379,31 @@ def api_comparar():
     p1, p2 = p1.iloc[0], p2.iloc[0]
 
     def to_float(val):
-        return 0.0 if str(val).strip() == "-" else float(val)
+        return 0.0 if str(val).strip() in ["-", ""] else float(re.sub(r"[^\d\.]", "", str(val)))
 
-    clean  = {a: df_jugadores[a].replace("-", 0).astype(float) for a in attrs}
+    # 2) Limpiamos y calculamos percentiles
+    clean = {}
+    for a in attrs:
+        clean[a] = df_jugadores[a] \
+            .replace("-", np.nan) \
+            .astype(str) \
+            .str.replace(r"[^\d\.]", "", regex=True) \
+            .replace("", "0") \
+            .astype(float)
+
     statsA = [round(percentileofscore(clean[a], to_float(p1[a])), 1) for a in attrs]
     statsB = [round(percentileofscore(clean[a], to_float(p2[a])), 1) for a in attrs]
 
-    campos_perfil = ["Nombre", "Edad", "Altura", "Peso", "Posición", "Club",
-                     "ValorNum", "Sueldo", "Media", "Gol/90", "Asis/90",
-                     "Reg/90", "% Pase", "Disparos", "Min/Par"]
+    # Campos de perfil (añadimos Pas Clv/90 si lo queremos mostrar en detalle)
+    campos_perfil = [
+        "Nombre", "Edad", "Altura", "Peso", "Posición", "Club",
+        "ValorNum", "Sueldo", "Media", "Gol/90", "Asis/90",
+        "Reg/90", "Pas Clv/90", "Disparos", "Min/Par"
+    ]
 
     def construir_perfil(p, nombre):
         perfil = {}
+        # Foto (misma función de antes)
         foto = buscar_foto_wikipedia(nombre)
         if foto:
             perfil["FotoURL"] = foto
@@ -359,6 +422,7 @@ def api_comparar():
         "perfilA": construir_perfil(p1, j1),
         "perfilB": construir_perfil(p2, j2)
     })
+
 
 
 

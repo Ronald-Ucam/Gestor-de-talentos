@@ -13,51 +13,148 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    /* Ajustes específicos para la comparación */
-    #info-comparacion {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 2rem;
-      margin-top: 30px;
+    /* Tabla de comparación */
+    #tablaComparacion {
+      width:100%;
+      border-collapse:collapse;
+      margin-top:30px;
+      background:var(--clr-glass);
+      backdrop-filter:blur(8px);
+      border-radius:var(--radius);
+      overflow:hidden;
     }
-    .perfil-col {
-      flex: 1 1 300px;
-      background: var(--clr-glass);
-      backdrop-filter: blur(8px);
-      border-radius: var(--radius);
-      padding: 20px;
-      max-height: 500px;
-      overflow-y: auto;
+    #tablaComparacion th,
+    #tablaComparacion td {
+      border:1px solid var(--clr-primary-hover);
+      padding:12px;
+      text-align:center;
     }
-    .perfil-col h3 {
-      margin-top: 0;
-      font-size: 1.4rem;
-      color: var(--clr-primary);
-      border-bottom: 2px solid var(--clr-primary-hover);
-      padding-bottom: 8px;
+    #tablaComparacion th {
+      background:var(--clr-primary);
+      color:#fff;
     }
-    .perfil-list dt {
-      font-weight: 600;
-      margin-top: 12px;
-      color: var(--clr-primary-hover);
+    #tablaComparacion tbody tr:nth-child(even) {
+      background:rgba(0,0,0,0.05);
     }
-    .perfil-list dd {
-      margin: 0 0 10px 0;
-      color: var(--clr-text);
+    .foto-jugador {
+      max-width:100px;
+      border-radius:8px;
+      display:block;
+      margin:0 auto 10px;
     }
+
+    /* Radar chart */
     #radarChartContainer {
-      position: relative;
-      max-width: 700px;
-      margin: 40px auto 0;
-      background: var(--clr-glass);
-      backdrop-filter: blur(8px);
-      border-radius: var(--radius);
-      padding: 20px;
+      position:relative;
+      max-width:700px;
+      margin:40px auto 0;
+      background:var(--clr-glass);
+      backdrop-filter:blur(8px);
+      border-radius:var(--radius);
+      padding:20px;
     }
     #radarChart {
-      width: 100% !important;
-      height: auto !important;
+      width:100% !important;
+      height:auto !important;
     }
+
+    /* Campo de juego comparativo */
+    .pitch-comparison {
+      display:flex;
+      justify-content:space-around;
+      gap:2rem;
+      margin:40px 0;
+    }
+    .pitch-col {
+      text-align:center;
+    }
+    .pitch-svg {
+      background: url('/static/images/campofutbol.jpg') no-repeat center center;
+      background-size: cover;
+      width:340px;
+      height:480px;
+      border:2px solid #080;
+      border-radius:4px;
+      position:relative;
+    }
+    .marker {
+      filter: blur(2px);
+    }
+
+    /* Contenedor para permitir scroll horizontal en móviles */
+.table-wrapper {
+  overflow-x: auto;
+  margin-top: 30px;
+}
+
+/* Tablas de aspecto “card” */
+#tablaComparacion {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: sans-serif;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Encabezado con fondo degradado y sticky */
+#tablaComparacion thead th {
+  position: sticky;
+  top: 0;
+  background: linear-gradient(90deg, #004d99, #0073e6);
+  color: #fff;
+  font-weight: 600;
+  padding: 12px 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Celdas */
+#tablaComparacion td {
+  padding: 12px 16px;
+  vertical-align: middle;
+  border-bottom: 1px solid #e0e0e0;
+  color: #333;
+}
+
+/* Líneas divisorias suaves */
+#tablaComparacion th + th,
+#tablaComparacion th + th + th {
+  border-left: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Filas alternadas */
+#tablaComparacion tbody tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+/* Hover */
+#tablaComparacion tbody tr:hover {
+  background: #e6f2ff;
+}
+
+/* Campo “Campo” en negrita */
+#tablaComparacion td:first-child {
+  font-weight: 600;
+  color: #004d99;
+}
+
+/* Imágenes en la tabla */
+.foto-jugador {
+  max-width: 80px;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+/* Responsive: ajusta el padding en móviles */
+@media (max-width: 600px) {
+  #tablaComparacion th,
+  #tablaComparacion td {
+    padding: 8px 12px;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -66,15 +163,12 @@
   <header class="site-header">
     <div class="container">
       <a href="/" class="logo">
-        <span class="logo-img-wrapper">
-          <img src="{{ url_for('static', filename='images/logo1.png') }}"
-               alt="Gestor de Talentos FM"
-               class="logo-img" />
-        </span>
+        <img src="{{ url_for('static', filename='images/logo1.png') }}"
+             alt="Gestor de Talentos FM" class="logo-img"/>
       </a>
       <nav class="main-nav">
         <a href="/"><span class="material-icons">home</span>Inicio</a>
-        <a href="/faqs"><span class="material-icons">help_outline</span>Preguntas Frecuentes</a>
+        <a href="/faqs"><span class="material-icons">help_outline</span>FAQ</a>
         <a href="/comparacion"><span class="material-icons">compare_arrows</span>Comparación</a>
         <a href="/clustering"><span class="material-icons">scatter_plot</span>Clustering</a>
       </nav>
@@ -92,39 +186,55 @@
 
   <!-- SECCIÓN PRINCIPAL -->
   <main class="container main-content">
-    <h2 class="page-title">Selecciona dos jugadores</h2>
+    <h2 class="page-title">Escribe el nombre de dos jugadores</h2>
 
+    <!-- FILTROS -->
     <section class="filters" style="justify-content:center; gap:1rem;">
       <label>Jugador A:
-        <select id="selectA">
-          {% for j in jugadores_list %}
-            <option value="{{ j }}" {% if j == selected1 %}selected{% endif %}>{{ j }}</option>
-          {% endfor %}
-        </select>
+        <input id="inputA" list="jugadores" placeholder="Escribe nombre..." value="{{ selected1 }}">
       </label>
       <label>Jugador B:
-        <select id="selectB">
-          {% for j in jugadores_list %}
-            <option value="{{ j }}" {% if j == selected2 %}selected{% endif %}>{{ j }}</option>
-          {% endfor %}
-        </select>
+        <input id="inputB" list="jugadores" placeholder="Escribe nombre..." value="{{ selected2 }}">
       </label>
       <button id="btnComparar" class="filters button">Comparar</button>
+      <datalist id="jugadores">
+        {% for j in jugadores_list %}
+          <option value="{{ j }}">
+        {% endfor %}
+      </datalist>
     </section>
 
-    <div id="info-comparacion">
-      <div id="perfilA" class="perfil-col">
-        <h3>Jugador A</h3>
-        <dl class="perfil-list" id="datosA"></dl>
-      </div>
-      <div id="perfilB" class="perfil-col">
-        <h3>Jugador B</h3>
-        <dl class="perfil-list" id="datosB"></dl>
-      </div>
-    </div>
+    <!-- TABLA DE COMPARACIÓN -->
+  <div class="table-wrapper">
 
+    <table id="tablaComparacion">
+      <thead>
+        <tr>
+          <th>Campo</th>
+          <th id="thA">Jugador A</th>
+          <th id="thB">Jugador B</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+
+    <!-- RADAR CHART -->
     <div id="radarChartContainer">
       <canvas id="radarChart"></canvas>
+    </div>
+
+    <!-- CAMPO DE JUEGO COMPARATIVO -->
+    <div class="pitch-comparison">
+      <div class="pitch-col">
+        <h4 id="labelA"></h4>
+        <svg id="pitchA" class="pitch-svg"></svg>
+      </div>
+      <div class="pitch-col">
+        <h4 id="labelB"></h4>
+        <svg id="pitchB" class="pitch-svg"></svg>
+      </div>
     </div>
   </main>
 
@@ -135,7 +245,7 @@
         <a href="/"><span class="material-icons">home</span>Inicio</a>
         <a href="/faqs"><span class="material-icons">help_outline</span>FAQ</a>
         <a href="/comparacion"><span class="material-icons">compare_arrows</span>Comparación</a>
-        <a href="/clustering"><span class="material-icons">scatter_plot</span>Clustering</a>
+        <a href="/clustering"><span class="material-icons">scatter_plot"></span>Clustering</a>
       </div>
       <p>© 2025 FootballManager. Todos los derechos reservados.</p>
     </div>
@@ -144,40 +254,54 @@
   <script>
     const ctx = document.getElementById('radarChart').getContext('2d');
     let radarChart = null;
-    const camposPerfil = [
-      "Edad","Altura","Peso","Posición","Club",
-      "ValorNum","Sueldo","Media","Gol/90","Asis/90",
-      "Reg/90","% Pase","Disparos","Min/Par"
-    ];
+
+    const positionMap = {
+      POR: [{x:0.5,y:0.05}],
+      DFC: [{x:0.5,y:0.2}],
+      DF:  [{x:0.3,y:0.3},{x:0.7,y:0.3}],
+      MC:  [{x:0.5,y:0.5}],
+      MCO: [{x:0.5,y:0.6}],
+      MCD: [{x:0.3,y:0.5},{x:0.7,y:0.5}],
+      EI:  [{x:0.1,y:0.4}],
+      ED:  [{x:0.9,y:0.4}],
+      MP:  [{x:0.5,y:0.45}],
+      DL:  [{x:0.5,y:0.85}]
+    };
+
+    function drawPitch(svgId, positions, color) {
+      const svg = document.getElementById(svgId);
+      svg.querySelectorAll('.marker').forEach(el => el.remove());
+      const w = svg.clientWidth, h = svg.clientHeight;
+      positions.forEach(pos => {
+        (positionMap[pos]||[]).forEach(pt => {
+          const sq = document.createElementNS('http://www.w3.org/2000/svg','rect');
+          const size = 70;
+          sq.setAttribute('x', pt.x * w - size/2);
+          sq.setAttribute('y', pt.y * h - size/2);
+          sq.setAttribute('width', size);
+          sq.setAttribute('height', size);
+          sq.setAttribute('rx', size/4);
+          sq.setAttribute('ry', size/4);
+          sq.setAttribute('fill', color);
+          sq.setAttribute('stroke','rgba(0,0,0,0.7)');
+          sq.setAttribute('stroke-width', '1');
+          sq.classList.add('marker');
+          svg.appendChild(sq);
+        });
+      });
+    }
 
     document.getElementById('btnComparar').addEventListener('click', () => {
-      const j1 = encodeURIComponent(document.getElementById('selectA').value);
-      const j2 = encodeURIComponent(document.getElementById('selectB').value);
+      const j1 = encodeURIComponent(document.getElementById('inputA').value.trim());
+      const j2 = encodeURIComponent(document.getElementById('inputB').value.trim());
+      if (!j1 || !j2) return alert('Escribe ambos jugadores.');
 
       fetch(`/api/comparar?jugador1=${j1}&jugador2=${j2}`)
         .then(res => res.json())
         .then(data => {
           const { labels, statsA, statsB, nameA, nameB, perfilA, perfilB } = data;
-          document.querySelector('#perfilA h3').textContent = nameA;
-          document.querySelector('#perfilB h3').textContent = nameB;
 
-          function renderDatos(id, perfil) {
-            const dl = document.getElementById(id);
-            dl.innerHTML = '';
-            camposPerfil.forEach(c => {
-              if (perfil[c] !== undefined) {
-                let val = perfil[c];
-                if (typeof val === 'number') val = val.toLocaleString();
-                if (c==="ValorNum"||c==="Sueldo") val += ' €';
-                const dt = document.createElement('dt'); dt.textContent = c;
-                const dd = document.createElement('dd'); dd.textContent = val;
-                dl.appendChild(dt); dl.appendChild(dd);
-              }
-            });
-          }
-          renderDatos('datosA', perfilA);
-          renderDatos('datosB', perfilB);
-
+          // Radar chart
           if (radarChart) radarChart.destroy();
           radarChart = new Chart(ctx, {
             type: 'radar',
@@ -185,14 +309,16 @@
               labels,
               datasets: [
                 {
-                  label: nameA, data: statsA,
+                  label: nameA,
+                  data: statsA,
                   fill: true,
                   backgroundColor: 'rgba(0,77,153,0.2)',
                   borderColor: '#004d99',
                   pointBackgroundColor: '#004d99'
                 },
                 {
-                  label: nameB, data: statsB,
+                  label: nameB,
+                  data: statsB,
                   fill: true,
                   backgroundColor: 'rgba(255,153,51,0.2)',
                   borderColor: '#ff9933',
@@ -214,10 +340,45 @@
               maintainAspectRatio: false
             }
           });
-        })
-        .catch(err => console.error('Error al comparar:', err));
+
+          // Tabla
+          document.getElementById('thA').textContent = nameA;
+          document.getElementById('thB').textContent = nameB;
+          const tbody = document.querySelector('#tablaComparacion tbody');
+          tbody.innerHTML = '';
+          let campos = [...new Set([...Object.keys(perfilA), ...Object.keys(perfilB)])]
+                        .filter(c => c !== 'FotoURL');
+          if (perfilA.FotoURL || perfilB.FotoURL) {
+            const trPhoto = document.createElement('tr');
+            trPhoto.innerHTML = `
+              <td>Foto</td>
+              <td>${perfilA.FotoURL?`<img src="${perfilA.FotoURL}" class="foto-jugador"/>`:''}</td>
+              <td>${perfilB.FotoURL?`<img src="${perfilB.FotoURL}" class="foto-jugador"/>`:''}</td>
+            `;
+            tbody.appendChild(trPhoto);
+          }
+          campos.forEach(c => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${c}</td>
+              <td>${perfilA[c]||''}</td>
+              <td>${perfilB[c]||''}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+
+          // Campo comparativo
+          document.getElementById('labelA').textContent = nameA;
+          document.getElementById('labelB').textContent = nameB;
+          const extractCodes = s =>
+            s.split(',').map(x=> (x.match(/\b[A-Z]{2,3}\b/)||[])[0]).filter(Boolean);
+
+          drawPitch('pitchA', extractCodes(perfilA.Posición||''), 'rgba(0,0,255,0.4)');
+          drawPitch('pitchB', extractCodes(perfilB.Posición||''), 'rgba(255,0,0,0.4)');
+        });
     });
 
+    // Auto-comparar al cargar
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('btnComparar').click();
     });
