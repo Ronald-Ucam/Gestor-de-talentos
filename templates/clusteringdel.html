@@ -7,14 +7,13 @@
 
   <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-  <!-- Tu CSS principal -->
+  <!-- CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
   <!-- Chart.js y plugin de zoom/pan -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2"></script>
 
   <style>
-    /* Fondo completo con imagen */
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
@@ -26,7 +25,6 @@
       justify-content: center;
       min-height: 100vh;
     }
-    /* Contenedor cristal */
     .main-content {
       background: rgba(255,255,255,0.6);
       backdrop-filter: blur(8px);
@@ -37,14 +35,12 @@
       width: 100%;
       box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     }
-    /* Título */
     .page-title {
       text-align: center;
       color: var(--clr-primary);
       font-size: clamp(1.5rem,2.5vw,2rem);
       margin-bottom: 1.5rem;
     }
-    /* Formulario filtros */
     .cluster-form {
       display: flex;
       flex-wrap: wrap;
@@ -89,7 +85,7 @@
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
-    /* Chart container */
+
     #chart-container {
       position: relative;
       background: rgba(255,255,255,0.8);
@@ -100,11 +96,11 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       height: 400px;
     }
+
     #clusterChart {
       width: 100% !important;
       height: 100% !important;
     }
-    /* Pan buttons */
     .pan-btn {
       position: absolute;
       width: 32px; height: 32px;
@@ -128,7 +124,7 @@
     #panDown  { bottom:21%; left:50%;transform:translate(-50%,50%); }
     #panLeft  { left:10.5%;top:50%;  transform:translate(-50%,-50%); }
     #panRight { right:6%;   top:50%;  transform:translate(50%,-50%); }
-    /* Tabla resultados */
+
     table#table-clusters {
       width: 100%;
       border-collapse: collapse;
@@ -152,7 +148,7 @@
     tr:nth-child(even) td {
       background: rgba(0,0,0,0.03);
     }
-    /* Paginación front */
+
     .pagination-controls {
       display: flex;
       justify-content: center;
@@ -173,6 +169,37 @@
       opacity: 0.5;
       cursor: default;
     }
+    .cluster-guide {
+      margin: 2rem auto;
+      max-width: 900px;
+    }
+    .cluster-guide-content {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 8px;
+      padding: 1.5rem 2rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      line-height: 1.6;
+    }
+    .cluster-guide-content p {
+      margin-bottom: 1rem;
+      color: #333;
+    }
+    .cluster-guide-content ol {
+      margin: 0 0 1rem 1.2rem;
+      color: #444;
+    }
+    .cluster-guide-content li {
+      margin-bottom: 0.6rem;
+    }
+    .cluster-guide-content .tip {
+      background: #e8f5e9;
+      border-left: 4px solid #4caf50;
+      padding: 0.6rem 1rem;
+      border-radius: 4px;
+      color: #2e7d32;
+      margin-top: 1rem;
+    }
+
   </style>
 </head>
 <body>
@@ -193,11 +220,8 @@
       <button type="submit"><span class="material-icons">play_arrow</span>Clustear</button>
     </form>
 
-    <datalist id="delanterosList">
-      {% for d in delanteros_list %}
-        <option value="{{ d }}"></option>
-      {% endfor %}
-    </datalist>
+    <datalist id="delanterosList"></datalist>
+
 
     <div id="chart-container">
       <div id="panUp"    class="pan-btn">↑</div>
@@ -206,7 +230,30 @@
       <div id="panRight" class="pan-btn">→</div>
       <canvas id="clusterChart"></canvas>
     </div>
-
+    <section class="cluster-guide">
+      <div class="cluster-guide-content">
+        <p>
+          El clustering agrupa a los jugadores en “cohortes” según sus características estadísticas
+          (por ejemplo, goles por 90′, xG, disparos, precisión de pase, etc.).  
+          Cuando eliges un <strong>Jugador de referencia</strong>, el sistema:
+        </p>
+        <ol>
+          <li>Resalta en el scatter plot al jugador seleccionado.</li>
+          <li>
+            Muestra en la tabla todos los jugadores de su mismo clúster, es decir,
+            aquellos con perfiles estadísticos similares.
+          </li>
+          <li>
+            Te ayuda a identificar rápidamente otros futbolistas que rinden de forma
+            parecida (ideal para comparar o buscar recambios).
+          </li>
+        </ol>
+        <p class="tip">
+          ⚽ <em>Tip:</em> Cambia el parámetro <strong>K</strong> para explorar agrupaciones
+          más gruesas (grupos grandes) o muy finas (perfiles muy específicos).
+        </p>
+      </div>
+    </section>
     <table id="table-clusters">
       <thead>
         <tr>
@@ -398,6 +445,29 @@
     [ageFilter,heightFilter,valueFilter].forEach(chk=>
       chk.addEventListener('change', ()=> rawData && drawChart(rawData, inputRef.value.trim()))
     );
+
+    async function actualizarDelanterosList() {
+      try {
+        const res  = await fetch('/api/cluster_fw?k=4');
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        const dl = document.getElementById('delanterosList');
+        dl.innerHTML = '';  
+        data.jugadores.forEach(nombre => {
+          const opt = document.createElement('option');
+          opt.value = nombre;
+          dl.appendChild(opt);
+        });
+      } catch (err) {
+        console.error('Error cargando delanteros:', err);
+      }
+    }
+
+  document
+    .getElementById('inputRef')
+    .addEventListener('focus', actualizarDelanterosList);
+
 
     window.addEventListener('DOMContentLoaded', ()=> {
       form.dispatchEvent(new Event('submit'));

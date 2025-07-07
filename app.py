@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, abort, jsonify
+from flask import Flask, render_template, request, abort, jsonify,redirect, url_for, flash, render_template, make_response
 import pandas as pd
 import os
 import re
@@ -11,20 +11,49 @@ from sklearn.decomposition import PCA
 from sklearn.metrics import pairwise_distances
 from sklearn.neighbors import NearestNeighbors
 import subprocess
+from flask import Flask, request, redirect, url_for, flash, render_template
+import os
+from preprocesar_tabla import procesar_BBDD_html
+
 
 
 
 app = Flask(__name__)
 
+app.secret_key = "clave_secreta" 
+# Guardar al nivel de app.py
+SAVE_PATH = os.path.join(os.path.dirname(__file__), 'BBDD.html')
+ALLOWED_EXTENSIONS = {'html', 'htm'}
 
-# --- Carga del DataFrame desde pickle 
-# --- pickle_path = os.path.join(os.getcwd(), "jugadores.pkl")
-# --- if not os.path.exists(pickle_path):
-# ---     raise FileNotFoundError(
-# ---         "Falta jugadores.pkl. Ejecuta preprocesar_tabla.py primero para generarlo."
-# ---     )
- # ---    subprocess.run(["python", "preprocesar_tabla.py"], check=True)
-# --- df_jugadores = pd.read_pickle(pickle_path)
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/upload_html', methods=['POST'])
+def upload_html():
+    if 'htmlFile' not in request.files:
+        flash('No se encontró el archivo.')
+        return redirect(url_for('index'))
+    file = request.files['htmlFile']
+    if file.filename == '':
+        flash('No se seleccionó ningún archivo.')
+        return redirect(url_for('index'))
+    if file and allowed_file(file.filename):
+        file.save(SAVE_PATH)
+        # Ejecuta el procesamiento inmediatamente después de guardar
+        try:
+            resultado = procesar_BBDD_html(SAVE_PATH)
+            if resultado:
+                flash('Archivo BBDD.html subido y procesado correctamente.')
+            else:
+                flash('Archivo subido, pero ocurrió un error en el procesamiento.')
+        except Exception as e:
+            flash(f'Ocurrió un error al procesar el archivo: {e}')
+        return redirect(url_for('index'))
+    else:
+        flash('Solo se permiten archivos HTML (.html, .htm).')
+        return redirect(url_for('index'))
+
+
 
 pickle_path = os.path.join(os.getcwd(), "jugadores.pkl")
 if not os.path.exists(pickle_path):
@@ -63,10 +92,9 @@ def comparacion():
 
 @app.route('/clustering')
 def clustering():
-    # Ya no recopilamos porteros, ni mapas de filtros…
     return render_template('clustering.html')
 
-
+#Para la gráfica
 @app.route('/clustering/porteros')
 def clustering_porteros():
     jugadores = df_jugadores["Nombre"].unique().tolist()
@@ -78,7 +106,7 @@ def clustering_porteros():
         .tolist()
     )
 
-    # Mapa nombre → edad (int)
+    # Mapa nombre → edad int
     age_map = {
         row.Nombre: int(row.Edad)
         for row in df_jugadores[["Nombre", "Edad"]].itertuples()
@@ -122,17 +150,17 @@ def clustering_porteros():
         "clusteringpor.html",
         jugadores_list=jugadores,
         age_map=age_map,
-        porteros_list=porteros,     # <— nueva
+        porteros_list=porteros,     
         height_map=height_map,
         value_map=value_map
     )                     
 
-
+#Para la gráfica
 @app.route('/clustering/defensas')
 def clustering_defensas():
     jugadores = df_jugadores['Nombre'].unique().tolist()
 
-    # Extrae sólo los defensas para el datalist (opcional)
+    # Extrae sólo los defensas para el datalist 
     defensas = (
         df_jugadores[df_jugadores['Posición'].str.contains(r'\bDF\b', na=False)]['Nombre']
         .sort_values()
@@ -173,15 +201,12 @@ def clustering_defensas():
     )
 
 
-#@app.route("/clustering")
-#def clustering():
- #   jugadores = df_jugadores["Nombre"].unique().tolist()
-  #  return render_template("clustering.html", jugadores_list=jugadores)
-
 
 @app.route("/mostrar_bd")
 def mostrar_bd():
     try:
+        df_jugadores = pd.read_pickle("jugadores.pkl")
+
         nombre      = request.args.get("nombre",    default=None, type=str)
         edad        = request.args.get("edad",      type=int)
         posicion    = request.args.get("posicion",  default=None, type=str)
@@ -204,7 +229,7 @@ def mostrar_bd():
             .replace("-", np.nan)
             .astype(float)
             .fillna(0)
-            .astype(int)        # <- devuelve a enteros
+            .astype(int)      
         )
 
 
@@ -284,17 +309,30 @@ def mostrar_bd():
         filtros = request.args.to_dict()
         filtros.pop("page", None)
 
-        return render_template(
+        html = render_template(
             "BBDD_filtrada.html",
             table_html=table_html,
             page=page,
             total_pages=total_pages,
             filtros=filtros
         )
+        # Envuelve en make_response para añadir cabeceras
+        resp = make_response(html)
+        resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        resp.headers['Pragma']        = 'no-cache'
+        resp.headers['Expires']       = '0'
+        return resp
 
     except Exception as e:
         return f"Error al filtrar/paginar: {str(e)}", 500
 
+
+@app.route("/api/nombres_jugadores")
+def api_nombres_jugadores():
+    # Carga la lista de nombres 
+    df = pd.read_pickle("jugadores.pkl")
+    nombres = sorted(df["Nombre"].dropna().unique().tolist())
+    return jsonify(nombres)
 
 
 def buscar_foto_wikipedia(nombre):
@@ -403,7 +441,7 @@ def api_comparar():
 
     def construir_perfil(p, nombre):
         perfil = {}
-        # Foto (misma función de antes)
+        
         foto = buscar_foto_wikipedia(nombre)
         if foto:
             perfil["FotoURL"] = foto
@@ -430,8 +468,16 @@ def api_comparar():
 @app.route("/api/cluster_por")
 def api_cluster_por():
     try:
+        # 1️ Parámetro k (con valor por defecto 4)
         k = int(request.args.get("k", 4))
+
+        # 2️ Carga siempre actualizada de los datos procesados
+        df_jugadores = pd.read_pickle("jugadores.pkl")
+
+        # 3️ Aplica clustering a los porteros
         df_por, attrs, cluster_names = cluster_goalkeepers(df_jugadores, k=k)
+
+        # 4️Devuelve JSON con los resultados
         return jsonify({
             "jugadores":    df_por["Nombre"].tolist(),
             "labels":       df_por["cluster"].tolist(),
@@ -439,30 +485,63 @@ def api_cluster_por():
             "clusterNames": cluster_names,
             "attrs":        attrs
         })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
+    except ValueError as ve:
+        return jsonify({"error": f"Parámetro inválido: {ve}"}), 400
+
+    except FileNotFoundError as fnf:
+        # Si no existe jugadores.pkl
+        return jsonify({"error": str(fnf)}), 500
+
+    except Exception as e:
+        # Cualquier otro error
+        return jsonify({"error": f"Error al generar clusters: {e}"}), 500
 
 
 @app.route('/api/cluster_def')
 def api_cluster_def():
-    """API que devuelve clustering de defensas en JSON."""
-    k = request.args.get('k', default=4, type=int)
-    df_def, attrs, names = cluster_defenders(df_jugadores, k)
-    return jsonify({
-        'jugadores':    df_def['Nombre'].tolist(),
-        'labels':       df_def['cluster'].tolist(),
-        'coords2':      df_def[['x_pca', 'y_pca']].values.tolist(),
-        'clusterNames': names,
-        'attrs':        attrs
-    })
+    try:
+        # 1️ Parámetro k (por defecto 4)
+        k = request.args.get('k', default=4, type=int)
 
-# Y el endpoint en app.py
+        # 2️ Carga fresca de los datos preprocesados
+        df_jugadores = pd.read_pickle("jugadores.pkl")
+
+        # 3️ Aplica clustering a los defensas
+        df_def, attrs, names = cluster_defenders(df_jugadores, k)
+
+        # 4️ Devuelve el JSON con resultados
+        return jsonify({
+            'jugadores':    df_def['Nombre'].tolist(),
+            'labels':       df_def['cluster'].tolist(),
+            'coords2':      df_def[['x_pca', 'y_pca']].values.tolist(),
+            'clusterNames': names,
+            'attrs':        attrs
+        })
+
+    except ValueError as ve:
+        # Parámetro k inválido
+        return jsonify({'error': f'Parámetro invalido: {ve}'}), 400
+
+    except FileNotFoundError as fnf:
+        return jsonify({'error': str(fnf)}), 500
+
+    except Exception as e:
+        return jsonify({'error': f'Error al generar clusters de defensas: {e}'}), 500
+
 @app.route("/api/cluster_mid")
 def api_cluster_mid():
     try:
+        # 1️ Número de clusters (por defecto 4)
         k = int(request.args.get("k", 4))
+
+        # 2️ Carga siempre fresca del DataFrame procesado
+        df_jugadores = pd.read_pickle("jugadores.pkl")
+
+        # 3️ Aplica clustering a los centrocampistas
         df_mid, attrs, cluster_names = cluster_midfielders(df_jugadores, k)
+
+        # 4️ Devuelve JSON con nombres, etiquetas y coordenadas
         return jsonify({
             "jugadores":    df_mid["Nombre"].tolist(),
             "labels":       df_mid["cluster"].tolist(),
@@ -470,12 +549,18 @@ def api_cluster_mid():
             "clusterNames": cluster_names,
             "attrs":        attrs
         })
+
+    except ValueError as ve:
+        return jsonify({"error": f"Parámetro inválido: {ve}"}), 400
+
+    except FileNotFoundError as fnf:
+        return jsonify({"error": str(fnf)}), 500
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Error al generar clusters: {e}"}), 500
 
 
-
-# -- Vista para renderizar el clustering de mediocentros --
+#Para la gráfica
 @app.route('/clustering/centrocampistas')
 def clustering_centrocampistas():
     jugadores = df_jugadores['Nombre'].unique().tolist()
@@ -528,19 +613,37 @@ def clustering_centrocampistas():
 @app.route("/api/cluster_fw")
 def api_cluster_fw():
     try:
+        # 1️ Número de clusters (por defecto 4)
         k = int(request.args.get("k", 4))
+
+        # 2️ Carga siempre fresca de los datos procesados
+        df_jugadores = pd.read_pickle("jugadores.pkl")
+
+        # 3️ Aplica clustering a los delanteros
         df_fw, attrs, names = cluster_forwards(df_jugadores, k)
+
+        # 4️ Devuelve JSON con nombres, etiquetas y coordenadas
         return jsonify({
             "jugadores":    df_fw["Nombre"].tolist(),
             "labels":       df_fw["cluster"].tolist(),
-            "coords2":      df_fw[["x_pca","y_pca"]].values.tolist(),
+            "coords2":      df_fw[["x_pca", "y_pca"]].values.tolist(),
             "clusterNames": names,
             "attrs":        attrs
         })
+
+    except ValueError as ve:
+        # Si k no es un entero válido
+        return jsonify({"error": f"Parámetro inválido: {ve}"}), 400
+
+    except FileNotFoundError as fnf:
+        # Si falta el pickle en disco
+        return jsonify({"error": str(fnf)}), 500
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        # Cualquier otro error
+        return jsonify({"error": f"Error al generar clusters de delanteros: {e}"}), 500
 
-
+#Para el mapa
 @app.route('/clustering/delanteros')
 def clustering_delanteros():
     jugadores = df_jugadores["Nombre"].unique().tolist()
@@ -552,7 +655,6 @@ def clustering_delanteros():
         .tolist()
     )
 
-    # ——— Construcción de mapas ———
     age_map = {
         row.Nombre: int(row.Edad)
         for row in df_jugadores[["Nombre","Edad"]].itertuples()
@@ -577,10 +679,9 @@ def clustering_delanteros():
             except:
                 v_clean = re.sub(r"[^\d\.]", "", str(v))
                 if v_clean: value_map[row.Nombre] = float(v_clean)
-    # ————————————————————————
 
     return render_template(
-        'clusteringdel.html',      # tu plantilla para delanteros
+        'clusteringdel.html',      
         jugadores_list=jugadores,
         delanteros_list=delanteros,
         age_map=age_map,
@@ -589,12 +690,14 @@ def clustering_delanteros():
     )
 
 
+
+
 def cluster_goalkeepers(df, k=4):
-    # 1) Filtrar sólo porteros
+    # 1 Filtrar sólo porteros
     df_por = df[df["Posición"] == "POR"].copy()
-    
-    # 2) Métricas relevantes
-    features = [
+
+    # 2 Métricas relevantes originales
+    base_feats = [
         "CS/90",         # porterías imbatidas por 90'
         "Enc/90",        # goles encajados por 90'
         "Rp %",          # % de paradas
@@ -602,50 +705,86 @@ def cluster_goalkeepers(df, k=4):
         "BDs",           # despejes
         "Distancia"      # km recorridos
     ]
-    cols = [c for c in features if c in df_por.columns]
+    cols = [c for c in base_feats if c in df_por.columns]
     if len(cols) < 2:
         raise ValueError(f"No hay suficientes columnas de portero: {cols}")
 
-    # 3) Limpiar y convertir a float
+    # 3 Limpiar y convertir todas estas a float
     for c in cols:
         s = df_por[c].astype(str)
-        s = s.replace('-', np.nan)                     # '-' → NaN
-        s = s.str.replace(r'[^0-9\.]', '', regex=True) # quita todo menos dígitos y punto
+        s = s.replace('-', np.nan)                     
+        s = s.str.replace(r'[^0-9\.]', '', regex=True)
         df_por[c] = s.replace('', np.nan).astype(float)
 
-    # 4) Descartar columnas muy vacías y rellenar medianas
+    # 4 Derivar nuevas métricas numéricas si están disponibles
+    extras = []
+    if "BAt" in df_por.columns and "BDs" in df_por.columns:
+        # limpiamos BAt y BDs también
+        df_por["BAt"] = pd.to_numeric(df_por["BAt"], errors="coerce").fillna(0)
+        df_por["BDs"] = pd.to_numeric(df_por["BDs"], errors="coerce").fillna(0)
+        # ratio de atrapadas por despeje
+        df_por["Atrap/Despeje"] = df_por["BAt"] / df_por["BDs"].replace(0, 1)
+        extras = ["BAt", "Atrap/Despeje"]
+
+    # 5 Recalcular lista de columnas tras derivar
+    cols = [c for c in cols + extras if c in df_por.columns]
+    if len(cols) < 2:
+        raise ValueError(f"No hay suficientes columnas de portero después de añadir extras: {cols}")
+
+    # 6 Descartar columnas con muchos NaN y rellenar medianas
     df_por = df_por.dropna(axis=1, thresh=len(df_por) * 0.7)
     cols   = [c for c in cols if c in df_por.columns]
     df_por[cols] = df_por[cols].fillna(df_por[cols].median())
 
-    # 5) Escalar
+    # 7 Escalar
     Xs = StandardScaler().fit_transform(df_por[cols].values)
 
-    # 6) K-Means
+    # 8 K-Means
     k_eff  = min(k, Xs.shape[0])
     km     = KMeans(n_clusters=k_eff, random_state=0, n_init="auto")
     labels = km.fit_predict(Xs)
-    
-    # 7) PCA para 2D
+
+    # 9 PCA para 2D
     coords = PCA(n_components=2, random_state=0).fit_transform(Xs)
 
-    # 8) Mapeo a descripciones legibles
+    # 10 Mapeo a descripciones legibles asegurando unicidad
     pretty = {
         'CS/90':         'Porterías imbatidas / 90′',
         'Enc/90':        'Goles encajados / 90′',
         'Rp %':          'Porcentaje de paradas',
         'Pen. parados':  'Penaltis parados',
         'BDs':           'Despejes totales',
-        'Distancia':     'Kilómetros recorridos'
+        'Distancia':     'Kilómetros recorridos',
+        'BAt':           'Balones atrapados',
+        'Atrap/Despeje':'Atrapadas por despeje'
     }
-    centros       = km.cluster_centers_
-    cluster_names = []
-    for center in centros:
-        best      = cols[np.argmax(center)]
-        nice      = pretty.get(best, best)
-        cluster_names.append(f"Alto en {nice}")
+    centros = km.cluster_centers_
+    n_clusters = centros.shape[0]
+    n_metrics = len(cols)
 
-    # 9) Adjuntar resultados
+    # Generar todos los triples (cluster, métrica, valor) y ordenarlos
+    triples = [(ci, mi, centros[ci, mi])
+               for ci in range(n_clusters) for mi in range(n_metrics)]
+    triples.sort(key=lambda x: x[2], reverse=True)
+
+    assignments   = {}
+    used_metrics  = set()
+    used_clusters = set()
+    for ci, mi, _ in triples:
+        if ci not in used_clusters and mi not in used_metrics:
+            assignments[ci]   = mi
+            used_clusters.add(ci)
+            used_metrics.add(mi)
+        if len(used_clusters) == n_clusters:
+            break
+
+    cluster_names = []
+    for ci in range(n_clusters):
+        mi   = assignments.get(ci, int(np.argmax(centros[ci])))
+        name = pretty.get(cols[mi], cols[mi])
+        cluster_names.append(f"Alto en {name}")
+
+    # 11 Adjuntar resultados al DataFrame
     df_por = df_por.reset_index(drop=True)
     df_por["cluster"] = labels
     df_por["x_pca"]   = coords[:, 0]
@@ -654,7 +793,7 @@ def cluster_goalkeepers(df, k=4):
     return df_por, cols, cluster_names
 
 
-#####DEFENSAS CLUSTERING
+
 
 def cluster_defenders(df, k=4):
     """
@@ -666,55 +805,92 @@ def cluster_defenders(df, k=4):
     - Pos Gan/90: recuperaciones de posición por 90'
     - % Pase: precisión de pase
     """
-    # 1) Filtrar defensas (etiqueta "DF")
+    # 1 Filtrar defensas (etiqueta "DF")
     df_def = df[df["Posición"].str.contains(r"\bDF\b", na=False)].copy()
 
-    # 2) Seleccionar columnas existentes
-    features = ["Entr/90", "Bal aér/90", "Int/90", "Desp", "Pos Gan/90", "% Pase"]
-    cols = [c for c in features if c in df_def.columns]
-
-    # 3) Limpiar y convertir a float
+    # 2 Limpieza inicial de columnas base
+    base_feats = ["Entr/90", "Bal aér/90", "Int/90", "Desp", "Pos Gan/90", "% Pase"]
+    cols = [c for c in base_feats if c in df_def.columns]
     for c in cols:
         s = df_def[c].astype(str).replace('-', np.nan)
         s = s.str.replace(r'[^0-9\.]', '', regex=True)
         df_def[c] = pd.to_numeric(s, errors='coerce')
 
-    # 4) Eliminar columnas con >30% NaN y rellenar restantes con medianas
+    # 3 Derivar métricas adicionales si disponemos de datos
+    extras = []
+    # Entradas limpiadoras
+    if "Ent Cl" in df_def.columns:
+        df_def["Ent Cl"] = pd.to_numeric(df_def["Ent Cl"].astype(str).str.replace(r'[^0-9\.]', '', regex=True), errors='coerce')
+        extras.append("Ent Cl")
+    # Recuperaciones por 90 como métrica extra
+    if "Rob/90" in df_def.columns:
+        df_def["Rob/90"] = pd.to_numeric(df_def["Rob/90"].astype(str).str.replace(r'[^0-9\.]', '', regex=True), errors='coerce')
+        extras.append("Rob/90")
+
+    # 4 Reconstruir lista de columnas tras extras
+    cols = [c for c in cols + extras if c in df_def.columns]
+    if len(cols) < 2:
+        raise ValueError(f"No hay suficientes columnas de defensa: {cols}")
+
+    # 5 Eliminar columnas con >30% NaN y rellenar con medianas
     df_def = df_def.dropna(axis=1, thresh=len(df_def)*0.7)
     cols = [c for c in cols if c in df_def.columns]
     df_def[cols] = df_def[cols].fillna(df_def[cols].median())
 
-    # 5) Escalar y clusterizar
+    # 6 Escalar y clusterizar
     X = StandardScaler().fit_transform(df_def[cols].values)
     k_eff = min(k, X.shape[0])
     km = KMeans(n_clusters=k_eff, random_state=0, n_init="auto")
     labels = km.fit_predict(X)
 
-    # 6) Reducir a 2D para visualización
+    # 7 PCA para 2D
     coords = PCA(n_components=2, random_state=0).fit_transform(X)
 
-     # 7) Nombrar clúster usando descripciones legibles
+    # 8 Mapear nombres sin repeticiones
     pretty_def = {
-        'Entr/90':    'Entradas ganadas por 90′',
+        'Entr/90':    'Entradas ganadas / 90′',
         'Bal aér/90': 'Duelos aéreos ganados / 90′',
-        'Int/90':     'Intercepciones por 90′',
+        'Int/90':     'Intercepciones / 90′',
         'Desp':       'Despejes totales',
         'Pos Gan/90': 'Recuperaciones de posición / 90′',
-        '% Pase':     'Precisión de pase'
+        '% Pase':     'Precisión de pase',
+        'Ent Cl':     'Entradas limpiadoras',
+        'Rob/90':     'Recuperaciones / 90′'
     }
     centers = km.cluster_centers_
-    cluster_names = []
-    for c in centers:
-        best = cols[np.argmax(c)]
-        nice = pretty_def.get(best, best)
-        cluster_names.append(f"Alto en {nice}")
+    n_clusters = centers.shape[0]
+    n_metrics = len(cols)
 
-    # 8) Construir DataFrame de resultados
+    # crear triple lista y ordenar por valor
+    triples = [(ci, mi, centers[ci, mi])
+               for ci in range(n_clusters) for mi in range(n_metrics)]
+    triples.sort(key=lambda x: x[2], reverse=True)
+
+    assignments = {}
+    used_metrics = set()
+    used_clusters = set()
+    for ci, mi, _ in triples:
+        if ci not in used_clusters and mi not in used_metrics:
+            assignments[ci] = mi
+            used_clusters.add(ci)
+            used_metrics.add(mi)
+        if len(used_clusters) == n_clusters:
+            break
+
+    cluster_names = []
+    for ci in range(n_clusters):
+        mi = assignments.get(ci, int(np.argmax(centers[ci])))
+        name = pretty_def.get(cols[mi], cols[mi])
+        cluster_names.append(f"Alto en {name}")
+
+    # 9) Adjuntar resultados al DataFrame
     df_out = df_def.reset_index(drop=True)
     df_out['cluster'] = labels
     df_out['x_pca'] = coords[:, 0]
     df_out['y_pca'] = coords[:, 1]
+
     return df_out, cols, cluster_names
+
 
 
 
@@ -732,47 +908,53 @@ def cluster_midfielders(df, k=4):
     - Pas Prog/90: Pases progresivos por 90'
     - Rob/90     : Recuperaciones (robos) por 90'
     """
-    # 1) Filtrar mediocentros
+    # 1 Filtrar mediocentros
     df_mid = df[df["Posición"].str.contains(r"\bMC\b", na=False)].copy()
 
-    # 2) Métricas ampliadas
-    features = [
-        "Reg/90",      # regates
-        "Pas Clv/90",  # pases clave
-        "% Pase",      # precisión de pase
-        "Asis/90",     # asistencias
-        "Distancia",   # km recorridos
-        "Pas Prog/90", # pases progresivos (si existe)
-        "Rob/90"       # robos/recuperaciones
+    # 2 Métricas base
+    base_feats = [
+        "Reg/90", "Pas Clv/90", "% Pase", "Asis/90",
+        "Distancia", "Pas Prog/90", "Rob/90"
     ]
-    # Filtramos solo las que realmente estén en el DataFrame
-    cols = [c for c in features if c in df_mid.columns]
+    cols = [c for c in base_feats if c in df_mid.columns]
     if len(cols) < 2:
         raise ValueError(f"No hay suficientes columnas para mediocentros: {cols}")
 
-    # 3) Limpiar y convertir a float
+    # 3 Limpiar y convertir a float
     for c in cols:
         s = df_mid[c].astype(str).replace('-', np.nan)
         s = s.str.replace(r'[^0-9\.]', '', regex=True)
         df_mid[c] = pd.to_numeric(s, errors='coerce')
 
-    # 4) Eliminar columnas con >30% NaN y rellenar medianas
+    # 4 Derivar nuevas métricas
+    extras = []
+    # Ratio asistencias/regates
+    if "Asis/90" in df_mid.columns and "Reg/90" in df_mid.columns:
+        df_mid["Asis/Reg"] = df_mid["Asis/90"] / df_mid["Reg/90"].replace(0, 1)
+        extras.append("Asis/Reg")
+    # Pases prog por pase clave
+    if "Pas Prog/90" in df_mid.columns and "Pas Clv/90" in df_mid.columns:
+        df_mid["Prog/Clv"] = df_mid["Pas Prog/90"] / df_mid["Pas Clv/90"].replace(0, 1)
+        extras.append("Prog/Clv")
+
+    # 5 Reconstruir lista de columnas tras extras
+    cols = [c for c in cols + extras if c in df_mid.columns]
+
+    # 6 Eliminar columnas con >30% NaN y rellenar medianas
     df_mid = df_mid.dropna(axis=1, thresh=len(df_mid)*0.7)
     cols   = [c for c in cols if c in df_mid.columns]
     df_mid[cols] = df_mid[cols].fillna(df_mid[cols].median())
 
-    # 5) Escalar
+    # 7 Escalar y clusterizar
     X = StandardScaler().fit_transform(df_mid[cols].values)
-
-    # 6) K-Means
-    k_eff  = min(k, X.shape[0])
-    km     = KMeans(n_clusters=k_eff, random_state=0, n_init="auto")
+    k_eff = min(k, X.shape[0])
+    km    = KMeans(n_clusters=k_eff, random_state=0, n_init="auto")
     labels = km.fit_predict(X)
 
-    # 7) Reducir a 2D con PCA
+    # 8 PCA para visualización
     coords = PCA(n_components=2, random_state=0).fit_transform(X)
 
-    # 8) Generar nombres legibles
+    # 9 Nombrar clusters sin repetir
     pretty_mid = {
         'Reg/90':      'Regates completados / 90′',
         'Pas Clv/90':  'Pases clave / 90′',
@@ -780,21 +962,39 @@ def cluster_midfielders(df, k=4):
         'Asis/90':     'Asistencias / 90′',
         'Distancia':   'Kilómetros recorridos',
         'Pas Prog/90': 'Pases progresivos / 90′',
-        'Rob/90':      'Recuperaciones (robos) / 90′'
+        'Rob/90':      'Recuperaciones (robos) / 90′',
+        'Asis/Reg':    'Asistencias por regate',
+        'Prog/Clv':    'Prog/Clv ratio'
     }
-    centros = km.cluster_centers_
-    cluster_names = []
-    for center in centros:
-        best = cols[np.argmax(center)]
-        nice = pretty_mid.get(best, best)
-        cluster_names.append(f"Alto en {nice}")
+    centers = km.cluster_centers_
+    n_clusters = centers.shape[0]
+    n_metrics = len(cols)
 
-    # 9) Devolver los resultados
+    triples = [(ci, mi, centers[ci, mi]) for ci in range(n_clusters) for mi in range(n_metrics)]
+    triples.sort(key=lambda x: x[2], reverse=True)
+
+    assignments = {}
+    used_metrics = set()
+    used_clusters = set()
+    for ci, mi, _ in triples:
+        if ci not in used_clusters and mi not in used_metrics:
+            assignments[ci] = mi
+            used_clusters.add(ci)
+            used_metrics.add(mi)
+        if len(used_clusters) == n_clusters:
+            break
+
+    cluster_names = []
+    for ci in range(n_clusters):
+        mi   = assignments.get(ci, int(np.argmax(centers[ci])))
+        name = pretty_mid.get(cols[mi], cols[mi])
+        cluster_names.append(f"Alto en {name}")
+
+    # 10 Devolver resultados
     df_mid = df_mid.reset_index(drop=True)
     df_mid["cluster"] = labels
     df_mid["x_pca"]   = coords[:, 0]
     df_mid["y_pca"]   = coords[:, 1]
-
     return df_mid, cols, cluster_names
 
 
@@ -813,61 +1013,92 @@ def cluster_forwards(df, k=4):
     - % Pase
     - Disparos
     - Min/Par
+    - OC/90
     """
-    # 1) Filtrar delanteros
+    # 1 Filtrar delanteros
     df_fw = df[df["Posición"].str.contains(r"\bDL\b", na=False)].copy()
 
-    # 2) Seleccionar las métricas disponibles
-    features = ["Gol/90", "Asis/90", "Reg/90", "% Pase", "Disparos", "Min/Par", "OC/90" ]
-    cols = [c for c in features if c in df_fw.columns]
+    # 2 Métricas base
+    base_feats = ["Gol/90", "Asis/90", "Reg/90", "% Pase", "Disparos", "Min/Par", "OC/90"]
+    cols = [c for c in base_feats if c in df_fw.columns]
     if len(cols) < 2:
         raise ValueError(f"No hay suficientes columnas para delanteros: {cols}")
 
-    # 3) Limpiar y convertir a float
+    # 3 Limpiar y convertir a float
     for c in cols:
         s = df_fw[c].astype(str).replace('-', np.nan)
         s = s.str.replace(r'[^0-9\.]', '', regex=True)
         df_fw[c] = pd.to_numeric(s, errors='coerce')
 
-    # 4) Eliminar columnas con >30% NaN y rellenar medianas
-    df_fw = df_fw.dropna(axis=1, thresh=len(df_fw)*0.7)
+    # 4Derivar métricas adicionales
+    extras = []
+    # Ratio de goles por disparo (efectividad)
+    if "Gol/90" in df_fw.columns and "Disparos" in df_fw.columns:
+        df_fw["Conv%"] = df_fw["Gol/90"] / df_fw["Disparos"].replace(0, 1)
+        extras.append("Conv%")
+    # xG por 90 minutos si existe xG y Min/Par
+    if "xG" in df_fw.columns and "Min/Par" in df_fw.columns:
+        df_fw["xG"] = pd.to_numeric(df_fw["xG"].astype(str).str.replace(r'[^0-9\.]','',regex=True), errors='coerce')
+        df_fw["xG/90"] = df_fw["xG"] / (df_fw["Min/Par"].replace(0, 1))
+        extras.append("xG/90")
+
+    # 5Reconstruir lista de columnas tras extras
+    cols = [c for c in cols + extras if c in df_fw.columns]
+
+    # 6Eliminar columnas con >30% NaN y rellenar con medianas
+    df_fw = df_fw.dropna(axis=1, thresh=len(df_fw) * 0.7)
     cols  = [c for c in cols if c in df_fw.columns]
     df_fw[cols] = df_fw[cols].fillna(df_fw[cols].median())
 
-    # 5) Escalar
+    # 7 Escalar y clusterizar
     X = StandardScaler().fit_transform(df_fw[cols].values)
-
-    # 6) K-Means
     k_eff = min(k, X.shape[0])
     km    = KMeans(n_clusters=k_eff, random_state=0, n_init="auto")
     labels = km.fit_predict(X)
 
-    # 7) PCA 2D
+    # 8 PCA 2D
     coords = PCA(n_components=2, random_state=0).fit_transform(X)
 
-    # 8) Nombres legibles
+    # 9 Nombrar clusters sin repetir
     pretty_fw = {
-        "Gol/90":   "Goles / 90′",
-        "Asis/90":  "Asistencias / 90′",
-        "Reg/90":   "Regates / 90′",
+        "Gol/90":   "Goles/90′",
+        "Asis/90":  "Asistencias/90′",
+        "Reg/90":   "Regates en 90′",
         "% Pase":   "Precisión de pase",
         "Disparos": "Disparos totales",
         "Min/Par":  "Minutos por gol",
-        "OC/90":    "Ocasiones creadas / 90′"    # <-- leyenda clara
-
+        "OC/90":    "Ocasiones creadas/90′",
+        "Conv%":    "Efectividad de gol",
+        "xG/90":    "Goles esperados 90′"
     }
-    centros = km.cluster_centers_
-    cluster_names = []
-    for center in centros:
-        best = cols[np.argmax(center)]
-        nice = pretty_fw.get(best, best)
-        cluster_names.append(f"Alto en {nice}")
+    centers = km.cluster_centers_
+    n_clusters = centers.shape[0]
+    n_metrics = len(cols)
+    triples = [(ci, mi, centers[ci, mi]) for ci in range(n_clusters) for mi in range(n_metrics)]
+    triples.sort(key=lambda x: x[2], reverse=True)
 
-    # 9) Devolver DataFrame y metadatos
+    assignments = {}
+    used_metrics = set()
+    used_clusters = set()
+    for ci, mi, _ in triples:
+        if ci not in used_clusters and mi not in used_metrics:
+            assignments[ci] = mi
+            used_clusters.add(ci)
+            used_metrics.add(mi)
+        if len(used_clusters) == n_clusters:
+            break
+
+    cluster_names = []
+    for ci in range(n_clusters):
+        mi = assignments.get(ci, int(np.argmax(centers[ci])))
+        name = pretty_fw.get(cols[mi], cols[mi])
+        cluster_names.append(f"Alto en {name}")
+
+    # 10 DataFrame resultado
     df_out = df_fw.reset_index(drop=True)
     df_out["cluster"] = labels
-    df_out["x_pca"]   = coords[:,0]
-    df_out["y_pca"]   = coords[:,1]
+    df_out["x_pca"]   = coords[:, 0]
+    df_out["y_pca"]   = coords[:, 1]
     return df_out, cols, cluster_names
 
 
@@ -875,7 +1106,7 @@ def cluster_forwards(df, k=4):
 
 
 
+
 if __name__ == "__main__":
-    #--app.run(debug=False, use_reloader=False)
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)

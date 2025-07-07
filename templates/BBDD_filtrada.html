@@ -4,12 +4,53 @@
 <head>
   <meta charset="UTF-8" />
   <title>Jugadores Filtrados</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="stylesheet" href="/static/css/style.css" />
 
-  <!-- ESTILOS ESPECÍFICOS PARA LA TABLA (IN-IFRAME) Y SELECCIÓN -->
-  <style>
-    /* Área de comparación: botón + lista */
-    .compare-area {
+
+<style>
+
+.no-results {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  max-width: 600px;
+  margin: 2rem auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.no-results .material-icons {
+  font-size: 48px;
+  color: var(--clr-primary);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+.no-results h2 {
+  margin: 0.5rem 0;
+  color: var(--clr-primary-hover);
+}
+.no-results p {
+  margin-bottom: 1.5rem;
+  color: var(--clr-text);
+}
+.no-results .btn {
+  background: var(--clr-primary);
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.no-results .btn:hover {
+  background: var(--clr-primary-hover);
+}
+
+
+.compare-area {
       display: flex;
       align-items: center;
       gap: 0.75rem;
@@ -30,7 +71,7 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
 
-    /* Lista de jugadores seleccionados */
+
     .selected-list {
       display: flex;
       gap: 0.5rem;
@@ -58,7 +99,7 @@
       line-height: 1;
     }
 
-    /* Compactamos columna de checkboxes */
+
     table th.select-col,
     table td.select-col {
       width: 40px;
@@ -168,12 +209,12 @@
       const table = document.querySelector('.table-responsive table');
       if (!table) return;
 
-      // 1) ELIMINAR "Inf" (columna 0) del <thead>
+      // 1 ELIMINAR "Inf" (columna 0) del <thead>
       const headerRow = table.querySelector('thead tr');
       if (headerRow && headerRow.cells.length) {
         headerRow.deleteCell(0);
       }
-      // 2) INSERTAR nueva cabecera "Seleccionar" en posición 0
+      // 2 INSERTAR nueva cabecera "Seleccionar" en posición 0
       const thSel = document.createElement('th');
       thSel.textContent = 'Seleccionar';
       thSel.classList.add('select-col');
@@ -182,7 +223,7 @@
       const maxAllowed = 2;
       let selected = [];
 
-      // 3) Para cada fila: eliminar celda Inf y añadir checkbox
+      // 3 Para cada fila: eliminar celda Inf y añadir checkbox
       table.querySelectorAll('tbody tr').forEach(row => {
         // eliminar la primera celda (Inf)
         if (row.cells.length) row.deleteCell(0);
@@ -192,7 +233,6 @@
         td.classList.add('select-col');
         const chk = document.createElement('input');
         chk.type = 'checkbox';
-        // ahora el nombre está en row.cells[1]
         chk.value = row.cells[1]?.textContent.trim() || '';
         td.appendChild(chk);
 
@@ -213,7 +253,7 @@
       const selectedListDiv = document.getElementById('selectedList');
       const btnCompare = document.getElementById('btnCompareTable');
 
-      // 4) Mostrar la lista de seleccionados
+      // 4 Mostrar la lista de seleccionados
       function renderSelected() {
         selectedListDiv.innerHTML = '';
         selected.forEach(chk => {
@@ -232,7 +272,7 @@
         });
       }
 
-      // 5) Al hacer clic en Comparar, abrimos la ventana de comparación
+      // 5 Al hacer clic en Comparar, abrimos la ventana de comparación
       btnCompare.addEventListener('click', () => {
         if (selected.length !== maxAllowed) {
           alert(`Selecciona exactamente ${maxAllowed} jugadores.`);

@@ -356,34 +356,81 @@ tr:nth-child(even) td {
 
 
 /* === FOOTER “CRISTAL” === */
+/* FOOTER */
 .site-footer {
-  margin-top: 40px;
-  border-top: 1px solid #ddd;
-  background-color: var(--clr-glass);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  padding: 20px 0;
+  background: var(--clr-primary);
+  color: #fff;
+  padding: 2rem 1rem 1.5rem;
+  font-size: 0.85rem;
 }
-.footer-inner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
+.footer-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
-.footer-links a {
-  margin-right: 15px;
-  color: var(--clr-primary);
+.footer-section h4 {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  color: #fff;
+}
+.footer-about p {
+  line-height: 1.6;
+}
+.footer-links ul {
+  list-style: none;
+  padding: 0;
+}
+.footer-links ul li {
+  margin-bottom: 0.6rem;
+}
+.footer-links ul li a {
+  color: #f0f0f0;
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+.footer-links ul li a .material-icons {
+  font-size: 1rem;
+  margin-right: 0.4rem;
+}
+.footer-links ul li a:hover {
+  color: #ddd;
+}
+
+.footer-social .social-icons {
+  display: flex;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+.footer-social .social-icons a {
+  color: #fff;
+  font-size: 1.2rem;
+  transition: color 0.3s;
+  text-decoration: none;
+}
+.footer-social .social-icons a:hover {
+  color: #ddd;
+}
+.footer-social .contact-email {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   font-size: 0.9rem;
 }
-.footer-links a:hover {
-  text-decoration: underline;
+.footer-social .contact-email .material-icons {
+  font-size: 1.1rem;
 }
-.site-footer p {
-  margin: 10px 0 0;
+
+.footer-bottom {
+  text-align: center;
+  margin-top: 2rem;
+  border-top: 1px solid rgba(255,255,255,0.2);
+  padding-top: 1rem;
   font-size: 0.85rem;
-  color: var(--clr-primary);
 }
+
 
 /* === MOBILE-FIRST TWEAKS === */
 @media (min-width: 768px) {

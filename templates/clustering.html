@@ -9,12 +9,19 @@
   <!-- Material Icons para los iconos de fútbol en el nav -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 
-  <!-- CSS externo -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <!-- CSS -->
+  <link rel="stylesheet" href="/static/css/style.css" />
+
+  <link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  integrity="sha512-..."
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+  />
 
 
-
-<style>/* Textos introductorios */
+<style>
 .intro-italic {
   text-align: center;
   font-style: italic;
@@ -29,7 +36,7 @@
   line-height: 1.6;
 }
 
-/* Fila de botones centrada */
+
 .button-row {
   display: flex;
   flex-wrap: wrap;
@@ -38,7 +45,7 @@
   margin-top: 1rem;
 }
 
-/* Ajustes a los botones */
+
 .btn-hero {
   background: var(--clr-accent);
   color: var(--clr-primary);
@@ -73,13 +80,13 @@
   margin: 1.5rem 0;
 }
 .clustering-image img {
-  max-width: 60%;              /* reduce su tamaño al 80% del contenedor */
+  max-width: 60%;              
   height: auto;
   display: block;
-  margin: 1.5rem auto;         /* centrada horizontalmente y separada verticalmente */
-  border-radius: 16px;         /* esquinas suaves */
-  box-shadow: 0 0 30px rgba(0,0,0,0.4); /* halo difuminado alrededor */
-  opacity: 0.95;               /* levemente traslúcida para fundirse */
+  margin: 1.5rem auto;         
+  border-radius: 16px;         
+  box-shadow: 0 0 30px rgba(0,0,0,0.4); 
+  opacity: 0.95;              
 }
 
 
@@ -120,7 +127,6 @@
     </div>
   </section>
 
-  <!-- SECCIÓN PRINCIPAL “CRISTAL” -->
 <!-- SECCIÓN PRINCIPAL “CRISTAL” -->
 <main class="container main-content">
   <h2 class="page-title">Análisis por Posición</h2>
@@ -166,17 +172,48 @@
 </main>
 
   <!-- FOOTER -->
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <div class="footer-links">
-        <a href="/"><span class="material-icons">home</span>Inicio</a>
-        <a href="/faqs"><span class="material-icons">help_outline</span>FAQ</a>
-        <a href="/comparacion"><span class="material-icons">compare_arrows</span>Comparación</a>
-        <a href="/clustering"><span class="material-icons">scatter_plot</span>Clustering</a>
+    <footer class="site-footer">
+      <div class="footer-container">
+        <!-- Sobre nosotros -->
+        <div class="footer-section footer-about">
+          <h4>Gestor de talentos FM</h4>
+          <p>
+            Plataforma de análisis y comparación de talentos en Football Manager. 
+            Descubre, filtra y clustea jugadores según su rendimiento.
+          </p>
+        </div>
+
+        <!-- Enlaces rápidos -->
+        <div class="footer-section footer-links">
+          <h4>Enlaces útiles</h4>
+          <ul>
+            <li><a href="/"><span class="material-icons">home</span>Inicio</a></li>
+            <li><a href="/faqs"><span class="material-icons">help_outline</span>FAQ</a></li>
+            <li><a href="/comparacion"><span class="material-icons">compare_arrows</span>Comparación</a></li>
+            <li><a href="/clustering"><span class="material-icons">scatter_plot</span>Clustering</a></li>
+          </ul>
+        </div>
+
+        <!-- Contacto / Síguenos -->
+        <div class="footer-section footer-social">
+          <h4>Síguenos</h4>
+          <div class="social-icons">
+            <a href="https://facebook.com/tuPagina"    aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://twitter.com/tuCuenta"     aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="https://instagram.com/tuCuenta"   aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="https://linkedin.com/company/tu"   aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+          </div>
+          <p class="contact-email">
+            <span class="material-icons">email</span>
+            contacto@footballmanager.com
+          </p>
+        </div>
       </div>
-      <p>© 2025 FootballManager. Todos los derechos reservados.</p>
-    </div>
-  </footer>
+
+      <div class="footer-bottom">
+        <p>© 2025 Gestordetalentos. Todos los derechos reservados.</p>
+      </div>
+    </footer>
 
 </body>
 </html>

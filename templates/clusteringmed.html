@@ -7,7 +7,7 @@
 
   <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-  <!-- Tu CSS principal -->
+  <!-- CSS-->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
   <!-- Chart.js y plugin de zoom/pan -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -37,14 +37,14 @@
       width: 100%;
       box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     }
-    /* Título */
+
     .page-title {
       text-align: center;
       color: var(--clr-primary);
       font-size: clamp(1.5rem, 2.5vw, 2rem);
       margin-bottom: 1.5rem;
     }
-    /* Formulario filtros */
+
     .cluster-form {
       display: flex;
       flex-wrap: wrap;
@@ -89,7 +89,7 @@
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
-    /* Chart container */
+
     #chart-container {
       position: relative;
       background: rgba(255,255,255,0.8);
@@ -104,7 +104,7 @@
       width: 100% !important;
       height: 100% !important;
     }
-    /* Pan buttons */
+
     .pan-btn {
       position: absolute;
       width: 32px; height: 32px;
@@ -124,11 +124,11 @@
       background: var(--clr-primary-hover);
       color: #fff;
     }
-    #panUp    { top:21%; left:50%;  transform:translate(-50%,-50%); }
+    #panUp    { top:27%; left:50%;  transform:translate(-50%,-50%); }
     #panDown  { bottom:21%; left:50%;transform:translate(-50%,50%); }
     #panLeft  { left:10.5%;top:50%;  transform:translate(-50%,-50%); }
     #panRight { right:6%;   top:50%;  transform:translate(50%,-50%); }
-    /* Tabla resultados */
+
     table#table-clusters {
       width: 100%;
       border-collapse: collapse;
@@ -173,6 +173,79 @@
       opacity: 0.5;
       cursor: default;
     }
+
+
+    .cluster-guide {
+  margin: 1.5rem 0 2rem;
+  padding: 0;
+}
+
+.cluster-guide-content {
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 8px;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin: 0 auto;             
+  line-height: 1.6;
+}
+
+.cluster-guide-content p {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.cluster-guide-content ol {
+  margin: 0 0 1rem 1.2rem;
+  color: #444;
+}
+
+.cluster-guide-content li {
+  margin-bottom: 0.6rem;
+}
+
+.cluster-guide-content .tip {
+  background: #e8f5e9;
+  border-left: 4px solid #4caf50;
+  padding: 0.6rem 1rem;
+  border-radius: 4px;
+  color: #2e7d32;
+  font-style: normal;
+  margin-top: 1rem;
+}
+  /* ========== Guía de Clustering ========== */
+.cluster-guide {
+  margin: 2rem auto;
+  max-width: 900px;
+}
+.cluster-guide-content {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  line-height: 1.6;
+}
+.cluster-guide-content p {
+  margin-bottom: 1rem;
+  color: #333;
+}
+.cluster-guide-content ol {
+  margin: 0 0 1rem 1.2rem;
+  color: #444;
+}
+.cluster-guide-content li {
+  margin-bottom: 0.6rem;
+}
+.cluster-guide-content .tip {
+  background: #e8f5e9;
+  border-left: 4px solid #4caf50;
+  padding: 0.6rem 1rem;
+  border-radius: 4px;
+  color: #2e7d32;
+  margin-top: 1rem;
+}
+
+    
   </style>
 </head>
 <body>
@@ -193,11 +266,8 @@
       <button type="submit"><span class="material-icons">play_arrow</span>Clustear</button>
     </form>
 
-    <datalist id="midfieldersList">
-      {% for m in midfielders_list %}
-        <option value="{{ m }}"></option>
-      {% endfor %}
-    </datalist>
+    <datalist id="midfieldersList"></datalist>
+
 
     <div id="chart-container">
       <div id="panUp"    class="pan-btn">↑</div>
@@ -206,6 +276,33 @@
       <div id="panRight" class="pan-btn">→</div>
       <canvas id="clusterChart"></canvas>
     </div>
+
+        
+  <section class="cluster-guide">
+  <div class="cluster-guide-content">
+    <p>
+      El clustering agrupa a los jugadores en “cohortes” según sus características estadísticas
+      (por ejemplo, goles por 90′, xG, disparos, precisión de pase, etc.).  
+      Cuando eliges un <strong>Jugador de referencia</strong>, el sistema:
+    </p>
+    <ol>
+      <li>Resalta en el scatter plot al jugador seleccionado.</li>
+      <li>
+        Muestra en la tabla todos los jugadores de su mismo clúster, es decir,
+        aquellos con perfiles estadísticos similares.
+      </li>
+      <li>
+        Te ayuda a identificar rápidamente otros futbolistas que rinden de forma
+        parecida (ideal para comparar o buscar recambios).
+      </li>
+    </ol>
+    <p class="tip">
+      ⚽ <em>Tip:</em> Cambia el parámetro <strong>K</strong> para explorar agrupaciones
+      más gruesas (grupos grandes) o muy finas (perfiles muy específicos).
+    </p>
+  </div>
+</section>
+
 
     <table id="table-clusters">
       <thead>
@@ -417,6 +514,31 @@
         if (rawData) drawChart(rawData, inputRef.value.trim());
       })
     );
+
+  async function actualizarMidfieldersList() {
+      try {
+        // Pedimos al endpoint la lista de centrocampistas (k=4, o el valor que quieras)
+        const res  = await fetch('/api/cluster_mid?k=4');
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        // Rellenamos el datalist
+        const dl = document.getElementById('midfieldersList');
+        dl.innerHTML = ''; 
+        data.jugadores.forEach(nombre => {
+          const opt = document.createElement('option');
+          opt.value = nombre;
+          dl.appendChild(opt);
+        });
+      } catch (err) {
+        console.error('Error cargando centrocampistas:', err);
+      }
+    }
+
+    // Al entrar en el campo, recarga opciones
+    document
+      .getElementById('inputRef')
+      .addEventListener('focus', actualizarMidfieldersList);
 
     window.addEventListener('DOMContentLoaded', ()=> {
       form.dispatchEvent(new Event('submit'));

@@ -8,52 +8,69 @@
   <!-- Material Icons para los iconos de fútbol en el nav -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 
-  <!-- CSS externo -->
+  <!-- CSS -->
   <link rel="stylesheet" href="/static/css/style.css" />
+  <!-- No cache -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+  <meta http-equiv="Pragma" content="no-cache"/>
+  <meta http-equiv="Expires" content="0"/>
+
+  <link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  integrity="sha512-..."
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+  />
+
+
 
   <script>
-    function aplicarFiltros() {
-      // Recogemos todos los valores de los filtros4
-      let nombre = document.getElementById("filtroNombre").value.trim();
-      let edad = document.getElementById("filtroEdad").value;
-      let posicion = document.getElementById("filtroPosicion").value;
-      let partidos = document.getElementById("filtroPartidos").value;
-      let golesMin     = document.getElementById("filtroGolesMin").value;
-      let golesMax     = document.getElementById("filtroGolesMax").value;
-      let asisMin      = document.getElementById("filtroAsistMin").value;
-      let asisMax      = document.getElementById("filtroAsistMax").value;
-      let disparosMin = document.getElementById("filtroDisparosMin").value;
-      let disparosMax = document.getElementById("filtroDisparosMax").value;
+  function recargarTabla() {
+    const iframe = document.getElementById("tablaJugadores");
+    const base = iframe.getAttribute("src").split("?")[0];
+    const parts = iframe.getAttribute("src").split("?");
+    const params = parts[1] ? parts[1].replace(/_=\d+(&)?/, "") : "";
+    iframe.src = base +
+      (params ? "?" + params + "&_=" : "?_=") +
+      new Date().getTime();
+  }
 
-      // Construimos la URL base para mostrar_bd (página 1 por defecto)
-      let url = "/mostrar_bd?page=1";
-      let params = [];
+  function aplicarFiltros() {
+    let nombre   = document.getElementById("filtroNombre").value.trim();
+    let edad     = document.getElementById("filtroEdad").value;
+    let posicion = document.getElementById("filtroPosicion").value;
+    let partidos = document.getElementById("filtroPartidos").value;
+    let golesMin = document.getElementById("filtroGolesMin").value;
+    let golesMax = document.getElementById("filtroGolesMax").value;
+    let asisMin  = document.getElementById("filtroAsistMin").value;
+    let asisMax  = document.getElementById("filtroAsistMax").value;
+    let dispMin  = document.getElementById("filtroDisparosMin").value;
+    let dispMax  = document.getElementById("filtroDisparosMax").value;
 
-      if (nombre)       params.push(`nombre=${encodeURIComponent(nombre)}`);
-      if (edad)        params.push(`edad=${encodeURIComponent(edad)}`);
-      if (posicion)    params.push(`posicion=${encodeURIComponent(posicion)}`);
-      if (partidos)    params.push(`partidos=${encodeURIComponent(partidos)}`);
+    // definimos la base con la paginación fija a página 1
+    const base = "/mostrar_bd";
+    let params = [`page=1`];
 
-      if (golesMin)    params.push(`goles_min=${encodeURIComponent(golesMin)}`);
-      if (golesMax)    params.push(`goles=${encodeURIComponent(golesMax)}`);
+    if (nombre)    params.push(`nombre=${encodeURIComponent(nombre)}`);
+    if (edad)      params.push(`edad=${encodeURIComponent(edad)}`);
+    if (posicion)  params.push(`posicion=${encodeURIComponent(posicion)}`);
+    if (partidos)  params.push(`partidos=${encodeURIComponent(partidos)}`);
+    if (golesMin)  params.push(`goles_min=${encodeURIComponent(golesMin)}`);
+    if (golesMax)  params.push(`goles=${encodeURIComponent(golesMax)}`);
+    if (asisMin)   params.push(`asistencias_min=${encodeURIComponent(asisMin)}`);
+    if (asisMax)   params.push(`asistencias=${encodeURIComponent(asisMax)}`);
+    if (dispMin)   params.push(`disparos_min=${encodeURIComponent(dispMin)}`);
+    if (dispMax)   params.push(`disparos=${encodeURIComponent(dispMax)}`);
 
-      if (asisMin)     params.push(`asistencias_min=${encodeURIComponent(asisMin)}`);
-      if (asisMax)     params.push(`asistencias=${encodeURIComponent(asisMax)}`);
+    params.push(`_=${new Date().getTime()}`);
 
-      if (disparosMin) params.push(`disparos_min=${encodeURIComponent(disparosMin)}`);
-      if (disparosMax) params.push(`disparos=${encodeURIComponent(disparosMax)}`);
+    document.getElementById("tablaJugadores").src = `${base}?${params.join("&")}`;
+  }
+</script>
 
-      if (params.length) {
-        url += "&" + params.join("&");
-      }
-
-      // Asignamos esta URL como src del iframe para recargarlo con filtros y paginación
-      document.getElementById("tablaJugadores").src = url;
-    }
-  </script>
 
   <style>
-    /* Leyenda de columnas */
 .legend {
   background: var(--clr-glass);
   backdrop-filter: blur(8px);
@@ -98,19 +115,16 @@ section.filters {
   align-items: center;
 }
 
-/* Filtros principales (fila 1) */
 section.filters > label:nth-child(1) { grid-column: 1; grid-row: 1; }
 section.filters > label:nth-child(2) { grid-column: 2; grid-row: 1; }
 section.filters > label:nth-child(3) { grid-column: 3; grid-row: 1; }
 section.filters > label:nth-child(4) { grid-column: 4; grid-row: 1; }
 
-/* “Más filtros” (fila 2, col 1) */
 details.advanced-filters {
   grid-column: 1;
   grid-row: 2;
 }
 
-/* Botón “Buscar” (fila 2, col 5) */
 section.filters .btn-search {
   grid-column: 5;
   grid-row: 2;
@@ -135,18 +149,15 @@ details.advanced-filters summary {
   margin-bottom: 0.5rem;
 }
 
-/* Contenedor horizontal SIN wrap */
 details.advanced-filters .adv-grid {
   display: flex;
-  flex-direction: row;  /* forzamos en fila */
+  flex-direction: row; 
   gap: 1rem;
-  /* eliminamos flex-wrap para que NUNCA caigan a la siguiente línea */
   flex-wrap: nowrap;
-  overflow-x: auto;     /* si no caben, scroll horizontal */
+  overflow-x: auto;     
   padding-bottom: 0.5rem;
 }
 
-/* Cada bloque de filtro */
 details.advanced-filters .adv-grid label {
   min-width: 140px;
   background: rgba(255,255,255,0.9);
@@ -157,17 +168,127 @@ details.advanced-filters .adv-grid label {
   flex-direction: column;
 }
 
-/* Alineamos el contenido de los labels */
 details.advanced-filters .adv-grid label dr {
   font-weight: bold;
   margin-top: 0.5rem;
+}
+.upload-html-section {
+  margin: 2rem auto 1.5rem auto;
+  max-width: 700px;
+}
+
+.upload-html-box {
+  background: var(--clr-glass, rgba(255,255,255,0.92));
+  border-radius: var(--radius, 16px);
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.07);
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.upload-html-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.upload-icon {
+  font-size: 2.2rem;
+  color: var(--clr-primary, #003366);
+  background: #eaf1fb;
+  border-radius: 50%;
+  padding: 0.6rem;
+  margin-top: -0.2rem;
+}
+
+.upload-desc {
+  font-size: 0.98rem;
+  color: var(--clr-text, #333);
+  margin: 0.2rem 0 0 0;
+}
+
+.upload-html-form {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 0.5rem;
+}
+
+.upload-html-form input[type=\"file\"] {
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.28rem 0.35rem;
+  background: #f8fafd;
+}
+
+.upload-html-form button {
+  background-color: var(--clr-primary, #003366);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.49rem 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: background 0.2s;
+}
+
+.upload-html-form button:hover {
+  background-color: #00509e;
+}
+
+.flashes { margin: 1.2rem auto; max-width: 800px; }
+.flashes .alert {
+  background: #eaf1fb;
+  color: #003366;
+  padding: 0.7rem 1.3rem;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  border: 1px solid #d6e5fa;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+}
+
+/* Overlay de carga */
+.loading-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.loading-overlay.hidden {
+  display: none;
+}
+.loading-overlay .loader {
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid #003366;
+  border-radius: 50%;
+  width: 60px; height: 60px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.loading-overlay p {
+  color: #fff;
+  margin-top: 1rem;
+  font-size: 1rem;
+  text-align: center;
 }
 
   </style>
 </head>
 <body>
 
-  <!-- NAVBAR -->
   <!-- HEADER con logo -->
   <header class="site-header">
     <div class="container">
@@ -190,6 +311,17 @@ details.advanced-filters .adv-grid label dr {
     </div>
   </header>
 
+   <!-- Mensajes flash -->
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="flashes">
+        {% for msg in messages %}
+          <div class="alert">{{ msg }}</div>
+        {% endfor %}
+      </div>
+      <script>recargarTabla();</script>
+    {% endif %}
+  {% endwith %}
 
   <!-- HERO -->
   <section class="hero">
@@ -209,14 +341,50 @@ details.advanced-filters .adv-grid label dr {
   <!-- SECCIÓN PRINCIPAL -->
   <main class="container main-content" id="players">
     <h2 class="page-title">Lista de Jugadores</h2>
+    
+    <section class="upload-html-section">
+      <div class="upload-html-box">
+        <div class="upload-html-info">
+          <span class="material-icons upload-icon">upload_file</span>
+          <div>
+            <strong>Subir archivo HTML</strong>
+            <p class="upload-desc">
+              Selecciona un archivo <b>.html</b> exportado desde Football Manager u otra herramienta compatible. El sistema procesará e integrará la información de jugadores contenida en él.
+            </p>
+          </div>
+        </div>
+        <form class="upload-html-form" action="/upload_html" method="POST" enctype="multipart/form-data">
+          <input type="file" id="htmlFile" name="htmlFile" accept=".html,.htm" required />
+          <button type="submit">
+            <span class="material-icons" style="vertical-align: middle;">cloud_upload</span> Subir HTML
+          </button>
+        </form>
+        <div id="loadingOverlay" class="loading-overlay hidden">
+                <div>
+                  <div class="loader"></div>
+                  <p>Cargando archivo…</p>
+                </div>
+              </div>
+
+      </div>
+    </section>
+
 
     <!-- FILTROS DE BÚSQUEDA -->
     <section class="filters">
 
       
       <label>Nombre:
-        <input type="text" id="filtroNombre" placeholder="Ej. Messi">
+        <input
+          type="text"
+          id="filtroNombre"
+          list="nombresList"
+          placeholder="Ej. Messi"
+          autocomplete="off"
+        />
       </label>
+      <datalist id="nombresList"></datalist>
+
       <label>Edad:
         <input type="number" id="filtroEdad" placeholder="Ej. 21" />
       </label>
@@ -272,19 +440,12 @@ details.advanced-filters .adv-grid label dr {
     <button onclick="aplicarFiltros()">Buscar</button>
     </section>
 
-    <!-- RESULTADOS: iframe QUE MUESTRA EL HTML PAGINADO -->
     <section class="results">
       <div class="pitch-frame">
-        <!-- Por defecto carga la página 1 sin filtros -->
-        <iframe
-          id="tablaJugadores"
-          src="/mostrar_bd?page=1"
-          frameborder="0"
-        ></iframe>
+        <iframe id="tablaJugadores" src="/mostrar_bd?_=${new Date().getTime()}" frameborder="0"></iframe>
       </div>
     </section>
 
-    <!-- Añádelo en index.html, justo antes de <main class="container main-content" id="players"> -->
 <section class="legend container">
   <h3>Leyenda de columnas</h3>
   <div class="legend-content">
@@ -381,23 +542,54 @@ details.advanced-filters .adv-grid label dr {
 
   </main>
 
-  <!-- FOOTER -->
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <div class="footer-links">
-        <a href="#"><span class="material-icons">home</span>Inicio</a>
-        <a href="#"><span class="material-icons">help_outline</span>FAQ</a>
-        <a href="#"><span class="material-icons">compare_arrows</span>Comparación</a>
-        <a href="#"><span class="material-icons">scatter_plot</span>Clustering</a>
-      </div>
-      <p>© 2025 FootballManager. Todos los derechos reservados.</p>
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-container">
+    <!-- Sobre nosotros -->
+    <div class="footer-section footer-about">
+      <h4>Gestor de talentos FM</h4>
+      <p>
+        Plataforma de análisis y comparación de talentos en Football Manager. 
+        Descubre, filtra y clustea jugadores según su rendimiento.
+      </p>
     </div>
-  </footer>
+
+    <!-- Enlaces rápidos -->
+    <div class="footer-section footer-links">
+      <h4>Enlaces útiles</h4>
+      <ul>
+        <li><a href="/"><span class="material-icons">home</span>Inicio</a></li>
+        <li><a href="/faqs"><span class="material-icons">help_outline</span>FAQ</a></li>
+        <li><a href="/comparacion"><span class="material-icons">compare_arrows</span>Comparación</a></li>
+        <li><a href="/clustering"><span class="material-icons">scatter_plot</span>Clustering</a></li>
+      </ul>
+    </div>
+
+    <!-- Contacto / Síguenos -->
+    <div class="footer-section footer-social">
+      <h4>Síguenos</h4>
+      <div class="social-icons">
+        <a href="https://facebook.com/tuPagina"    aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://twitter.com/tuCuenta"     aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+        <a href="https://instagram.com/tuCuenta"   aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="https://linkedin.com/company/tu"   aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+      </div>
+      <p class="contact-email">
+        <span class="material-icons">email</span>
+        contacto@footballmanager.com
+      </p>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© 2025 Gestordetalentos. Todos los derechos reservados.</p>
+  </div>
+</footer>
+
 
 
 <script>
   window.addEventListener('DOMContentLoaded', () => {
-    // Configura cada par [minId, maxId]
     const pairs = [
       ["filtroValorMin",    "filtroValorMax"],
       ["filtroGolesMin",    "filtroGolesMax"],
@@ -409,10 +601,8 @@ details.advanced-filters .adv-grid label dr {
       const minEl = document.getElementById(minId);
       const maxEl = document.getElementById(maxId);
 
-      // Cuando cambie el mínimo…
       minEl.addEventListener('input', () => {
         const minV = Number(minEl.value);
-        // Asegura que max >= min
         if (!isNaN(minV)) {
           maxEl.min = minV;
           if (Number(maxEl.value) < minV) {
@@ -423,7 +613,6 @@ details.advanced-filters .adv-grid label dr {
         }
       });
 
-      // Cuando cambie el máximo…
       maxEl.addEventListener('input', () => {
         const maxV = Number(maxEl.value);
         // Asegura que min <= max
@@ -437,6 +626,40 @@ details.advanced-filters .adv-grid label dr {
         }
       });
     });
+  });
+
+  function recargarTabla() {
+  const iframe = document.getElementById("tablaJugadores");
+  let srcBase = iframe.getAttribute("src").split("?")[0];
+  // Añade un cache-buster con timestamp
+  iframe.src = `${srcBase}?_=${new Date().getTime()}`;
+}
+
+  async function actualizarNombresList() {
+    const dl = document.getElementById('nombresList');
+    if (dl.childElementCount) return; 
+    try {
+      const res    = await fetch('/api/nombres_jugadores');
+      const nombres = await res.json();
+      nombres.forEach(n => {
+        const opt = document.createElement('option');
+        opt.value = n;
+        dl.appendChild(opt);
+      });
+    } catch (err) {
+      console.error('Error cargando nombres:', err);
+    }
+  }
+
+  document
+    .getElementById('filtroNombre')
+    .addEventListener('focus', actualizarNombresList);
+
+const form = document.querySelector('.upload-html-form');
+  const overlay = document.getElementById('loadingOverlay');
+  form.addEventListener('submit', () => {
+    // muestra el overlay
+    overlay.classList.remove('hidden');
   });
 </script>
 

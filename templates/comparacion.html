@@ -7,13 +7,20 @@
 
   <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <!-- Tu CSS habitual -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <!-- CSS -->
+  <link rel="stylesheet" href="/static/css/style.css" />
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  integrity="sha512-..."
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+  />
+
   <style>
-    /* Tabla de comparación */
     #tablaComparacion {
       width:100%;
       border-collapse:collapse;
@@ -81,7 +88,6 @@
       filter: blur(2px);
     }
 
-    /* Contenedor para permitir scroll horizontal en móviles */
 .table-wrapper {
   overflow-x: auto;
   margin-top: 30px;
@@ -240,14 +246,44 @@
 
   <!-- FOOTER -->
   <footer class="site-footer">
-    <div class="container footer-inner">
-      <div class="footer-links">
-        <a href="/"><span class="material-icons">home</span>Inicio</a>
-        <a href="/faqs"><span class="material-icons">help_outline</span>FAQ</a>
-        <a href="/comparacion"><span class="material-icons">compare_arrows</span>Comparación</a>
-        <a href="/clustering"><span class="material-icons">scatter_plot"></span>Clustering</a>
+    <div class="footer-container">
+      <div class="footer-section footer-about">
+        <h4>Gestor de talentos FM</h4>
+        <p>
+          Plataforma de análisis y comparación de talentos en Football Manager. 
+          Descubre, filtra y clustea jugadores según su rendimiento.
+        </p>
       </div>
-      <p>© 2025 FootballManager. Todos los derechos reservados.</p>
+
+      <!-- Enlaces rápidos -->
+      <div class="footer-section footer-links">
+        <h4>Enlaces útiles</h4>
+        <ul>
+          <li><a href="/"><span class="material-icons">home</span>Inicio</a></li>
+          <li><a href="/faqs"><span class="material-icons">help_outline</span>FAQ</a></li>
+          <li><a href="/comparacion"><span class="material-icons">compare_arrows</span>Comparación</a></li>
+          <li><a href="/clustering"><span class="material-icons">scatter_plot</span>Clustering</a></li>
+        </ul>
+      </div>
+
+      <!-- Contacto / Síguenos -->
+      <div class="footer-section footer-social">
+        <h4>Síguenos</h4>
+        <div class="social-icons">
+          <a href="https://facebook.com/tuPagina"    aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="https://twitter.com/tuCuenta"     aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          <a href="https://instagram.com/tuCuenta"   aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="https://linkedin.com/company/tu"   aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+        <p class="contact-email">
+          <span class="material-icons">email</span>
+          contacto@footballmanager.com
+        </p>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© 2025 Gestordetalentos. Todos los derechos reservados.</p>
     </div>
   </footer>
 
@@ -367,7 +403,6 @@
             tbody.appendChild(tr);
           });
 
-          // Campo comparativo
           document.getElementById('labelA').textContent = nameA;
           document.getElementById('labelB').textContent = nameB;
           const extractCodes = s =>
@@ -378,7 +413,6 @@
         });
     });
 
-    // Auto-comparar al cargar
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('btnComparar').click();
     });
