@@ -14,6 +14,8 @@ import subprocess
 from flask import Flask, request, redirect, url_for, flash, render_template
 import os
 from preprocesar_tabla import procesar_BBDD_html
+from models import db, Usuario, ArchivoHTML, Jugador, Favorito
+from flask_login import LoginManager
 
 
 
