@@ -1,1 +1,1 @@
-web: bash -lc "python3 preprocesar_tabla.py && python3 app.py"
+web: python preprocesar_tabla.py && gunicorn app:app --bind 0.0.0.0:$PORT
