@@ -22,7 +22,43 @@ from flask_login import LoginManager
 
 app = Flask(__name__)
 
-app.secret_key = "clave_secreta" 
+#app.secret_key = "clave_secreta" lo he cambiado por lo de ahora abajo
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "clave_secreta")
+
+database_url = os.environ.get("DATABASE_URL")
+
+if database_url and database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+if database_url:
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+else:
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///local.db"
+
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db.init_app(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return Usuario.query.get(int(user_id))
+
+
+with app.app_context():
+    db.create_all()
+
+
+
+
+
+
+
+
 # Guardar al nivel de app.py
 SAVE_PATH = os.path.join(os.path.dirname(__file__), 'BBDD.html')
 ALLOWED_EXTENSIONS = {'html', 'htm'}
@@ -30,30 +66,137 @@ ALLOWED_EXTENSIONS = {'html', 'htm'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
+#ver si funciona
+def convertir_float(valor):
+    try:
+        if valor is None:
+            return None
+
+        valor = str(valor).strip()
+
+        if valor in ["", "-"]:
+            return None
+
+        valor = valor.replace("%", "")
+        valor = valor.replace("€", "")
+        valor = valor.replace("km", "")
+        valor = valor.replace("\xa0", "")
+        valor = valor.replace(",", ".")
+
+        # Si es formato 1.234 puede ser miles. En tus datos hay puntos como separador de miles.
+        if valor.count(".") > 1:
+            valor = valor.replace(".", "")
+
+        return float(valor)
+    except Exception:
+        return None
+
+
+def convertir_int(valor):
+    try:
+        if valor is None:
+            return None
+
+        valor = str(valor).strip()
+
+        if valor in ["", "-"]:
+            return None
+
+        valor = re.sub(r"[^\d]", "", valor)
+
+        if not valor:
+            return None
+
+        return int(valor)
+    except Exception:
+        return None
+    #hasta aqui el comprobar si funciona  
+
+
+def limpiar_json_fila(fila):
+    datos = {}
+    for clave, valor in fila.fillna("").to_dict().items():
+        if hasattr(valor, "item"):
+            valor = valor.item()
+        datos[str(clave)] = valor
+    return datos
+
 @app.route('/upload_html', methods=['POST'])
 def upload_html():
     if 'htmlFile' not in request.files:
         flash('No se encontró el archivo.')
         return redirect(url_for('index'))
+
     file = request.files['htmlFile']
+
     if file.filename == '':
         flash('No se seleccionó ningún archivo.')
         return redirect(url_for('index'))
-    if file and allowed_file(file.filename):
-        file.save(SAVE_PATH)
-        # Ejecuta el procesamiento inmediatamente después de guardar
-        try:
-            resultado = procesar_BBDD_html(SAVE_PATH)
-            if resultado:
-                flash('Archivo BBDD.html subido y procesado correctamente.')
-            else:
-                flash('Archivo subido, pero ocurrió un error en el procesamiento.')
-        except Exception as e:
-            flash(f'Ocurrió un error al procesar el archivo: {e}')
-        return redirect(url_for('index'))
-    else:
+
+    if not allowed_file(file.filename):
         flash('Solo se permiten archivos HTML (.html, .htm).')
         return redirect(url_for('index'))
+
+    try:
+        # 1. Leer el contenido del HTML
+        contenido_html = file.read().decode("utf-8", errors="ignore")
+
+        # 2. Guardar también el archivo físico como hacías antes
+        with open(SAVE_PATH, "w", encoding="utf-8") as f:
+            f.write(contenido_html)
+
+        # 3. Procesar el HTML con tu función actual
+        resultado = procesar_BBDD_html(SAVE_PATH)
+
+        if not resultado:
+            flash('Archivo subido, pero ocurrió un error en el procesamiento.')
+            return redirect(url_for('index'))
+
+        # 4. Leer el pickle generado por tu procesamiento actual
+        df = pd.read_pickle("jugadores.pkl")
+
+        # 5. Guardar el HTML en PostgreSQL
+        nuevo_archivo = ArchivoHTML(
+            usuario_id=None,
+            nombre_archivo=file.filename,
+            contenido_html=contenido_html,
+            jugadores_detectados=len(df),
+            columnas_detectadas=len(df.columns),
+            estado="procesado"
+        )
+
+        db.session.add(nuevo_archivo)
+        db.session.commit()
+
+        # 6. Guardar jugadores en PostgreSQL
+        for _, fila in df.iterrows():
+            jugador = Jugador(
+                archivo_id=nuevo_archivo.id,
+                nombre=str(fila.get("Nombre", "")),
+                edad=convertir_int(fila.get("Edad")),
+                posicion=str(fila.get("Posición", "")),
+                club=str(fila.get("Club", "")),
+                valor_traspaso=str(fila.get("Valor de traspaso", "")),
+                sueldo=str(fila.get("Sueldo", "")),
+                media=convertir_float(fila.get("Media")),
+                goles=convertir_float(fila.get("Gol")),
+                asistencias=convertir_float(fila.get("Asis")),
+                minutos=convertir_float(fila.get("Min")),
+                datos_json=limpiar_json_fila(fila)
+                )
+
+            db.session.add(jugador)
+
+        db.session.commit()
+
+        flash('Archivo HTML subido, procesado y guardado en la base de datos correctamente.')
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Ocurrió un error al procesar el archivo: {e}')
+
+    return redirect(url_for('index'))
 
 
 
