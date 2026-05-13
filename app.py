@@ -123,6 +123,60 @@ def limpiar_json_fila(fila):
         datos[str(clave)] = valor
     return datos
 
+
+
+def obtener_dataframe_actual():
+    """
+    Devuelve el DataFrame que debe usar la aplicación.
+
+    - Si el usuario está logueado y tiene archivos subidos:
+      carga los jugadores del último archivo desde la base de datos.
+
+    - Si no está logueado o no tiene archivos:
+      carga la demo desde jugadores.pkl.
+    """
+
+    if current_user.is_authenticated:
+        ultimo_archivo = ArchivoHTML.query.filter_by(
+            usuario_id=current_user.id
+        ).order_by(
+            ArchivoHTML.fecha_subida.desc()
+        ).first()
+
+        if ultimo_archivo:
+            jugadores = Jugador.query.filter_by(
+                archivo_id=ultimo_archivo.id
+            ).all()
+
+            if jugadores:
+                datos = []
+
+                for jugador in jugadores:
+                    if jugador.datos_json:
+                        fila = dict(jugador.datos_json)
+                    else:
+                        fila = {}
+
+                    # Aseguramos campos importantes por si faltan en datos_json
+                    fila["Nombre"] = jugador.nombre
+                    fila["Edad"] = jugador.edad
+                    fila["Posición"] = jugador.posicion
+                    fila["Club"] = jugador.club
+                    fila["Sueldo"] = jugador.sueldo
+                    fila["Media"] = jugador.media
+                    fila["Gol"] = jugador.goles
+                    fila["Asis"] = jugador.asistencias
+                    fila["Min"] = jugador.minutos
+
+                    datos.append(fila)
+
+                return pd.DataFrame(datos)
+
+    # Si no hay usuario, no hay archivos o algo falla, usamos la demo
+    return pd.read_pickle("jugadores.pkl")
+
+
+
 @app.route('/upload_html', methods=['POST'])
 @login_required
 def upload_html():
@@ -148,15 +202,15 @@ def upload_html():
         with open(SAVE_PATH, "w", encoding="utf-8") as f:
             f.write(contenido_html)
 
-        # 3. Procesar el HTML con tu función actual
-        resultado = procesar_BBDD_html(SAVE_PATH)
+        # 3. Procesar el HTML sin modificar la demo global
+        df = procesar_BBDD_html(SAVE_PATH, guardar_demo=False)
 
-        if not resultado:
+        if df is None or df.empty:
             flash('Archivo subido, pero ocurrió un error en el procesamiento.')
             return redirect(url_for('index'))
 
         # 4. Leer el pickle generado por tu procesamiento actual
-        df = pd.read_pickle("jugadores.pkl")
+        ######df = pd.read_pickle("jugadores.pkl")
 
         # 5. Guardar el HTML en PostgreSQL
         nuevo_archivo = ArchivoHTML(
@@ -210,6 +264,31 @@ def mis_archivos():
     ).all()
 
     return render_template("mis_archivos.html", archivos=archivos)
+
+@app.route("/eliminar-archivo/<int:archivo_id>", methods=["POST"])
+@login_required
+def eliminar_archivo(archivo_id):
+    archivo = ArchivoHTML.query.filter_by(
+        id=archivo_id,
+        usuario_id=current_user.id
+    ).first_or_404()
+
+    try:
+        # Primero borramos los jugadores asociados a ese archivo
+        Jugador.query.filter_by(archivo_id=archivo.id).delete()
+
+        # Luego borramos el archivo
+        db.session.delete(archivo)
+        db.session.commit()
+
+        flash("Archivo eliminado correctamente.")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error al eliminar el archivo: {e}")
+
+    return redirect(url_for("mis_archivos"))
+
+
 
 
 pickle_path = os.path.join(os.getcwd(), "jugadores.pkl")
@@ -362,7 +441,7 @@ def clustering_defensas():
 @app.route("/mostrar_bd")
 def mostrar_bd():
     try:
-        df_jugadores = pd.read_pickle("jugadores.pkl")
+        df_jugadores = obtener_dataframe_actual()
 
         nombre      = request.args.get("nombre",    default=None, type=str)
         edad        = request.args.get("edad",      type=int)
@@ -486,8 +565,7 @@ def mostrar_bd():
 
 @app.route("/api/nombres_jugadores")
 def api_nombres_jugadores():
-    # Carga la lista de nombres 
-    df = pd.read_pickle("jugadores.pkl")
+    df = obtener_dataframe_actual()
     nombres = sorted(df["Nombre"].dropna().unique().tolist())
     return jsonify(nombres)
 
