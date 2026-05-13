@@ -49,7 +49,7 @@ login_manager.login_view = "auth.login"
 
 @login_manager.user_loader
 def load_user(user_id):
-    return Usuario.query.get(int(user_id))
+    return db.session.get(Usuario, int(user_id))
 
 
 with app.app_context():
@@ -256,43 +256,7 @@ def upload_html():
 
     return redirect(url_for('index'))
 
-"""
-@app.route("/mis-archivos")
-@login_required
-def mis_archivos():
-    archivos = ArchivoHTML.query.filter_by(
-        usuario_id=current_user.id
-    ).order_by(
-        ArchivoHTML.fecha_subida.desc()
-    ).all()
 
-    return render_template("mis_archivos.html", archivos=archivos)
-
-@app.route("/eliminar-archivo/<int:archivo_id>", methods=["POST"])
-@login_required
-def eliminar_archivo(archivo_id):
-    archivo = ArchivoHTML.query.filter_by(
-        id=archivo_id,
-        usuario_id=current_user.id
-    ).first_or_404()
-
-    try:
-        # Primero borramos los jugadores asociados a ese archivo
-        Jugador.query.filter_by(archivo_id=archivo.id).delete()
-
-        # Luego borramos el archivo
-        db.session.delete(archivo)
-        db.session.commit()
-
-        flash("Archivo eliminado correctamente.")
-    except Exception as e:
-        db.session.rollback()
-        flash(f"Error al eliminar el archivo: {e}")
-
-    return redirect(url_for("mis_archivos"))
-
-
-"""
 
 pickle_path = os.path.join(os.getcwd(), "jugadores.pkl")
 if not os.path.exists(pickle_path):
