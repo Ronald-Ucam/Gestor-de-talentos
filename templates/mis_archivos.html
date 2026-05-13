@@ -49,6 +49,29 @@
       font-weight: 700;
       font-size: 0.85rem;
     }
+
+    .btn-delete-file {
+  background: #c0392b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.45rem 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.btn-delete-file:hover {
+  background: #a93226;
+  transform: translateY(-1px);
+}
+
+.btn-delete-file .material-icons {
+  font-size: 1.1rem;
+}
   </style>
 </head>
 
@@ -82,7 +105,7 @@
             </button>
 
             <div class="user-dropdown">
-              <a href="{{ url_for('mis_archivos') }}">
+              <a href="{{ url_for('user.mis_archivos') }}">
                 <span class="material-icons">folder</span>
                 Mis archivos
               </a>
@@ -143,6 +166,18 @@
               <td>{{ archivo.columnas_detectadas }}</td>
               <td>{{ archivo.fecha_subida.strftime('%d/%m/%Y %H:%M') }}</td>
               <td><span class="status-pill">{{ archivo.estado }}</span></td>
+              <td>
+                <form 
+                  action="{{ url_for('user.eliminar_archivo', archivo_id=archivo.id) }}" 
+                  method="POST"
+                  onsubmit="return confirm('¿Seguro que quieres eliminar este archivo? También se eliminarán sus jugadores asociados.');"
+                >
+                  <button type="submit" class="btn-delete-file">
+                    <span class="material-icons">delete</span>
+                    Eliminar
+                  </button>
+                </form>
+              </td>
             </tr>
           {% endfor %}
         </tbody>

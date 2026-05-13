@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mi cuenta</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="/" class="logo">
+      <span class="logo-img-wrapper">
+        <img
+          src="{{ url_for('static', filename='images/logo1.png') }}"
+          alt="Gestor de Talentos FM"
+          class="logo-img"
+        />
+      </span>
+    </a>
+
+    <nav class="main-nav">
+      <a href="/"><span class="material-icons">home</span>Inicio</a>
+      <a href="/faqs"><span class="material-icons">help_outline</span>Preguntas Frecuentes</a>
+      <a href="/comparacion"><span class="material-icons">compare_arrows</span>Comparación</a>
+      <a href="/clustering"><span class="material-icons">scatter_plot</span>Clustering</a>
+
+      <div class="user-menu">
+        <button class="user-menu-button" type="button">
+          <span class="material-icons">account_circle</span>
+          {{ current_user.nombre }}
+          <span class="material-icons user-menu-arrow">expand_more</span>
+        </button>
+
+        <div class="user-dropdown">
+          <a href="{{ url_for('user.mi_cuenta') }}">
+            <span class="material-icons">person</span>
+            Información personal
+          </a>
+
+          <a href="{{ url_for('user.mis_archivos') }}">
+            <span class="material-icons">folder</span>
+            Mis archivos
+          </a>
+
+          <a href="{{ url_for('auth.logout') }}" class="logout-option">
+            <span class="material-icons">logout</span>
+            Cerrar sesión
+          </a>
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-background"></div>
+  <div class="hero-content container">
+    <h1 class="hero-title">Mi cuenta</h1>
+    <p class="hero-subtitle">Información personal y resumen de actividad.</p>
+  </div>
+</section>
+
+<main class="container main-content">
+  <h2 class="page-title">Información personal</h2>
+
+  <div style="background: rgba(255,255,255,0.9); padding: 1.5rem; border-radius: 12px;">
+    <p><strong>Nombre:</strong> {{ current_user.nombre }}</p>
+    <p><strong>Email:</strong> {{ current_user.email }}</p>
+    <p><strong>Archivos subidos:</strong> {{ total_archivos }}</p>
+    <p><strong>Jugadores importados:</strong> {{ total_jugadores }}</p>
+
+    {% if ultimo_archivo %}
+      <p><strong>Último archivo:</strong> {{ ultimo_archivo.nombre_archivo }}</p>
+      <p><strong>Fecha:</strong> {{ ultimo_archivo.fecha_subida.strftime('%d/%m/%Y %H:%M') }}</p>
+    {% else %}
+      <p><strong>Último archivo:</strong> No has subido archivos todavía.</p>
+    {% endif %}
+  </div>
+
+  <div style="text-align: center; margin-top: 2rem;">
+    <a href="{{ url_for('user.mis_archivos') }}" class="btn-hero">
+      <span class="material-icons">folder</span>
+      Ver mis archivos
+    </a>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-bottom">
+    <p>© 2025 Gestordetalentos. Todos los derechos reservados.</p>
+  </div>
+</footer>
+
+</body>
+</html>

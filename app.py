@@ -17,11 +17,13 @@ from preprocesar_tabla import procesar_BBDD_html
 from models import db, Usuario, ArchivoHTML, Jugador, Favorito
 from flask_login import LoginManager, login_required, current_user
 from auth import auth
+from user import user
 
 
 app = Flask(__name__)
 
 app.register_blueprint(auth)
+app.register_blueprint(user)
 
 #app.secret_key = "clave_secreta" lo he cambiado por lo de ahora abajo
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "clave_secreta")
@@ -254,6 +256,7 @@ def upload_html():
 
     return redirect(url_for('index'))
 
+"""
 @app.route("/mis-archivos")
 @login_required
 def mis_archivos():
@@ -289,7 +292,7 @@ def eliminar_archivo(archivo_id):
     return redirect(url_for("mis_archivos"))
 
 
-
+"""
 
 pickle_path = os.path.join(os.getcwd(), "jugadores.pkl")
 if not os.path.exists(pickle_path):
