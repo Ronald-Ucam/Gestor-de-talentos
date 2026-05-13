@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro - Gestor de Talentos FM</title>
+</head>
+<body>
+    <h1>Crear cuenta</h1>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        <label>Nombre</label>
+        <input type="text" name="nombre" required>
+
+        <br><br>
+
+        <label>Email</label>
+        <input type="email" name="email" required>
+
+        <br><br>
+
+        <label>Contraseña</label>
+        <input type="password" name="password" required>
+
+        <br><br>
+
+        <button type="submit">Registrarme</button>
+    </form>
+
+    <p>¿Ya tienes cuenta? <a href="{{ url_for('auth.login') }}">Inicia sesión</a></p>
+    <p><a href="{{ url_for('index') }}">Volver al inicio</a></p>
+</body>
+</html>

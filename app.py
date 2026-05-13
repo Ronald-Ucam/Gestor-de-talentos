@@ -15,12 +15,13 @@ from flask import Flask, request, redirect, url_for, flash, render_template
 import os
 from preprocesar_tabla import procesar_BBDD_html
 from models import db, Usuario, ArchivoHTML, Jugador, Favorito
-from flask_login import LoginManager
-
-
+from flask_login import LoginManager, login_required, current_user
+from auth import auth
 
 
 app = Flask(__name__)
+
+app.register_blueprint(auth)
 
 #app.secret_key = "clave_secreta" lo he cambiado por lo de ahora abajo
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "clave_secreta")
@@ -41,7 +42,7 @@ db.init_app(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = "login"
+login_manager.login_view = "auth.login"
 
 
 @login_manager.user_loader
