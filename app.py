@@ -309,15 +309,15 @@ def faqs():
 @app.route("/comparacion")
 def comparacion():
     # 1) Lista completa de nombres
-    jugadores = df_jugadores["Nombre"].unique().tolist()
+    df_actual = obtener_dataframe_actual()
 
-    # 2) Leemos el array players[] que mandó el formulario
+    jugadores = df_actual["Nombre"].dropna().unique().tolist()
+
     seleccionados = request.args.getlist("players[]")
-    # 3) Rellenamos selected1 y selected2 con fallback a los dos primeros de la lista
+
     j1 = seleccionados[0] if len(seleccionados) > 0 else (jugadores[0] if jugadores else "")
     j2 = seleccionados[1] if len(seleccionados) > 1 else (jugadores[1] if len(jugadores) > 1 else j1)
 
-    # 4) Renderizamos pasando también selected1/selected2
     return render_template(
         "comparacion.html",
         jugadores_list=jugadores,
@@ -642,22 +642,24 @@ def api_comparar():
     j1 = request.args.get("jugador1")
     j2 = request.args.get("jugador2")
 
-    # 1) Lista de métricas: pasamos de "% Pase" a "Pas Clv/90"
+    df_actual = obtener_dataframe_actual()
+
     attrs = ["Media", "Gol/90", "Asis/90", "Reg/90", "Pas Clv/90"]
 
-    p1 = df_jugadores[df_jugadores["Nombre"] == j1]
-    p2 = df_jugadores[df_jugadores["Nombre"] == j2]
+    p1 = df_actual[df_actual["Nombre"] == j1]
+    p2 = df_actual[df_actual["Nombre"] == j2]
+
     if p1.empty or p2.empty:
         return jsonify({"error": "Jugador no encontrado"}), 404
+
     p1, p2 = p1.iloc[0], p2.iloc[0]
 
     def to_float(val):
         return 0.0 if str(val).strip() in ["-", ""] else float(re.sub(r"[^\d\.]", "", str(val)))
 
-    # 2) Limpiamos y calculamos percentiles
     clean = {}
     for a in attrs:
-        clean[a] = df_jugadores[a] \
+        clean[a] = df_actual[a] \
             .replace("-", np.nan) \
             .astype(str) \
             .str.replace(r"[^\d\.]", "", regex=True) \
@@ -667,7 +669,6 @@ def api_comparar():
     statsA = [round(percentileofscore(clean[a], to_float(p1[a])), 1) for a in attrs]
     statsB = [round(percentileofscore(clean[a], to_float(p2[a])), 1) for a in attrs]
 
-    # Campos de perfil (añadimos Pas Clv/90 si lo queremos mostrar en detalle)
     campos_perfil = [
         "Nombre", "Edad", "Altura", "Peso", "Posición", "Club",
         "ValorNum", "Sueldo", "Media", "Gol/90", "Asis/90",
@@ -676,22 +677,24 @@ def api_comparar():
 
     def construir_perfil(p, nombre):
         perfil = {}
-        
+
         foto = buscar_foto_wikipedia(nombre)
         if foto:
             perfil["FotoURL"] = foto
+
         for c in campos_perfil:
-            if c in df_jugadores.columns:
+            if c in df_actual.columns:
                 v = p[c]
                 perfil[c] = v.item() if hasattr(v, "item") else v
+
         return perfil
 
     return jsonify({
-        "labels":  attrs,
-        "statsA":  statsA,
-        "statsB":  statsB,
-        "nameA":   j1,
-        "nameB":   j2,
+        "labels": attrs,
+        "statsA": statsA,
+        "statsB": statsB,
+        "nameA": j1,
+        "nameB": j2,
         "perfilA": construir_perfil(p1, j1),
         "perfilB": construir_perfil(p2, j2)
     })
@@ -707,7 +710,7 @@ def api_cluster_por():
         k = int(request.args.get("k", 4))
 
         # 2️ Carga siempre actualizada de los datos procesados
-        df_jugadores = pd.read_pickle("jugadores.pkl")
+        df_jugadores = obtener_dataframe_actual()
 
         # 3️ Aplica clustering a los porteros
         df_por, attrs, cluster_names = cluster_goalkeepers(df_jugadores, k=k)
@@ -740,7 +743,7 @@ def api_cluster_def():
         k = request.args.get('k', default=4, type=int)
 
         # 2️ Carga fresca de los datos preprocesados
-        df_jugadores = pd.read_pickle("jugadores.pkl")
+        df_jugadores = obtener_dataframe_actual()
 
         # 3️ Aplica clustering a los defensas
         df_def, attrs, names = cluster_defenders(df_jugadores, k)
@@ -771,7 +774,7 @@ def api_cluster_mid():
         k = int(request.args.get("k", 4))
 
         # 2️ Carga siempre fresca del DataFrame procesado
-        df_jugadores = pd.read_pickle("jugadores.pkl")
+        df_jugadores = obtener_dataframe_actual()
 
         # 3️ Aplica clustering a los centrocampistas
         df_mid, attrs, cluster_names = cluster_midfielders(df_jugadores, k)
@@ -852,7 +855,7 @@ def api_cluster_fw():
         k = int(request.args.get("k", 4))
 
         # 2️ Carga siempre fresca de los datos procesados
-        df_jugadores = pd.read_pickle("jugadores.pkl")
+        df_jugadores = obtener_dataframe_actual()
 
         # 3️ Aplica clustering a los delanteros
         df_fw, attrs, names = cluster_forwards(df_jugadores, k)
