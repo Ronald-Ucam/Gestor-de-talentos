@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestor de Talentos FM – Mis archivos</title>
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+
+  <style>
+    .files-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(255,255,255,0.92);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    }
+
+    .files-table th {
+      background: var(--clr-primary);
+      color: white;
+      padding: 0.9rem;
+      text-align: left;
+    }
+
+    .files-table td {
+      padding: 0.85rem;
+      border-bottom: 1px solid #e5e5e5;
+      color: #333;
+    }
+
+    .files-empty {
+      text-align: center;
+      padding: 2rem;
+      background: rgba(255,255,255,0.85);
+      border-radius: 12px;
+      color: var(--clr-primary);
+      font-weight: 600;
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      background: #e6f7ed;
+      color: #1e7e34;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="logo">
+        <span class="logo-img-wrapper">
+          <img
+            src="{{ url_for('static', filename='images/logo1.png') }}"
+            alt="Gestor de Talentos FM"
+            class="logo-img"
+          />
+        </span>
+      </a>
+
+      <nav class="main-nav">
+        <a href="/"><span class="material-icons">home</span>Inicio</a>
+        <a href="/faqs"><span class="material-icons">help_outline</span>Preguntas Frecuentes</a>
+        <a href="/comparacion"><span class="material-icons">compare_arrows</span>Comparación</a>
+        <a href="/clustering"><span class="material-icons">scatter_plot</span>Clustering</a>
+
+        {% if current_user.is_authenticated %}
+
+          <div class="user-menu">
+            <button class="user-menu-button" type="button">
+              <span class="material-icons">account_circle</span>
+              {{ current_user.nombre }}
+              <span class="material-icons user-menu-arrow">expand_more</span>
+            </button>
+
+            <div class="user-dropdown">
+              <a href="{{ url_for('mis_archivos') }}">
+                <span class="material-icons">folder</span>
+                Mis archivos
+              </a>
+
+              <a href="{{ url_for('auth.logout') }}" class="logout-option">
+                <span class="material-icons">logout</span>
+                Cerrar sesión
+              </a>
+            </div>
+          </div>
+
+        {% else %}
+
+          <a href="{{ url_for('auth.login') }}" class="login-nav">
+            <span class="material-icons">login</span>
+            Login
+          </a>
+
+          <a href="{{ url_for('auth.registro') }}" class="register-nav">
+            <span class="material-icons">person_add</span>
+            Registro
+          </a>
+
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-background"></div>
+    <div class="hero-content container">
+      <h1 class="hero-title">Mis archivos</h1>
+      <p class="hero-subtitle">
+        Consulta los archivos HTML que has importado en la plataforma.
+      </p>
+    </div>
+  </section>
+
+  <main class="container main-content">
+    <h2 class="page-title">Historial de archivos importados</h2>
+
+    {% if archivos %}
+      <table class="files-table">
+        <thead>
+          <tr>
+            <th>Archivo</th>
+            <th>Jugadores</th>
+            <th>Columnas</th>
+            <th>Fecha de subida</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for archivo in archivos %}
+            <tr>
+              <td>{{ archivo.nombre_archivo }}</td>
+              <td>{{ archivo.jugadores_detectados }}</td>
+              <td>{{ archivo.columnas_detectadas }}</td>
+              <td>{{ archivo.fecha_subida.strftime('%d/%m/%Y %H:%M') }}</td>
+              <td><span class="status-pill">{{ archivo.estado }}</span></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="files-empty">
+        Todavía no has subido ningún archivo HTML.
+      </div>
+    {% endif %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-bottom">
+      <p>© 2025 Gestordetalentos. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

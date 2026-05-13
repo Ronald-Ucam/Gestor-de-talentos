@@ -124,6 +124,7 @@ def limpiar_json_fila(fila):
     return datos
 
 @app.route('/upload_html', methods=['POST'])
+@login_required
 def upload_html():
     if 'htmlFile' not in request.files:
         flash('No se encontró el archivo.')
@@ -159,7 +160,7 @@ def upload_html():
 
         # 5. Guardar el HTML en PostgreSQL
         nuevo_archivo = ArchivoHTML(
-            usuario_id=None,
+            usuario_id=current_user.id,
             nombre_archivo=file.filename,
             contenido_html=contenido_html,
             jugadores_detectados=len(df),
@@ -199,6 +200,16 @@ def upload_html():
 
     return redirect(url_for('index'))
 
+@app.route("/mis-archivos")
+@login_required
+def mis_archivos():
+    archivos = ArchivoHTML.query.filter_by(
+        usuario_id=current_user.id
+    ).order_by(
+        ArchivoHTML.fecha_subida.desc()
+    ).all()
+
+    return render_template("mis_archivos.html", archivos=archivos)
 
 
 pickle_path = os.path.join(os.getcwd(), "jugadores.pkl")

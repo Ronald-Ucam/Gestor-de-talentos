@@ -237,21 +237,64 @@ details.advanced-filters .adv-grid label dr {
   gap: 0.4rem;
   transition: background 0.2s;
 }
+.btn-login-upload {
+  width: fit-content;
+  background-color: var(--clr-primary, #003366);
+  color: #fff;
+  text-decoration: none;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.55rem 1.2rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: background 0.2s, transform 0.2s;
+}
 
+.btn-login-upload:hover {
+  background-color: #00509e;
+  transform: translateY(-2px);
+}
 .upload-html-form button:hover {
   background-color: #00509e;
 }
 
-.flashes { margin: 1.2rem auto; max-width: 800px; }
+.flashes {
+  position: fixed;
+  top: 95px;              /* justo debajo del navbar */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  width: min(90%, 520px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  pointer-events: none;   /* no molesta al contenido de detrás */
+}
+
 .flashes .alert {
-  background: #eaf1fb;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.96);
   color: #003366;
-  padding: 0.7rem 1.3rem;
-  border-radius: 6px;
-  margin-bottom: 0.5rem;
+  padding: 1rem 1.2rem;
+  border-radius: 14px;
   font-weight: 600;
-  border: 1px solid #d6e5fa;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+  border-left: 5px solid #28a745;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.20);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 1;
+}
+
+.flashes .alert .material-icons {
+  color: #28a745;
+  font-size: 1.4rem;
+  flex-shrink: 0;
 }
 
 /* Overlay de carga */
@@ -303,25 +346,64 @@ details.advanced-filters .adv-grid label dr {
       </a>
 
       <nav class="main-nav">
-        <a href="#"><span class="material-icons">home</span>Inicio</a>
+        <a href="/"><span class="material-icons">home</span>Inicio</a>
         <a href="/faqs"><span class="material-icons">help_outline</span>Preguntas Frecuentes</a>
         <a href="/comparacion"><span class="material-icons">compare_arrows</span>Comparación</a>
         <a href="/clustering"><span class="material-icons">scatter_plot</span>Clustering</a>
+
+        {% if current_user.is_authenticated %}
+
+          <div class="user-menu">
+            <button class="user-menu-button" type="button">
+              <span class="material-icons">account_circle</span>
+              {{ current_user.nombre }}
+              <span class="material-icons user-menu-arrow">expand_more</span>
+            </button>
+
+            <div class="user-dropdown">
+              <a href="{{ url_for('mis_archivos') }}">
+                <span class="material-icons">folder</span>
+                Mis archivos
+              </a>
+
+              <a href="{{ url_for('auth.logout') }}" class="logout-option">
+                <span class="material-icons">logout</span>
+                Cerrar sesión
+              </a>
+            </div>
+          </div>
+
+        {% else %}
+
+          <a href="{{ url_for('auth.login') }}" class="login-nav">
+            <span class="material-icons">login</span>
+            Login
+          </a>
+
+          <a href="{{ url_for('auth.registro') }}" class="register-nav">
+            <span class="material-icons">person_add</span>
+            Registro
+          </a>
+
+        {% endif %}
       </nav>
     </div>
   </header>
 
    <!-- Mensajes flash -->
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <div class="flashes">
-        {% for msg in messages %}
-          <div class="alert">{{ msg }}</div>
-        {% endfor %}
-      </div>
-      <script>recargarTabla();</script>
-    {% endif %}
-  {% endwith %}
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flashes" id="flashMessages">
+          {% for msg in messages %}
+            <div class="alert">
+              <span class="material-icons">check_circle</span>
+              <span>{{ msg }}</span>
+            </div>
+          {% endfor %}
+        </div>
+        <script>recargarTabla();</script>
+      {% endif %}
+    {% endwith %}
 
   <!-- HERO -->
   <section class="hero">
@@ -343,30 +425,58 @@ details.advanced-filters .adv-grid label dr {
     <h2 class="page-title">Lista de Jugadores</h2>
     
     <section class="upload-html-section">
-      <div class="upload-html-box">
-        <div class="upload-html-info">
-          <span class="material-icons upload-icon">upload_file</span>
-          <div>
-            <strong>Subir archivo HTML</strong>
-            <p class="upload-desc">
-              Selecciona un archivo <b>.html</b> exportado desde Football Manager u otra herramienta compatible. El sistema procesará e integrará la información de jugadores contenida en él.
-            </p>
+
+      {% if current_user.is_authenticated %}
+
+        <div class="upload-html-box">
+          <div class="upload-html-info">
+            <span class="material-icons upload-icon">upload_file</span>
+            <div>
+              <strong>Subir archivo HTML</strong>
+              <p class="upload-desc">
+                Selecciona un archivo <b>.html</b> exportado desde Football Manager u otra herramienta compatible. 
+                El sistema procesará e integrará la información de jugadores contenida en él.
+              </p>
+            </div>
+          </div>
+
+          <form class="upload-html-form" action="/upload_html" method="POST" enctype="multipart/form-data">
+            <input type="file" id="htmlFile" name="htmlFile" accept=".html,.htm" required />
+            <button type="submit">
+              <span class="material-icons" style="vertical-align: middle;">cloud_upload</span> Subir HTML
+            </button>
+          </form>
+
+          <div id="loadingOverlay" class="loading-overlay hidden">
+            <div>
+              <div class="loader"></div>
+              <p>Cargando archivo…</p>
+            </div>
           </div>
         </div>
-        <form class="upload-html-form" action="/upload_html" method="POST" enctype="multipart/form-data">
-          <input type="file" id="htmlFile" name="htmlFile" accept=".html,.htm" required />
-          <button type="submit">
-            <span class="material-icons" style="vertical-align: middle;">cloud_upload</span> Subir HTML
-          </button>
-        </form>
-        <div id="loadingOverlay" class="loading-overlay hidden">
-                <div>
-                  <div class="loader"></div>
-                  <p>Cargando archivo…</p>
-                </div>
-              </div>
 
-      </div>
+      {% else %}
+
+        <div class="upload-html-box">
+          <div class="upload-html-info">
+            <span class="material-icons upload-icon">lock</span>
+            <div>
+              <strong>Inicia sesión para subir tus propios archivos</strong>
+              <p class="upload-desc">
+                Puedes explorar la aplicación con los datos de ejemplo sin registrarte. 
+                Para importar y guardar tus propios archivos HTML de Football Manager necesitas iniciar sesión.
+              </p>
+            </div>
+          </div>
+
+          <a href="{{ url_for('auth.login') }}" class="btn-login-upload">
+            <span class="material-icons">login</span>
+            Iniciar sesión
+          </a>
+        </div>
+
+      {% endif %}
+
     </section>
 
 
@@ -601,6 +711,8 @@ details.advanced-filters .adv-grid label dr {
       const minEl = document.getElementById(minId);
       const maxEl = document.getElementById(maxId);
 
+      if (!minEl || !maxEl) return;
+
       minEl.addEventListener('input', () => {
         const minV = Number(minEl.value);
         if (!isNaN(minV)) {
@@ -615,7 +727,6 @@ details.advanced-filters .adv-grid label dr {
 
       maxEl.addEventListener('input', () => {
         const maxV = Number(maxEl.value);
-        // Asegura que min <= max
         if (!isNaN(maxV)) {
           minEl.max = maxV;
           if (Number(minEl.value) > maxV) {
@@ -629,17 +740,16 @@ details.advanced-filters .adv-grid label dr {
   });
 
   function recargarTabla() {
-  const iframe = document.getElementById("tablaJugadores");
-  let srcBase = iframe.getAttribute("src").split("?")[0];
-  // Añade un cache-buster con timestamp
-  iframe.src = `${srcBase}?_=${new Date().getTime()}`;
-}
+    const iframe = document.getElementById("tablaJugadores");
+    let srcBase = iframe.getAttribute("src").split("?")[0];
+    iframe.src = `${srcBase}?_=${new Date().getTime()}`;
+  }
 
   async function actualizarNombresList() {
     const dl = document.getElementById('nombresList');
     if (dl.childElementCount) return; 
     try {
-      const res    = await fetch('/api/nombres_jugadores');
+      const res = await fetch('/api/nombres_jugadores');
       const nombres = await res.json();
       nombres.forEach(n => {
         const opt = document.createElement('option');
@@ -655,12 +765,25 @@ details.advanced-filters .adv-grid label dr {
     .getElementById('filtroNombre')
     .addEventListener('focus', actualizarNombresList);
 
-const form = document.querySelector('.upload-html-form');
+  const form = document.querySelector('.upload-html-form');
   const overlay = document.getElementById('loadingOverlay');
+
   form.addEventListener('submit', () => {
-    // muestra el overlay
     overlay.classList.remove('hidden');
   });
+
+  setTimeout(function () {
+    const flashBox = document.getElementById("flashMessages");
+    if (flashBox) {
+      flashBox.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+      flashBox.style.opacity = "0";
+      flashBox.style.transform = "translateX(-50%) translateY(-10px)";
+
+      setTimeout(function () {
+        flashBox.remove();
+      }, 500);
+    }
+  }, 3000);
 </script>
 
 

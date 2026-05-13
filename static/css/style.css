@@ -82,7 +82,126 @@ body {
   height: 2px;
   background: var(--clr-accent);
 }
+.main-nav .register-nav {
+  color: var(--clr-accent);
+}
 
+.main-nav .login-nav {
+  margin-left: 0.4rem;
+}
+/* === NAVBAR: LOGIN / USUARIO === */
+/* === MENÚ DESPLEGABLE DE USUARIO === */
+.user-menu {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.user-menu-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 999px;
+  padding: 0.45rem 0.85rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+}
+
+.user-menu-button:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.user-menu-button .material-icons {
+  font-size: 1.25rem;
+}
+
+.user-menu-arrow {
+  font-size: 1.15rem !important;
+  transition: transform var(--transition);
+}
+
+.user-menu:hover .user-menu-arrow {
+  transform: rotate(180deg);
+}
+
+.user-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 210px;
+  background: rgba(0, 51, 102, 0.98);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 14px;
+  box-shadow: 0 14px 32px rgba(0,0,0,0.28);
+  padding: 0.55rem;
+  display: none;
+  z-index: 9999;
+  margin-top: 0.35rem;
+}
+
+.user-menu::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 100%;
+  height: 0.6rem;
+}
+
+.user-menu:hover .user-dropdown,
+.user-dropdown:hover {
+  display: block;
+}
+
+.user-dropdown::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  right: 24px;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 10px solid rgba(0, 51, 102, 0.98);
+}
+
+.user-dropdown a {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.75rem 0.85rem;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background var(--transition), color var(--transition);
+}
+
+.user-dropdown a:hover {
+  background: rgba(255,255,255,0.13);
+  opacity: 1;
+}
+
+.user-dropdown a:hover::after {
+  display: none;
+}
+
+.user-dropdown a .material-icons {
+  font-size: 1.2rem;
+}
+
+.user-dropdown .logout-option {
+  color: var(--clr-accent);
+}
+
+.user-dropdown .logout-option:hover {
+  background: rgba(255, 179, 71, 0.14);
+}
 /* === HERO PROFESIONAL & DINÁMICO === */
 /* 1) Elimina cualquier fondo heredado en el hero */
 .hero {
