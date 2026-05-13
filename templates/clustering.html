@@ -112,6 +112,42 @@
         <a href="/faqs"><span class="material-icons">help_outline</span>Preguntas Frecuentes</a>
         <a href="/comparacion"><span class="material-icons">compare_arrows</span>Comparación</a>
         <a href="/clustering"><span class="material-icons">scatter_plot</span>Clustering</a>
+
+        {% if current_user.is_authenticated %}
+
+          <div class="user-menu">
+            <button class="user-menu-button" type="button">
+              <span class="material-icons">account_circle</span>
+              {{ current_user.nombre }}
+              <span class="material-icons user-menu-arrow">expand_more</span>
+            </button>
+
+            <div class="user-dropdown">
+              <a href="{{ url_for('mis_archivos') }}">
+                <span class="material-icons">folder</span>
+                Mis archivos
+              </a>
+
+              <a href="{{ url_for('auth.logout') }}" class="logout-option">
+                <span class="material-icons">logout</span>
+                Cerrar sesión
+              </a>
+            </div>
+          </div>
+
+        {% else %}
+
+          <a href="{{ url_for('auth.login') }}" class="login-nav">
+            <span class="material-icons">login</span>
+            Login
+          </a>
+
+          <a href="{{ url_for('auth.registro') }}" class="register-nav">
+            <span class="material-icons">person_add</span>
+            Registro
+          </a>
+
+        {% endif %}
       </nav>
     </div>
   </header>
