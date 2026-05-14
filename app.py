@@ -5,14 +5,8 @@ import re
 import numpy as np
 import requests
 from scipy.stats import percentileofscore
-from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
-from sklearn.decomposition import PCA
-from sklearn.metrics import pairwise_distances
-from sklearn.neighbors import NearestNeighbors
 import subprocess
 from flask import Flask, request, redirect, url_for, flash, render_template
-import os
 from preprocesar_tabla import procesar_BBDD_html
 from models import db, Usuario, ArchivoHTML, Jugador, Favorito
 from flask_login import LoginManager, login_required, current_user
