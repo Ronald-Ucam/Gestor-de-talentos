@@ -18,7 +18,7 @@ from models import db, Usuario, ArchivoHTML, Jugador, Favorito
 from flask_login import LoginManager, login_required, current_user
 from auth import auth
 from user import user
-
+from data_service import obtener_dataframe_actual, convertir_float, convertir_int, limpiar_json_fila
 
 app = Flask(__name__)
 
@@ -69,113 +69,6 @@ ALLOWED_EXTENSIONS = {'html', 'htm'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
-#ver si funciona
-def convertir_float(valor):
-    try:
-        if valor is None:
-            return None
-
-        valor = str(valor).strip()
-
-        if valor in ["", "-"]:
-            return None
-
-        valor = valor.replace("%", "")
-        valor = valor.replace("€", "")
-        valor = valor.replace("km", "")
-        valor = valor.replace("\xa0", "")
-        valor = valor.replace(",", ".")
-
-        # Si es formato 1.234 puede ser miles. En tus datos hay puntos como separador de miles.
-        if valor.count(".") > 1:
-            valor = valor.replace(".", "")
-
-        return float(valor)
-    except Exception:
-        return None
-
-
-def convertir_int(valor):
-    try:
-        if valor is None:
-            return None
-
-        valor = str(valor).strip()
-
-        if valor in ["", "-"]:
-            return None
-
-        valor = re.sub(r"[^\d]", "", valor)
-
-        if not valor:
-            return None
-
-        return int(valor)
-    except Exception:
-        return None
-    #hasta aqui el comprobar si funciona  
-
-
-def limpiar_json_fila(fila):
-    datos = {}
-    for clave, valor in fila.fillna("").to_dict().items():
-        if hasattr(valor, "item"):
-            valor = valor.item()
-        datos[str(clave)] = valor
-    return datos
-
-
-
-def obtener_dataframe_actual():
-    """
-    Devuelve el DataFrame que debe usar la aplicación.
-
-    - Si el usuario está logueado y tiene archivos subidos:
-      carga los jugadores del último archivo desde la base de datos.
-
-    - Si no está logueado o no tiene archivos:
-      carga la demo desde jugadores.pkl.
-    """
-
-    if current_user.is_authenticated:
-        ultimo_archivo = ArchivoHTML.query.filter_by(
-            usuario_id=current_user.id
-        ).order_by(
-            ArchivoHTML.fecha_subida.desc()
-        ).first()
-
-        if ultimo_archivo:
-            jugadores = Jugador.query.filter_by(
-                archivo_id=ultimo_archivo.id
-            ).all()
-
-            if jugadores:
-                datos = []
-
-                for jugador in jugadores:
-                    if jugador.datos_json:
-                        fila = dict(jugador.datos_json)
-                    else:
-                        fila = {}
-
-                    # Aseguramos campos importantes por si faltan en datos_json
-                    fila["Nombre"] = jugador.nombre
-                    fila["Edad"] = jugador.edad
-                    fila["Posición"] = jugador.posicion
-                    fila["Club"] = jugador.club
-                    fila["Sueldo"] = jugador.sueldo
-                    fila["Media"] = jugador.media
-                    fila["Gol"] = jugador.goles
-                    fila["Asis"] = jugador.asistencias
-                    fila["Min"] = jugador.minutos
-
-                    datos.append(fila)
-
-                return pd.DataFrame(datos)
-
-    # Si no hay usuario, no hay archivos o algo falla, usamos la demo
-    return pd.read_pickle("jugadores.pkl")
 
 
 
