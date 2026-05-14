@@ -39,7 +39,7 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     }
 
-    /* Título centrado */
+
     .page-title {
       text-align: center;
       color: var(--clr-primary);
@@ -47,7 +47,7 @@
       margin-bottom: 1.5rem;
     }
 
-    /* Formulario de filtros */
+
     .cluster-form {
       display: flex;
       flex-wrap: wrap;
@@ -93,7 +93,7 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
 
-    /* Contenedor del gráfico */
+
     #chart-container {
       position: relative;
       background: rgba(255,255,255,0.8);
@@ -109,7 +109,7 @@
       height: 100% !important;
     }
 
-    /* Botones pan */
+
     .pan-btn {
       position: absolute;
       width: 32px;
@@ -135,7 +135,7 @@
     #panLeft  { left:10.5%; top:50%;  transform:translate(-50%,-50%); }
     #panRight { right:6%;   top:50%;  transform:translate(50%,-50%); }
 
-    /* Tabla de resultados */
+
     table#table-clusters {
       width: 100%;
       border-collapse: collapse;
@@ -160,7 +160,7 @@
       background: rgba(0,0,0,0.03);
     }
 
-    /* Controles de paginación */
+
     .pagination-controls {
       display: flex;
       justify-content: center;
@@ -317,10 +317,10 @@
     const nextBtn      = document.getElementById('nextPage');
     const pageInfo     = document.getElementById('pageInfo');
 
-    const defensasList = JSON.parse('{{ defensas_list | tojson }}');
-    const ageMap       = JSON.parse('{{ age_map       | tojson }}');
-    const heightMap    = JSON.parse('{{ height_map    | tojson }}');
-    const valueMap     = JSON.parse('{{ value_map     | tojson }}');
+    let defensasList = JSON.parse('{{ defensas_list | tojson | safe }}');
+    const ageMap     = JSON.parse('{{ age_map | tojson | safe }}');
+    const heightMap  = JSON.parse('{{ height_map | tojson | safe }}');
+    const valueMap   = JSON.parse('{{ value_map | tojson | safe }}');
 
     let chart, lastData;
     const perPage = 20;
@@ -450,16 +450,31 @@
     panLeft.addEventListener('click', ()=>pan(-0.1, 0));
     panRight.addEventListener('click', ()=>pan( 0.1, 0));
 
-    form.addEventListener('submit', async e=>{
+    form.addEventListener('submit', async e => {
       e.preventDefault();
-      const k   = +inputK.value;
+
+      const k = +inputK.value;
       const ref = inputRef.value.trim();
-      if (ref && !defensasList.includes(ref)) {
+
+      const refNormalizado = ref.toLowerCase();
+
+      const existeDefensa = defensasList.some(
+        nombre => nombre.toLowerCase() === refNormalizado
+      );
+
+      if (ref && !existeDefensa) {
+        console.log("Defensa escrito:", ref);
+        console.log("Lista de defensas válidos:", defensasList);
         return alert('Selecciona un defensa válido.');
       }
+
+      const refFinal = ref
+        ? defensasList.find(nombre => nombre.toLowerCase() === refNormalizado)
+        : "";
+
       try {
-        const raw = await runClustering(k, ref);
-        drawChart(raw, ref);
+        const raw = await runClustering(k, refFinal);
+        drawChart(raw, refFinal);
       } catch(err) {
         alert('Error: ' + err.message);
       }
@@ -468,32 +483,42 @@
     [ageFilter,heightFilter,valueFilter].forEach(chk=>
       chk.addEventListener('change', ()=> lastData && drawChart(lastData, inputRef.value.trim()))
     );
-  async function actualizarDefensasList() {
+
+
+    async function actualizarDefensasList() {
       try {
-        // Llamamos al endpoint con k=4 solo para obtener la lista de defensas
-        const res  = await fetch('/api/cluster_def?k=4');
+        const res = await fetch('/api/cluster_def?k=4');
         const data = await res.json();
+
         if (data.error) throw new Error(data.error);
 
         const dl = document.getElementById('defensasList');
-        dl.innerHTML = '';  // limpia opciones previas
+        dl.innerHTML = '';
 
-        data.jugadores.forEach(nombre => {
+        // IMPORTANTE: actualizamos también el array usado por la validación
+        defensasList = data.jugadores || [];
+
+        defensasList.forEach(nombre => {
           const opt = document.createElement('option');
           opt.value = nombre;
           dl.appendChild(opt);
         });
+
+        console.log("Defensas cargados:", defensasList);
+
       } catch (err) {
         console.error('Error cargando defensas:', err);
       }
     }
 
-    // Cuando el input de defensa recibe foco, recarga la lista
     document
       .getElementById('inputRef')
       .addEventListener('focus', actualizarDefensasList);
       
-    window.addEventListener('DOMContentLoaded', ()=> form.dispatchEvent(new Event('submit')));
+    window.addEventListener('DOMContentLoaded', async () => {
+      await actualizarDefensasList();
+      form.dispatchEvent(new Event('submit'));
+    });
   </script>
 </body>
 </html>

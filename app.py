@@ -300,7 +300,8 @@ def clustering():
 #Para la gráfica
 @app.route('/clustering/porteros')
 def clustering_porteros():
-    jugadores = df_jugadores["Nombre"].unique().tolist()
+    df_actual = obtener_dataframe_actual()
+    jugadores = df_actual["Nombre"].unique().tolist()
 
     porteros = (
         df_jugadores[df_jugadores["Posición"] == "POR"]["Nombre"]
@@ -361,7 +362,8 @@ def clustering_porteros():
 #Para la gráfica
 @app.route('/clustering/defensas')
 def clustering_defensas():
-    jugadores = df_jugadores['Nombre'].unique().tolist()
+    df_actual = obtener_dataframe_actual()
+    jugadores = df_actual["Nombre"].unique().tolist()
 
     # Extrae sólo los defensas para el datalist 
     defensas = (
@@ -768,7 +770,8 @@ def api_cluster_mid():
 #Para la gráfica
 @app.route('/clustering/centrocampistas')
 def clustering_centrocampistas():
-    jugadores = df_jugadores['Nombre'].unique().tolist()
+    df_actual = obtener_dataframe_actual()
+    jugadores = df_actual["Nombre"].unique().tolist()
 
     # Extrae solo los mediocentros para el datalist
     midfielders = (
@@ -851,8 +854,10 @@ def api_cluster_fw():
 #Para el mapa
 @app.route('/clustering/delanteros')
 def clustering_delanteros():
-    jugadores = df_jugadores["Nombre"].unique().tolist()
 
+    df_actual = obtener_dataframe_actual()
+    jugadores = df_actual["Nombre"].unique().tolist()
+    
     delanteros = (
         df_jugadores[df_jugadores["Posición"].str.contains(r"\bDL\b", na=False)]["Nombre"]
         .sort_values()

@@ -340,10 +340,10 @@
     const nextBtn      = document.getElementById('nextPage');
     const pageInfo     = document.getElementById('pageInfo');
 
-    const midfieldersList = JSON.parse('{{ midfielders_list | tojson }}');
-    const ageMap          = JSON.parse('{{ age_map          | tojson }}');
-    const heightMap       = JSON.parse('{{ height_map       | tojson }}');
-    const valueMap        = JSON.parse('{{ value_map        | tojson }}');
+    let midfieldersList = JSON.parse('{{ midfielders_list | tojson | safe }}');
+    const ageMap = JSON.parse('{{ age_map | tojson | safe }}');
+    const heightMap = JSON.parse('{{ height_map | tojson | safe }}');
+    const valueMap = JSON.parse('{{ value_map | tojson | safe }}');
 
     let chart, rawData, filteredData;
     const perPage = 20;
@@ -496,14 +496,29 @@
 
     form.addEventListener('submit', async e => {
       e.preventDefault();
-      const k   = +inputK.value;
+
+      const k = +inputK.value;
       const ref = inputRef.value.trim();
-      if (ref && !midfieldersList.includes(ref)) {
+
+      const refNormalizado = ref.toLowerCase();
+
+      const existeCentrocampista = midfieldersList.some(
+        nombre => nombre.toLowerCase() === refNormalizado
+      );
+
+      if (ref && !existeCentrocampista) {
+        console.log("Centrocampista escrito:", ref);
+        console.log("Lista de centrocampistas válidos:", midfieldersList);
         return alert('Selecciona un centrocampista válido.');
       }
+
+      const refFinal = ref
+        ? midfieldersList.find(nombre => nombre.toLowerCase() === refNormalizado)
+        : "";
+
       try {
-        const data = await runClustering(k, ref);
-        drawChart(data, ref);
+        const data = await runClustering(k, refFinal);
+        drawChart(data, refFinal);
       } catch(err) {
         alert('Error: ' + err.message);
       }

@@ -290,10 +290,10 @@
     const nextBtn     = document.getElementById('nextPage');
     const pageInfo    = document.getElementById('pageInfo');
 
-    const delanterosList = JSON.parse('{{ delanteros_list | tojson }}');
-    const ageMap         = JSON.parse('{{ age_map       | tojson }}');
-    const heightMap      = JSON.parse('{{ height_map    | tojson }}');
-    const valueMap       = JSON.parse('{{ value_map     | tojson }}');
+    let delanterosList = JSON.parse('{{ delanteros_list | tojson | safe }}');
+    const ageMap = JSON.parse('{{ age_map | tojson | safe }}');
+    const heightMap = JSON.parse('{{ height_map | tojson | safe }}');
+    const valueMap = JSON.parse('{{ value_map | tojson | safe }}');
 
     let chart, rawData, filteredData;
     const perPage = 20;
@@ -427,16 +427,31 @@
     panLeft.addEventListener('click', ()=>pan(-0.1,0));
     panRight.addEventListener('click',()=>pan( 0.1,0));
 
-    form.addEventListener('submit',async e=>{
+    form.addEventListener('submit', async e => {
       e.preventDefault();
-      const k   = +inputK.value;
+
+      const k = +inputK.value;
       const ref = inputRef.value.trim();
-      if(ref && !delanterosList.includes(ref)) {
+
+      const refNormalizado = ref.toLowerCase();
+
+      const existeDelantero = delanterosList.some(
+        nombre => nombre.toLowerCase() === refNormalizado
+      );
+
+      if (ref && !existeDelantero) {
+        console.log("Delantero escrito:", ref);
+        console.log("Lista de delanteros válidos:", delanterosList);
         return alert('Selecciona un delantero válido.');
       }
+
+      const refFinal = ref
+        ? delanterosList.find(nombre => nombre.toLowerCase() === refNormalizado)
+        : "";
+
       try {
-        const d = await runClustering(k, ref);
-        drawChart(d, ref);
+        const d = await runClustering(k, refFinal);
+        drawChart(d, refFinal);
       } catch(err) {
         alert('Error: ' + err.message);
       }
@@ -448,17 +463,25 @@
 
     async function actualizarDelanterosList() {
       try {
-        const res  = await fetch('/api/cluster_fw?k=4');
+        const res = await fetch('/api/cluster_fw?k=4');
         const data = await res.json();
+
         if (data.error) throw new Error(data.error);
 
         const dl = document.getElementById('delanterosList');
-        dl.innerHTML = '';  
-        data.jugadores.forEach(nombre => {
+        dl.innerHTML = '';
+
+        // IMPORTANTE: actualizamos también el array usado por la validación
+        delanterosList = data.jugadores || [];
+
+        delanterosList.forEach(nombre => {
           const opt = document.createElement('option');
           opt.value = nombre;
           dl.appendChild(opt);
         });
+
+        console.log("Delanteros cargados:", delanterosList);
+
       } catch (err) {
         console.error('Error cargando delanteros:', err);
       }
@@ -469,7 +492,8 @@
     .addEventListener('focus', actualizarDelanterosList);
 
 
-    window.addEventListener('DOMContentLoaded', ()=> {
+    window.addEventListener('DOMContentLoaded', async () => {
+      await actualizarDelanterosList();
       form.dispatchEvent(new Event('submit'));
     });
   </script>

@@ -286,11 +286,10 @@
     const nextBtn      = document.getElementById('nextPage');
     const pageInfo     = document.getElementById('pageInfo');
 
-    const porterosList = JSON.parse('{{ porteros_list | tojson }}');
-    const ageMap       = JSON.parse('{{ age_map       | tojson }}');
-    const heightMap    = JSON.parse('{{ height_map    | tojson }}');
-    const valueMap     = JSON.parse('{{ value_map     | tojson }}');
-
+    let porterosList = JSON.parse('{{ porteros_list | tojson | safe }}');
+    const ageMap = JSON.parse('{{ age_map | tojson | safe }}');
+    const heightMap = JSON.parse('{{ height_map | tojson | safe }}');
+    const valueMap = JSON.parse('{{ value_map | tojson | safe }}');
     let chart, rawData, filteredData;
     const perPage = 20;
     let currentPage = 1;
@@ -423,14 +422,29 @@
 
     form.addEventListener('submit', async e => {
       e.preventDefault();
-      const k   = +inputK.value;
+
+      const k = +inputK.value;
       const ref = inputRef.value.trim();
-      if (ref && !porterosList.includes(ref)) {
+
+      const refNormalizado = ref.toLowerCase();
+
+      const existePortero = porterosList.some(
+        nombre => nombre.toLowerCase() === refNormalizado
+      );
+
+      if (ref && !existePortero) {
+        console.log("Portero escrito:", ref);
+        console.log("Lista de porteros válidos:", porterosList);
         return alert('Selecciona un portero válido.');
       }
+
+      const refFinal = ref
+        ? porterosList.find(nombre => nombre.toLowerCase() === refNormalizado)
+        : "";
+
       try {
-        const data = await runClustering(k, ref);
-        drawChart(data, ref);
+        const data = await runClustering(k, refFinal);
+        drawChart(data, refFinal);
       } catch(err) {
         alert('Error: ' + err.message);
       }
@@ -440,21 +454,27 @@
       chk.addEventListener('change', ()=> rawData && drawChart(rawData, inputRef.value.trim()))
     );
 
-async function actualizarPorterosList() {
+  async function actualizarPorterosList() {
     try {
-      // Llamamos a tu API de clustering de porteros sin necesidad de K real
       const res = await fetch('/api/cluster_por?k=4');
       const data = await res.json();
+
       if (data.error) throw new Error(data.error);
 
       const dl = document.getElementById('porterosList');
-      dl.innerHTML = '';  
-      // data.jugadores solo tiene los porteros
-      data.jugadores.forEach(nombre => {
+      dl.innerHTML = '';
+
+      // IMPORTANTE: actualizamos también el array usado por la validación
+      porterosList = data.jugadores || [];
+
+      porterosList.forEach(nombre => {
         const opt = document.createElement('option');
         opt.value = nombre;
         dl.appendChild(opt);
       });
+
+      console.log("Porteros cargados:", porterosList);
+
     } catch (err) {
       console.error("No se pudieron cargar porteros:", err);
     }
@@ -463,7 +483,10 @@ async function actualizarPorterosList() {
   inputRef.addEventListener('focus', actualizarPorterosList);
 
   
-    window.addEventListener('DOMContentLoaded', ()=> form.dispatchEvent(new Event('submit')));
-  </script>
+    window.addEventListener('DOMContentLoaded', async () => {
+      await actualizarPorterosList();
+      form.dispatchEvent(new Event('submit'));
+    });
+</script>
 </body>
 </html>

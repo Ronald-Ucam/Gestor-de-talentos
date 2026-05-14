@@ -123,7 +123,12 @@
             </button>
 
             <div class="user-dropdown">
-              <a href="{{ url_for('mis_archivos') }}">
+              <a href="{{ url_for('user.mi_cuenta') }}">
+                <span class="material-icons">person</span>
+                Información personal
+              </a>
+              
+              <a href="{{ url_for('user.mis_archivos') }}">
                 <span class="material-icons">folder</span>
                 Mis archivos
               </a>
