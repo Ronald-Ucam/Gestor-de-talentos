@@ -16,3 +16,7 @@ uploads/
 
 # Sistema
 Thumbs.db
+instance/
+*.db
+*.sqlite
+*.sqlite3
