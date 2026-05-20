@@ -908,7 +908,7 @@ def api_dbscan_fw():
     
 
 
-    
+
 @clustering_bp.route("/api/dbscan_por")
 def api_dbscan_por():
     try:
@@ -947,3 +947,97 @@ def api_dbscan_por():
         return jsonify({"error": f"Error al generar DBSCAN de porteros: {e}"}), 500
 
 
+@clustering_bp.route("/api/dbscan_def")
+def api_dbscan_def():
+    try:
+        eps = request.args.get("eps", default=1.8, type=float)
+        min_samples = request.args.get("min_samples", default=5, type=int)
+
+        df_jugadores = obtener_dataframe_actual()
+
+        df_def = df_jugadores[
+            df_jugadores["Posición"].str.contains(r"\bDF\b", na=False)
+        ].copy()
+
+        cols = [
+            "Entr/90",
+            "Bal aér/90",
+            "Int/90",
+            "Desp",
+            "Pos Gan/90",
+            "% Pase",
+            "Ent Cl",
+            "Rob/90"
+        ]
+
+        cols = [c for c in cols if c in df_def.columns]
+
+        df_db, attrs, cluster_names = aplicar_dbscan(
+            df_def,
+            cols,
+            eps=eps,
+            min_samples=min_samples
+        )
+
+        return jsonify({
+            "jugadores": df_db["Nombre"].tolist(),
+            "labels": df_db["cluster"].astype(int).tolist(),
+            "labelsOriginales": df_db["cluster_original"].astype(int).tolist(),
+            "coords2": df_db[["x_pca", "y_pca"]].astype(float).values.tolist(),
+            "clusterNames": cluster_names,
+            "attrs": attrs
+        })
+
+    except ValueError as ve:
+        return jsonify({"error": f"Parámetro inválido: {ve}"}), 400
+
+    except Exception as e:
+        return jsonify({"error": f"Error al generar DBSCAN de defensas: {e}"}), 500
+    
+
+
+@clustering_bp.route("/api/dbscan_mid")
+def api_dbscan_mid():
+    try:
+        eps = request.args.get("eps", default=1.8, type=float)
+        min_samples = request.args.get("min_samples", default=5, type=int)
+
+        df_jugadores = obtener_dataframe_actual()
+
+        df_mid = df_jugadores[
+            df_jugadores["Posición"].str.contains(r"\bMC\b", na=False)
+        ].copy()
+
+        cols = [
+            "Reg/90",
+            "Pas Clv/90",
+            "% Pase",
+            "Asis/90",
+            "Distancia",
+            "Pas Prog/90",
+            "Rob/90"
+        ]
+
+        cols = [c for c in cols if c in df_mid.columns]
+
+        df_db, attrs, cluster_names = aplicar_dbscan(
+            df_mid,
+            cols,
+            eps=eps,
+            min_samples=min_samples
+        )
+
+        return jsonify({
+            "jugadores": df_db["Nombre"].tolist(),
+            "labels": df_db["cluster"].astype(int).tolist(),
+            "labelsOriginales": df_db["cluster_original"].astype(int).tolist(),
+            "coords2": df_db[["x_pca", "y_pca"]].astype(float).values.tolist(),
+            "clusterNames": cluster_names,
+            "attrs": attrs
+        })
+
+    except ValueError as ve:
+        return jsonify({"error": f"Parámetro inválido: {ve}"}), 400
+
+    except Exception as e:
+        return jsonify({"error": f"Error al generar DBSCAN de centrocampistas: {e}"}), 500

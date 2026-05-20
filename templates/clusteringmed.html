@@ -26,6 +26,7 @@
       justify-content: center;
       min-height: 100vh;
     }
+
     /* Contenedor cristal */
     .main-content {
       background: rgba(255,255,255,0.6);
@@ -53,6 +54,7 @@
       align-items: center;
       margin-bottom: 2rem;
     }
+
     .cluster-form label {
       font-weight: 600;
       display: flex;
@@ -60,17 +62,26 @@
       gap: 0.25rem;
       color: var(--clr-text);
     }
+
     .cluster-form input[type="number"],
-    .cluster-form input[type="text"] {
+    .cluster-form input[type="text"],
+    .cluster-form select {
       padding: 0.4rem 0.6rem;
       border: 1px solid #ccc;
       border-radius: var(--radius);
       font-size: 0.9rem;
     }
+
+    #epsControl,
+    #minSamplesControl {
+      display: none;
+    }
+
     .cluster-form input[type="checkbox"] {
       transform: scale(1.2);
       margin-right: 0.3rem;
     }
+
     .cluster-form button {
       background: var(--clr-primary);
       color: #fff;
@@ -84,6 +95,7 @@
       transition: transform var(--transition), box-shadow var(--transition);
       cursor: pointer;
     }
+
     .cluster-form button:hover {
       background: var(--clr-primary-hover);
       transform: translateY(-2px);
@@ -100,6 +112,7 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       height: 400px;
     }
+
     #clusterChart {
       width: 100% !important;
       height: 100% !important;
@@ -107,7 +120,8 @@
 
     .pan-btn {
       position: absolute;
-      width: 32px; height: 32px;
+      width: 32px;
+      height: 32px;
       background: var(--clr-accent);
       color: var(--clr-primary);
       border: none;
@@ -120,10 +134,12 @@
       transition: background var(--transition);
       z-index: 10;
     }
+
     .pan-btn:hover {
       background: var(--clr-primary-hover);
       color: #fff;
     }
+
     #panUp    { top:27%; left:50%;  transform:translate(-50%,-50%); }
     #panDown  { bottom:21%; left:50%;transform:translate(-50%,50%); }
     #panLeft  { left:10.5%;top:50%;  transform:translate(-50%,-50%); }
@@ -138,10 +154,12 @@
       overflow: hidden;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
+
     th, td {
       padding: 0.75rem 1rem;
       text-align: left;
     }
+
     th {
       background: var(--clr-primary);
       color: #fff;
@@ -149,10 +167,11 @@
       top: 0;
       z-index: 1;
     }
+
     tr:nth-child(even) td {
       background: rgba(0,0,0,0.03);
     }
-    /* Paginación front */
+
     .pagination-controls {
       display: flex;
       justify-content: center;
@@ -160,6 +179,7 @@
       gap: 1rem;
       margin-top: 1rem;
     }
+
     .pagination-controls button {
       background: var(--clr-accent);
       border: none;
@@ -169,83 +189,47 @@
       font-weight: 600;
       transition: background var(--transition);
     }
+
     .pagination-controls button:disabled {
       opacity: 0.5;
       cursor: default;
     }
 
-
     .cluster-guide {
-  margin: 1.5rem 0 2rem;
-  padding: 0;
-}
+      margin: 2rem auto;
+      max-width: 900px;
+    }
 
-.cluster-guide-content {
-  background: rgba(255, 255, 255, 0.85);
-  border-radius: 8px;
-  padding: 1.5rem 2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  max-width: 800px;
-  margin: 0 auto;             
-  line-height: 1.6;
-}
+    .cluster-guide-content {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 8px;
+      padding: 1.5rem 2rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      line-height: 1.6;
+    }
 
-.cluster-guide-content p {
-  margin-bottom: 1rem;
-  color: #333;
-}
+    .cluster-guide-content p {
+      margin-bottom: 1rem;
+      color: #333;
+    }
 
-.cluster-guide-content ol {
-  margin: 0 0 1rem 1.2rem;
-  color: #444;
-}
+    .cluster-guide-content ol {
+      margin: 0 0 1rem 1.2rem;
+      color: #444;
+    }
 
-.cluster-guide-content li {
-  margin-bottom: 0.6rem;
-}
+    .cluster-guide-content li {
+      margin-bottom: 0.6rem;
+    }
 
-.cluster-guide-content .tip {
-  background: #e8f5e9;
-  border-left: 4px solid #4caf50;
-  padding: 0.6rem 1rem;
-  border-radius: 4px;
-  color: #2e7d32;
-  font-style: normal;
-  margin-top: 1rem;
-}
-  /* ========== Guía de Clustering ========== */
-.cluster-guide {
-  margin: 2rem auto;
-  max-width: 900px;
-}
-.cluster-guide-content {
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 8px;
-  padding: 1.5rem 2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  line-height: 1.6;
-}
-.cluster-guide-content p {
-  margin-bottom: 1rem;
-  color: #333;
-}
-.cluster-guide-content ol {
-  margin: 0 0 1rem 1.2rem;
-  color: #444;
-}
-.cluster-guide-content li {
-  margin-bottom: 0.6rem;
-}
-.cluster-guide-content .tip {
-  background: #e8f5e9;
-  border-left: 4px solid #4caf50;
-  padding: 0.6rem 1rem;
-  border-radius: 4px;
-  color: #2e7d32;
-  margin-top: 1rem;
-}
-
-    
+    .cluster-guide-content .tip {
+      background: #e8f5e9;
+      border-left: 4px solid #4caf50;
+      padding: 0.6rem 1rem;
+      border-radius: 4px;
+      color: #2e7d32;
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -254,20 +238,37 @@
     <h2 class="page-title">Clustering de Centrocampistas</h2>
 
     <form id="clusterForm" class="cluster-form">
-      <label><span class="material-icons">filter_alt</span>K:
+      <label><span class="material-icons">analytics</span>Algoritmo:
+        <select id="inputAlgoritmo">
+          <option value="kmeans" selected>K-Means</option>
+          <option value="dbscan">DBSCAN</option>
+        </select>
+      </label>
+
+      <label id="kControl"><span class="material-icons">filter_alt</span>K:
         <input type="number" id="inputK" value="4" min="1" max="7" />
       </label>
+
+      <label id="epsControl"><span class="material-icons">scatter_plot</span>EPS:
+        <input type="number" id="inputEps" value="1.8" min="0.1" max="5" step="0.1" />
+      </label>
+
+      <label id="minSamplesControl"><span class="material-icons">groups</span>Mín. muestras:
+        <input type="number" id="inputMinSamples" value="5" min="2" max="20" />
+      </label>
+
       <label><span class="material-icons">person_search</span>Mediocentro ref:
         <input type="text" id="inputRef" list="midfieldersList" placeholder="Escribe nombre…" autocomplete="off"/>
       </label>
+
       <label><input type="checkbox" id="ageFilter"/> Edad ±4 años</label>
       <label><input type="checkbox" id="heightFilter"/> Altura ±5 cm</label>
       <label><input type="checkbox" id="valueFilter"/> Valor ±10 M€</label>
+
       <button type="submit"><span class="material-icons">play_arrow</span>Clustear</button>
     </form>
 
     <datalist id="midfieldersList"></datalist>
-
 
     <div id="chart-container">
       <div id="panUp"    class="pan-btn">↑</div>
@@ -277,32 +278,30 @@
       <canvas id="clusterChart"></canvas>
     </div>
 
-        
-  <section class="cluster-guide">
-  <div class="cluster-guide-content">
-    <p>
-      El clustering agrupa a los jugadores en “cohortes” según sus características estadísticas
-      (por ejemplo, goles por 90′, xG, disparos, precisión de pase, etc.).  
-      Cuando eliges un <strong>Jugador de referencia</strong>, el sistema:
-    </p>
-    <ol>
-      <li>Resalta en el scatter plot al jugador seleccionado.</li>
-      <li>
-        Muestra en la tabla todos los jugadores de su mismo clúster, es decir,
-        aquellos con perfiles estadísticos similares.
-      </li>
-      <li>
-        Te ayuda a identificar rápidamente otros futbolistas que rinden de forma
-        parecida (ideal para comparar o buscar recambios).
-      </li>
-    </ol>
-    <p class="tip">
-      ⚽ <em>Tip:</em> Cambia el parámetro <strong>K</strong> para explorar agrupaciones
-      más gruesas (grupos grandes) o muy finas (perfiles muy específicos).
-    </p>
-  </div>
-</section>
-
+    <section class="cluster-guide">
+      <div class="cluster-guide-content">
+        <p>
+          El clustering agrupa a los jugadores en “cohortes” según sus características estadísticas
+          (por ejemplo, regates por 90′, pases clave, precisión de pase, asistencias, distancia recorrida, etc.).
+          Cuando eliges un <strong>Jugador de referencia</strong>, el sistema:
+        </p>
+        <ol>
+          <li>Resalta en el scatter plot al jugador seleccionado.</li>
+          <li>
+            Muestra en la tabla todos los jugadores de su mismo clúster, es decir,
+            aquellos con perfiles estadísticos similares.
+          </li>
+          <li>
+            Te ayuda a identificar rápidamente otros centrocampistas que rinden de forma
+            parecida, útil para comparar perfiles o buscar recambios.
+          </li>
+        </ol>
+        <p class="tip">
+          ⚽ <em>Tip:</em> Usa <strong>K-Means</strong> para crear grupos fijos de centrocampistas
+          y <strong>DBSCAN</strong> para detectar perfiles más atípicos o jugadores que se salen del patrón general.
+        </p>
+      </div>
+    </section>
 
     <table id="table-clusters">
       <thead>
@@ -326,6 +325,14 @@
 
     const form         = document.getElementById('clusterForm');
     const inputK       = document.getElementById('inputK');
+
+    const inputAlgoritmo = document.getElementById('inputAlgoritmo');
+    const inputEps = document.getElementById('inputEps');
+    const inputMinSamples = document.getElementById('inputMinSamples');
+    const kControl = document.getElementById('kControl');
+    const epsControl = document.getElementById('epsControl');
+    const minSamplesControl = document.getElementById('minSamplesControl');
+
     const inputRef     = document.getElementById('inputRef');
     const ageFilter    = document.getElementById('ageFilter');
     const heightFilter = document.getElementById('heightFilter');
@@ -349,11 +356,30 @@
     const perPage = 20;
     let currentPage = 1;
 
-    async function runClustering(K, ref) {
-      const qs  = new URLSearchParams({ k: K, jugador: ref });
-      const res = await fetch('/api/cluster_mid?' + qs);
-      const d   = await res.json();
+    async function runClustering(algoritmo, K, ref, eps, minSamples) {
+      let url;
+      let qs;
+
+      if (algoritmo === "dbscan") {
+        qs = new URLSearchParams({
+          eps: eps,
+          min_samples: minSamples,
+          jugador: ref
+        });
+        url = "/api/dbscan_mid?" + qs;
+      } else {
+        qs = new URLSearchParams({
+          k: K,
+          jugador: ref
+        });
+        url = "/api/cluster_mid?" + qs;
+      }
+
+      const res = await fetch(url);
+      const d = await res.json();
+
       if (d.error) throw new Error(d.error);
+
       return d;
     }
 
@@ -370,35 +396,40 @@
 
     function applyFilters(data, ref) {
       let d = data;
+
       if (ageFilter.checked && ref) {
         const b = ageMap[ref];
         d = filterBy(d,'jugadores','labels','coords2',
           j => Math.abs((ageMap[j]||0)-b) <= 4
         );
       }
+
       if (heightFilter.checked && ref) {
         const b = heightMap[ref];
         d = filterBy(d,'jugadores','labels','coords2',
           j => Math.abs((heightMap[j]||0)-b) <= 5
         );
       }
+
       if (valueFilter.checked && ref) {
         const b = valueMap[ref];
         d = filterBy(d,'jugadores','labels','coords2',
           j => Math.abs((valueMap[j]||0)-b) <= 10
         );
       }
+
       return d;
     }
 
     function renderTablePage() {
       const total = filteredData.jugadores.length;
-      const maxP  = Math.ceil(total / perPage);
+      const maxP = Math.max(1, Math.ceil(total / perPage));
       const start = (currentPage - 1) * perPage;
       const sliceJ = filteredData.jugadores.slice(start, start + perPage);
       const sliceL = filteredData.labels.slice(start, start + perPage);
 
       tbody.innerHTML = '';
+
       sliceJ.forEach((j,i) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${j}</td><td>${filteredData.clusterNames[sliceL[i]]}</td>`;
@@ -415,18 +446,19 @@
       filteredData = applyFilters(data, ref);
       currentPage  = 1;
 
-      // preparar datasets
       const { coords2, labels, clusterNames } = filteredData;
       const sets = clusterNames.map((nm,id) => ({
         label: nm,
         data: coords2.map((c,i)=>({ x:c[0], y:c[1], cid: labels[i] }))
                     .filter(pt => pt.cid === id),
-        pointRadius:6, showLine:false
+        pointRadius:6,
+        showLine:false
       }));
-      // punto ref
+
       if (ref && rawData.jugadores.includes(ref)) {
         const idx = rawData.jugadores.indexOf(ref);
         const [x,y] = rawData.coords2[idx];
+
         sets.push({
           label:`Ref: ${ref}`,
           data:[{x,y}],
@@ -439,6 +471,7 @@
       }
 
       if (chart) chart.destroy();
+
       chart = new Chart(ctx, {
         type:'scatter',
         data:{datasets:sets},
@@ -450,14 +483,17 @@
                 rawData.coords2.findIndex(c=>c[0]===pt.raw.x&&c[1]===pt.raw.y)
               ]
             }},
-            zoom:{pan:{enabled:true,mode:'xy'},
-                  zoom:{wheel:{enabled:true},pinch:{enabled:true},drag:{enabled:true},mode:'xy'}}
+            zoom:{
+              pan:{enabled:true,mode:'xy'},
+              zoom:{wheel:{enabled:true},pinch:{enabled:true},drag:{enabled:true},mode:'xy'}
+            }
           },
           scales:{
             x:{title:{display:true,text:'PCA 1'}},
             y:{title:{display:true,text:'PCA 2'}}
           },
-          responsive:true, maintainAspectRatio:false
+          responsive:true,
+          maintainAspectRatio:false
         }
       });
 
@@ -466,8 +502,12 @@
 
     function pan(dx,dy) {
       if (!chart) return;
-      const xs = chart.scales.x, ys = chart.scales.y;
-      const xr = xs.max - xs.min, yr = ys.max - ys.min;
+
+      const xs = chart.scales.x;
+      const ys = chart.scales.y;
+      const xr = xs.max - xs.min;
+      const yr = ys.max - ys.min;
+
       chart.options.scales.x.min = xs.min + dx * xr;
       chart.options.scales.x.max = xs.max + dx * xr;
       chart.options.scales.y.min = ys.min + dy * yr;
@@ -481,8 +521,9 @@
         renderTablePage();
       }
     });
+
     nextBtn.addEventListener('click', ()=> {
-      const maxP = Math.ceil(filteredData.jugadores.length / perPage);
+      const maxP = Math.max(1, Math.ceil(filteredData.jugadores.length / perPage));
       if (currentPage < maxP) {
         currentPage++;
         renderTablePage();
@@ -497,7 +538,10 @@
     form.addEventListener('submit', async e => {
       e.preventDefault();
 
+      const algoritmo = inputAlgoritmo.value;
       const k = +inputK.value;
+      const eps = +inputEps.value;
+      const minSamples = +inputMinSamples.value;
       const ref = inputRef.value.trim();
 
       const refNormalizado = ref.toLowerCase();
@@ -517,7 +561,7 @@
         : "";
 
       try {
-        const data = await runClustering(k, refFinal);
+        const data = await runClustering(algoritmo, k, refFinal, eps, minSamples);
         drawChart(data, refFinal);
       } catch(err) {
         alert('Error: ' + err.message);
@@ -526,36 +570,72 @@
 
     [ageFilter, heightFilter, valueFilter].forEach(chk =>
       chk.addEventListener('change', () => {
-        if (rawData) drawChart(rawData, inputRef.value.trim());
+        if (!rawData) return;
+
+        const ref = inputRef.value.trim();
+        const refNormalizado = ref.toLowerCase();
+
+        const refFinal = ref
+          ? midfieldersList.find(nombre => nombre.toLowerCase() === refNormalizado)
+          : "";
+
+        drawChart(rawData, refFinal || "");
       })
     );
 
-  async function actualizarMidfieldersList() {
+    async function actualizarMidfieldersList() {
       try {
-        // Pedimos al endpoint la lista de centrocampistas (k=4, o el valor que quieras)
-        const res  = await fetch('/api/cluster_mid?k=4');
+        const res = await fetch('/api/cluster_mid?k=4');
         const data = await res.json();
+
         if (data.error) throw new Error(data.error);
 
-        // Rellenamos el datalist
         const dl = document.getElementById('midfieldersList');
-        dl.innerHTML = ''; 
-        data.jugadores.forEach(nombre => {
+        dl.innerHTML = '';
+
+        midfieldersList = data.jugadores || [];
+
+        midfieldersList.forEach(nombre => {
           const opt = document.createElement('option');
           opt.value = nombre;
           dl.appendChild(opt);
         });
+
+        console.log("Centrocampistas cargados:", midfieldersList);
+
       } catch (err) {
         console.error('Error cargando centrocampistas:', err);
       }
     }
 
-    // Al entrar en el campo, recarga opciones
-    document
-      .getElementById('inputRef')
-      .addEventListener('focus', actualizarMidfieldersList);
+    inputRef.addEventListener('focus', actualizarMidfieldersList);
 
-    window.addEventListener('DOMContentLoaded', ()=> {
+    inputAlgoritmo.addEventListener('change', () => {
+      const esDBSCAN = inputAlgoritmo.value === "dbscan";
+
+      kControl.style.display = esDBSCAN ? "none" : "flex";
+      epsControl.style.display = esDBSCAN ? "flex" : "none";
+      minSamplesControl.style.display = esDBSCAN ? "flex" : "none";
+
+      form.dispatchEvent(new Event('submit'));
+    });
+
+    [inputEps, inputMinSamples].forEach(input => {
+      input.addEventListener('change', () => {
+        if (inputAlgoritmo.value === "dbscan") {
+          form.dispatchEvent(new Event('submit'));
+        }
+      });
+    });
+
+    inputK.addEventListener('change', () => {
+      if (inputAlgoritmo.value === "kmeans") {
+        form.dispatchEvent(new Event('submit'));
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      await actualizarMidfieldersList();
       form.dispatchEvent(new Event('submit'));
     });
   </script>

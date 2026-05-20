@@ -64,12 +64,19 @@
       color: var(--clr-text);
     }
     .cluster-form input[type="number"],
-    .cluster-form input[type="text"] {
+    .cluster-form input[type="text"],
+    .cluster-form select {
       padding: 0.4rem 0.6rem;
       border: 1px solid #ccc;
       border-radius: var(--radius);
       font-size: 0.9rem;
     }
+
+    #epsControl,
+    #minSamplesControl {
+      display: none;
+    }
+
     .cluster-form input[type="checkbox"] {
       transform: scale(1.2);
       margin-right: 0.3rem;
@@ -220,11 +227,27 @@
     <h2 class="page-title">Clustering de Defensas</h2>
 
     <form id="clusterForm" class="cluster-form">
-      <label>
+      <label><span class="material-icons">analytics</span>Algoritmo:
+        <select id="inputAlgoritmo">
+          <option value="kmeans" selected>K-Means</option>
+          <option value="dbscan">DBSCAN</option>
+        </select>
+      </label>
+
+      <label id="kControl">
         <span class="material-icons">filter_alt</span>
         K:
         <input type="number" id="inputK" value="4" min="1" max="6" />
       </label>
+
+      <label id="epsControl"><span class="material-icons">scatter_plot</span>EPS:
+        <input type="number" id="inputEps" value="1.8" min="0.1" max="5" step="0.1" />
+      </label>
+
+      <label id="minSamplesControl"><span class="material-icons">groups</span>Mín. muestras:
+        <input type="number" id="inputMinSamples" value="5" min="2" max="20" />
+      </label>
+
       <label>
         <span class="material-icons">person_search</span>
         Defensa ref:
@@ -260,7 +283,7 @@
       <div class="cluster-guide-content">
         <p>
           El clustering agrupa a los jugadores en “cohortes” según sus características estadísticas
-          (por ejemplo, goles por 90′, xG, disparos, precisión de pase, etc.).  
+          defensivas (por ejemplo, entradas, duelos aéreos, intercepciones, despejes o precisión de pase).
           Cuando eliges un <strong>Jugador de referencia</strong>, el sistema:
         </p>
         <ol>
@@ -270,13 +293,13 @@
             aquellos con perfiles estadísticos similares.
           </li>
           <li>
-            Te ayuda a identificar rápidamente otros futbolistas que rinden de forma
-            parecida (ideal para comparar o buscar recambios).
+            Te ayuda a identificar rápidamente otros defensas que rinden de forma
+            parecida, útil para comparar perfiles o buscar recambios.
           </li>
         </ol>
         <p class="tip">
-          ⚽ <em>Tip:</em> Cambia el parámetro <strong>K</strong> para explorar agrupaciones
-          más gruesas (grupos grandes) o muy finas (perfiles muy específicos).
+          ⚽ <em>Tip:</em> Usa <strong>K-Means</strong> para crear grupos fijos de jugadores
+          y <strong>DBSCAN</strong> para detectar defensas con perfiles más atípicos o que se salen del patrón general.
         </p>
       </div>
     </section>
@@ -303,6 +326,14 @@
 
     const form         = document.getElementById('clusterForm');
     const inputK       = document.getElementById('inputK');
+
+    const inputAlgoritmo = document.getElementById('inputAlgoritmo');
+    const inputEps = document.getElementById('inputEps');
+    const inputMinSamples = document.getElementById('inputMinSamples');
+    const kControl = document.getElementById('kControl');
+    const epsControl = document.getElementById('epsControl');
+    const minSamplesControl = document.getElementById('minSamplesControl');
+
     const inputRef     = document.getElementById('inputRef');
     const ageFilter    = document.getElementById('ageFilter');
     const heightFilter = document.getElementById('heightFilter');
@@ -322,15 +353,34 @@
     const heightMap  = JSON.parse('{{ height_map | tojson | safe }}');
     const valueMap   = JSON.parse('{{ value_map | tojson | safe }}');
 
-    let chart, lastData;
+    let chart, rawData, filteredData;
     const perPage = 20;
     let currentPage = 1;
 
-    async function runClustering(K, ref) {
-      const qs  = new URLSearchParams({ k: K, jugador: ref });
-      const res = await fetch('/api/cluster_def?' + qs);
+    async function runClustering(algoritmo, K, ref, eps, minSamples) {
+      let url;
+      let qs;
+
+      if (algoritmo === "dbscan") {
+        qs = new URLSearchParams({
+          eps: eps,
+          min_samples: minSamples,
+          jugador: ref
+        });
+        url = "/api/dbscan_def?" + qs;
+      } else {
+        qs = new URLSearchParams({
+          k: K,
+          jugador: ref
+        });
+        url = "/api/cluster_def?" + qs;
+      }
+
+      const res = await fetch(url);
       const data = await res.json();
+
       if (data.error) throw new Error(data.error);
+
       return data;
     }
 
@@ -363,16 +413,16 @@
     }
 
     function renderTablePage() {
-      const total = lastData.jugadores.length;
-      const maxPage = Math.ceil(total / perPage);
+      const total = filteredData.jugadores.length;
+      const maxPage = Math.max(1, Math.ceil(total / perPage));
       const start = (currentPage - 1) * perPage;
-      const sliceJ = lastData.jugadores.slice(start, start + perPage);
-      const sliceL = lastData.labels.slice(start, start + perPage);
+      const sliceJ = filteredData.jugadores.slice(start, start + perPage);
+      const sliceL = filteredData.labels.slice(start, start + perPage);
 
       tbody.innerHTML = '';
       sliceJ.forEach((jug, i) => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${jug}</td><td>${lastData.clusterNames[sliceL[i]]}</td>`;
+        tr.innerHTML = `<td>${jug}</td><td>${filteredData.clusterNames[sliceL[i]]}</td>`;
         tbody.appendChild(tr);
       });
 
@@ -382,19 +432,21 @@
     }
 
     function drawChart(raw, ref) {
-      lastData = applyFilters(raw, ref);
+      rawData = raw;
+      filteredData = applyFilters(raw, ref);
       currentPage = 1;
 
-      // Dibuja el scatter
-      const { jugadores, labels, coords2, clusterNames } = lastData;
+      const { labels, coords2, clusterNames } = filteredData;
       const datasets = clusterNames.map((name,cid)=> ({
         label: name,
         data: coords2.map((c,i)=>({ x:c[0], y:c[1], cid: labels[i] })).filter(p=>p.cid===cid),
-        pointRadius: 6, showLine: false
+        pointRadius: 6,
+        showLine: false
       }));
-      if (ref && raw.jugadores.includes(ref)) {
-        const idx = raw.jugadores.indexOf(ref);
-        const [x,y] = raw.coords2[idx];
+
+      if (ref && rawData.jugadores.includes(ref)) {
+        const idx = rawData.jugadores.indexOf(ref);
+        const [x,y] = rawData.coords2[idx];
         datasets.push({
           label: `Ref: ${ref}`,
           data:[{ x,y }],
@@ -405,6 +457,7 @@
           showLine:false
         });
       }
+
       if (chart) chart.destroy();
       chart = new Chart(ctx, {
         type:'scatter',
@@ -413,7 +466,7 @@
           plugins:{
             legend:{ position:'top' },
             tooltip:{ callbacks:{ label: c=>
-              raw.jugadores[ raw.coords2.findIndex(cc=>cc[0]===c.raw.x&&cc[1]===c.raw.y) ]
+              rawData.jugadores[ rawData.coords2.findIndex(cc=>cc[0]===c.raw.x&&cc[1]===c.raw.y) ]
             }},
             zoom:{ pan:{enabled:true,mode:'xy'}, zoom:{wheel:{enabled:true},pinch:{enabled:true},drag:{enabled:true},mode:'xy'} }
           },
@@ -421,7 +474,8 @@
             x:{ title:{ display:true, text:'PCA 1' } },
             y:{ title:{ display:true, text:'PCA 2' } }
           },
-          responsive:true, maintainAspectRatio:false
+          responsive:true,
+          maintainAspectRatio:false
         }
       });
 
@@ -439,10 +493,19 @@
       chart.update();
     }
 
-    prevBtn.addEventListener('click', ()=>{ if(currentPage>1){ currentPage--; renderTablePage(); }});
-    nextBtn.addEventListener('click', ()=>{ 
-      const maxPage = Math.ceil(lastData.jugadores.length/perPage);
-      if(currentPage<maxPage){ currentPage++; renderTablePage(); }
+    prevBtn.addEventListener('click', ()=>{
+      if(currentPage>1){
+        currentPage--;
+        renderTablePage();
+      }
+    });
+
+    nextBtn.addEventListener('click', ()=>{
+      const maxPage = Math.max(1, Math.ceil(filteredData.jugadores.length/perPage));
+      if(currentPage<maxPage){
+        currentPage++;
+        renderTablePage();
+      }
     });
 
     panUp  .addEventListener('click', ()=>pan(0,  0.1));
@@ -453,7 +516,10 @@
     form.addEventListener('submit', async e => {
       e.preventDefault();
 
+      const algoritmo = inputAlgoritmo.value;
       const k = +inputK.value;
+      const eps = +inputEps.value;
+      const minSamples = +inputMinSamples.value;
       const ref = inputRef.value.trim();
 
       const refNormalizado = ref.toLowerCase();
@@ -473,15 +539,26 @@
         : "";
 
       try {
-        const raw = await runClustering(k, refFinal);
+        const raw = await runClustering(algoritmo, k, refFinal, eps, minSamples);
         drawChart(raw, refFinal);
       } catch(err) {
         alert('Error: ' + err.message);
       }
     });
 
-    [ageFilter,heightFilter,valueFilter].forEach(chk=>
-      chk.addEventListener('change', ()=> lastData && drawChart(lastData, inputRef.value.trim()))
+    [ageFilter,heightFilter,valueFilter].forEach(chk =>
+      chk.addEventListener('change', () => {
+        if (!rawData) return;
+
+        const ref = inputRef.value.trim();
+        const refNormalizado = ref.toLowerCase();
+
+        const refFinal = ref
+          ? defensasList.find(nombre => nombre.toLowerCase() === refNormalizado)
+          : "";
+
+        drawChart(rawData, refFinal || "");
+      })
     );
 
 
@@ -511,10 +588,32 @@
       }
     }
 
-    document
-      .getElementById('inputRef')
-      .addEventListener('focus', actualizarDefensasList);
-      
+    inputRef.addEventListener('focus', actualizarDefensasList);
+
+    inputAlgoritmo.addEventListener('change', () => {
+      const esDBSCAN = inputAlgoritmo.value === "dbscan";
+
+      kControl.style.display = esDBSCAN ? "none" : "flex";
+      epsControl.style.display = esDBSCAN ? "flex" : "none";
+      minSamplesControl.style.display = esDBSCAN ? "flex" : "none";
+
+      form.dispatchEvent(new Event('submit'));
+    });
+
+    [inputEps, inputMinSamples].forEach(input => {
+      input.addEventListener('change', () => {
+        if (inputAlgoritmo.value === "dbscan") {
+          form.dispatchEvent(new Event('submit'));
+        }
+      });
+    });
+
+    inputK.addEventListener('change', () => {
+      if (inputAlgoritmo.value === "kmeans") {
+        form.dispatchEvent(new Event('submit'));
+      }
+    });
+
     window.addEventListener('DOMContentLoaded', async () => {
       await actualizarDefensasList();
       form.dispatchEvent(new Event('submit'));

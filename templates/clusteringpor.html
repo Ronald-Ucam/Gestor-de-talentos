@@ -57,11 +57,17 @@
       color: var(--clr-text);
     }
     .cluster-form input[type="number"],
-    .cluster-form input[type="text"] {
+    .cluster-form input[type="text"],
+    .cluster-form select {
       padding: 0.4rem 0.6rem;
       border: 1px solid #ccc;
       border-radius: var(--radius);
       font-size: 0.9rem;
+    }
+
+    #epsControl,
+    #minSamplesControl {
+      display: none;
     }
     .cluster-form input[type="checkbox"] {
       transform: scale(1.2);
@@ -205,8 +211,23 @@
     <h2 class="page-title">Clustering de Porteros</h2>
 
     <form id="clusterForm" class="cluster-form">
-      <label><span class="material-icons">filter_alt</span>K:
+      <label><span class="material-icons">analytics</span>Algoritmo:
+        <select id="inputAlgoritmo">
+          <option value="kmeans" selected>K-Means</option>
+          <option value="dbscan">DBSCAN</option>
+        </select>
+      </label>
+
+      <label id="kControl"><span class="material-icons">filter_alt</span>K:
         <input type="number" id="inputK" value="4" min="1" max="6" />
+      </label>
+
+      <label id="epsControl"><span class="material-icons">scatter_plot</span>EPS:
+        <input type="number" id="inputEps" value="1.8" min="0.1" max="5" step="0.1" />
+      </label>
+
+      <label id="minSamplesControl"><span class="material-icons">groups</span>Mín. muestras:
+        <input type="number" id="inputMinSamples" value="5" min="2" max="20" />
       </label>
       <label><span class="material-icons">person_search</span>Portero ref:
         <input type="text" id="inputRef" list="porterosList" placeholder="Escribe nombre…" autocomplete="off"/>
@@ -247,8 +268,8 @@
           </li>
         </ol>
         <p class="tip">
-          ⚽ <em>Tip:</em> Cambia el parámetro <strong>K</strong> para explorar agrupaciones
-          más gruesas (grupos grandes) o muy finas (perfiles muy específicos).
+          🧤 <em>Tip:</em> Usa <strong>K-Means</strong> para crear grupos fijos de porteros
+          y <strong>DBSCAN</strong> para detectar perfiles más atípicos o porteros que se salen del patrón general.
         </p>
       </div>
     </section>
@@ -272,6 +293,14 @@
 
     const form         = document.getElementById('clusterForm');
     const inputK       = document.getElementById('inputK');
+
+    const inputAlgoritmo = document.getElementById('inputAlgoritmo');
+    const inputEps = document.getElementById('inputEps');
+    const inputMinSamples = document.getElementById('inputMinSamples');
+    const kControl = document.getElementById('kControl');
+    const epsControl = document.getElementById('epsControl');
+    const minSamplesControl = document.getElementById('minSamplesControl');
+
     const inputRef     = document.getElementById('inputRef');
     const ageFilter    = document.getElementById('ageFilter');
     const heightFilter = document.getElementById('heightFilter');
@@ -294,11 +323,30 @@
     const perPage = 20;
     let currentPage = 1;
 
-    async function runClustering(K, ref) {
-      const qs  = new URLSearchParams({ k: K, jugador: ref });
-      const res = await fetch('/api/cluster_por?' + qs);
-      const d   = await res.json();
+    async function runClustering(algoritmo, K, ref, eps, minSamples) {
+      let url;
+      let qs;
+
+      if (algoritmo === "dbscan") {
+        qs = new URLSearchParams({
+          eps: eps,
+          min_samples: minSamples,
+          jugador: ref
+        });
+        url = "/api/dbscan_por?" + qs;
+      } else {
+        qs = new URLSearchParams({
+          k: K,
+          jugador: ref
+        });
+        url = "/api/cluster_por?" + qs;
+      }
+
+      const res = await fetch(url);
+      const d = await res.json();
+
       if (d.error) throw new Error(d.error);
+
       return d;
     }
 
@@ -332,21 +380,28 @@
 
     function renderTablePage() {
       const total = filteredData.jugadores.length;
-      const maxP  = Math.ceil(total / perPage);
+      const maxP = Math.max(1, Math.ceil(total / perPage));      
       const start = (currentPage - 1) * perPage;
       const sliceJ = filteredData.jugadores.slice(start, start + perPage);
       const sliceL = filteredData.labels.slice(start, start + perPage);
 
       tbody.innerHTML = '';
-      sliceJ.forEach((j,i) => {
+
+      if (total === 0) {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${j}</td><td>${filteredData.clusterNames[sliceL[i]]}</td>`;
+        tr.innerHTML = `<td colspan="2">No hay porteros con los filtros seleccionados.</td>`;
         tbody.appendChild(tr);
-      });
+      } else {
+        sliceJ.forEach((j, i) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${j}</td><td>${filteredData.clusterNames[sliceL[i]]}</td>`;
+          tbody.appendChild(tr);
+        });
+      }
 
       pageInfo.textContent = `Página ${currentPage} / ${maxP}`;
       prevBtn.disabled = (currentPage === 1);
-      nextBtn.disabled = (currentPage === maxP);
+      nextBtn.disabled = (currentPage === maxP || total === 0);
     }
 
     function drawChart(data, ref) {
@@ -411,8 +466,11 @@
       if (currentPage > 1) { currentPage--; renderTablePage(); }
     });
     nextBtn.addEventListener('click', ()=> {
-      const maxP = Math.ceil(filteredData.jugadores.length / perPage);
-      if (currentPage < maxP) { currentPage++; renderTablePage(); }
+      const maxP = Math.max(1, Math.ceil(filteredData.jugadores.length / perPage));
+      if (currentPage < maxP) { 
+        currentPage++; 
+        renderTablePage(); 
+      }
     });
 
     panUp.addEventListener('click', ()=>pan(0,  0.1));
@@ -423,7 +481,10 @@
     form.addEventListener('submit', async e => {
       e.preventDefault();
 
+      const algoritmo = inputAlgoritmo.value;
       const k = +inputK.value;
+      const eps = +inputEps.value;
+      const minSamples = +inputMinSamples.value;
       const ref = inputRef.value.trim();
 
       const refNormalizado = ref.toLowerCase();
@@ -443,15 +504,26 @@
         : "";
 
       try {
-        const data = await runClustering(k, refFinal);
+        const data = await runClustering(algoritmo, k, refFinal, eps, minSamples);
         drawChart(data, refFinal);
       } catch(err) {
         alert('Error: ' + err.message);
       }
     });
 
-    [ageFilter,heightFilter,valueFilter].forEach(chk=>
-      chk.addEventListener('change', ()=> rawData && drawChart(rawData, inputRef.value.trim()))
+    [ageFilter,heightFilter,valueFilter].forEach(chk =>
+      chk.addEventListener('change', () => {
+        if (!rawData) return;
+
+        const ref = inputRef.value.trim();
+        const refNormalizado = ref.toLowerCase();
+
+        const refFinal = ref
+          ? porterosList.find(nombre => nombre.toLowerCase() === refNormalizado)
+          : "";
+
+        drawChart(rawData, refFinal || "");
+      })
     );
 
   async function actualizarPorterosList() {
@@ -482,6 +554,29 @@
 
   inputRef.addEventListener('focus', actualizarPorterosList);
 
+  inputAlgoritmo.addEventListener('change', () => {
+    const esDBSCAN = inputAlgoritmo.value === "dbscan";
+
+    kControl.style.display = esDBSCAN ? "none" : "flex";
+    epsControl.style.display = esDBSCAN ? "flex" : "none";
+    minSamplesControl.style.display = esDBSCAN ? "flex" : "none";
+
+    form.dispatchEvent(new Event('submit'));
+  });
+
+  [inputEps, inputMinSamples].forEach(input => {
+    input.addEventListener('change', () => {
+      if (inputAlgoritmo.value === "dbscan") {
+        form.dispatchEvent(new Event('submit'));
+      }
+    });
+  });
+
+  inputK.addEventListener('change', () => {
+    if (inputAlgoritmo.value === "kmeans") {
+      form.dispatchEvent(new Event('submit'));
+    }
+  });
   
     window.addEventListener('DOMContentLoaded', async () => {
       await actualizarPorterosList();

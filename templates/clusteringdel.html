@@ -273,8 +273,9 @@
           </li>
         </ol>
         <p class="tip">
-          ⚽ <em>Tip:</em> Usa <strong>K-Means</strong> para crear grupos fijos de jugadores
-          y <strong>DBSCAN</strong> para detectar perfiles más atípicos o jugadores que se salen del patrón general.
+          ⚽ <em>Tip:</em> Usa <strong>K-Means</strong> cuando quieras dividir los delanteros
+          en un número fijo de grupos. Usa <strong>DBSCAN</strong> para detectar jugadores
+          con perfiles atípicos o diferentes al patrón general.
         </p>
       </div>
     </section>
@@ -388,21 +389,28 @@
 
     function renderTablePage() {
       const total = filteredData.jugadores.length;
-      const maxP  = Math.ceil(total / perPage);
-      const start = (currentPage-1)*perPage;
-      const sliceJ= filteredData.jugadores.slice(start,start+perPage);
-      const sliceL= filteredData.labels.slice(start,start+perPage);
+      const maxP = Math.max(1, Math.ceil(total / perPage));
+      const start = (currentPage - 1) * perPage;
+      const sliceJ = filteredData.jugadores.slice(start, start + perPage);
+      const sliceL = filteredData.labels.slice(start, start + perPage);
 
       tbody.innerHTML = '';
-      sliceJ.forEach((j,i)=>{
+
+      if (total === 0) {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${j}</td><td>${filteredData.clusterNames[sliceL[i]]}</td>`;
+        tr.innerHTML = `<td colspan="2">No hay delanteros con los filtros seleccionados.</td>`;
         tbody.appendChild(tr);
-      });
+      } else {
+        sliceJ.forEach((j, i) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${j}</td><td>${filteredData.clusterNames[sliceL[i]]}</td>`;
+          tbody.appendChild(tr);
+        });
+      }
 
       pageInfo.textContent = `Página ${currentPage} / ${maxP}`;
-      prevBtn.disabled = currentPage===1;
-      nextBtn.disabled = currentPage===maxP;
+      prevBtn.disabled = currentPage === 1;
+      nextBtn.disabled = currentPage === maxP || total === 0;
     }
 
     function drawChart(data, ref) {
@@ -468,9 +476,12 @@
     }
 
     prevBtn.addEventListener('click', ()=>{ if(currentPage>1){ currentPage--; renderTablePage(); }});
-    nextBtn.addEventListener('click', ()=>{ 
-      const maxP = Math.ceil(filteredData.jugadores.length/perPage);
-      if(currentPage<maxP){ currentPage++; renderTablePage(); }
+    nextBtn.addEventListener('click', ()=> {
+      const maxP = Math.max(1, Math.ceil(filteredData.jugadores.length / perPage));
+      if (currentPage < maxP) { 
+        currentPage++; 
+        renderTablePage(); 
+      }
     });
 
     panUp.addEventListener('click',   ()=>pan(0,  0.1));
