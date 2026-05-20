@@ -905,3 +905,45 @@ def api_dbscan_fw():
 
     except Exception as e:
         return jsonify({"error": f"Error al generar DBSCAN: {e}"}), 500
+    
+
+
+    
+@clustering_bp.route("/api/dbscan_por")
+def api_dbscan_por():
+    try:
+        eps = request.args.get("eps", default=1.8, type=float)
+        min_samples = request.args.get("min_samples", default=5, type=int)
+
+        df_jugadores = obtener_dataframe_actual()
+
+        df_por = df_jugadores[
+            df_jugadores["Posición"] == "POR"
+        ].copy()
+
+        cols = ["CS/90", "Enc/90", "Rp %", "Pen. parados", "BDs", "Distancia"]
+        cols = [c for c in cols if c in df_por.columns]
+
+        df_db, attrs, cluster_names = aplicar_dbscan(
+            df_por,
+            cols,
+            eps=eps,
+            min_samples=min_samples
+        )
+
+        return jsonify({
+            "jugadores": df_db["Nombre"].tolist(),
+            "labels": df_db["cluster"].astype(int).tolist(),
+            "labelsOriginales": df_db["cluster_original"].astype(int).tolist(),
+            "coords2": df_db[["x_pca", "y_pca"]].astype(float).values.tolist(),
+            "clusterNames": cluster_names,
+            "attrs": attrs
+        })
+
+    except ValueError as ve:
+        return jsonify({"error": f"Parámetro inválido: {ve}"}), 400
+
+    except Exception as e:
+        return jsonify({"error": f"Error al generar DBSCAN de porteros: {e}"}), 500
+
+
