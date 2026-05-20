@@ -4,7 +4,7 @@ import numpy as np
 import re
 
 from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans,DBSCAN
 from sklearn.decomposition import PCA
 
 from data_service import obtener_dataframe_actual
@@ -777,3 +777,131 @@ def cluster_forwards(df, k=4):
     df_out["y_pca"]   = coords[:, 1]
     return df_out, cols, cluster_names
 
+
+
+"""""""""""""""""""""
+
+******   DBSCAN   *******
+
+"""""""""""""""""""""
+
+
+
+
+
+def aplicar_dbscan(df_posicion, cols, eps=1.8, min_samples=5):
+    """
+    Aplica DBSCAN sobre un conjunto de jugadores ya filtrado por posición.
+
+    DBSCAN:
+    - Detecta grupos por densidad.
+    - Marca como ruido/outlier los jugadores con etiqueta -1.
+    """
+
+    df_posicion = df_posicion.copy()
+
+    if df_posicion.empty:
+        raise ValueError("No hay jugadores suficientes para aplicar DBSCAN.")
+
+    if len(cols) < 2:
+        raise ValueError(f"No hay suficientes columnas para DBSCAN: {cols}")
+
+    # Limpiar columnas numéricas
+    for c in cols:
+        s = df_posicion[c].astype(str).replace("-", np.nan)
+        s = s.str.replace(r"[^0-9\.]", "", regex=True)
+        df_posicion.loc[:, c] = pd.to_numeric(s, errors="coerce")
+
+    # Eliminar columnas con demasiados nulos
+    df_posicion = df_posicion.dropna(axis=1, thresh=len(df_posicion) * 0.7).copy()
+    cols = [c for c in cols if c in df_posicion.columns]
+
+    if len(cols) < 2:
+        raise ValueError(f"No hay suficientes columnas válidas para DBSCAN: {cols}")
+
+    # Rellenar nulos y asegurar datos numéricos
+    df_posicion[cols] = df_posicion[cols].apply(pd.to_numeric, errors="coerce")
+    df_posicion[cols] = df_posicion[cols].replace([np.inf, -np.inf], np.nan)
+
+    medianas = df_posicion[cols].median(numeric_only=True)
+    df_posicion[cols] = df_posicion[cols].fillna(medianas)
+    df_posicion[cols] = df_posicion[cols].fillna(0)
+
+    # Si aún queda algún NaN, lo ponemos a 0
+    df_posicion.loc[:, cols] = df_posicion[cols].fillna(0)
+
+    # Escalado
+    X = StandardScaler().fit_transform(df_posicion[cols].values)
+
+    if len(df_posicion) < 2:
+        raise ValueError("No hay suficientes jugadores para representar DBSCAN.")
+
+    # DBSCAN
+    dbscan = DBSCAN(eps=eps, min_samples=min_samples)
+    labels_originales = dbscan.fit_predict(X)
+
+    # PCA para pintar en 2D
+    coords = PCA(n_components=2, random_state=0).fit_transform(X)
+
+    df_out = df_posicion.reset_index(drop=True).copy()
+    df_out["cluster_original"] = labels_originales
+
+    # Convertimos etiquetas DBSCAN a índices compatibles con Chart.js
+    etiquetas_unicas = sorted(set(labels_originales))
+
+    cluster_names = []
+    label_map = {}
+
+    for nueva_etiqueta, etiqueta_original in enumerate(etiquetas_unicas):
+        label_map[int(etiqueta_original)] = nueva_etiqueta
+
+        if etiqueta_original == -1:
+            cluster_names.append("Ruido / perfil atípico")
+        else:
+            cluster_names.append(f"Grupo DBSCAN {int(etiqueta_original) + 1}")
+
+    labels_convertidas = [label_map[int(label)] for label in labels_originales]
+
+    df_out["cluster"] = labels_convertidas
+    df_out["x_pca"] = coords[:, 0]
+    df_out["y_pca"] = coords[:, 1]
+
+    return df_out, cols, cluster_names
+
+
+@clustering_bp.route("/api/dbscan_fw")
+def api_dbscan_fw():
+    try:
+        eps = request.args.get("eps", default=1.8, type=float)
+        min_samples = request.args.get("min_samples", default=5, type=int)
+
+        df_jugadores = obtener_dataframe_actual()
+
+        df_fw = df_jugadores[
+            df_jugadores["Posición"].str.contains(r"\bDL\b", na=False)
+        ].copy()
+
+        cols = ["Gol/90", "Asis/90", "Reg/90", "% Pase", "Disparos", "Min/Par", "OC/90"]
+        cols = [c for c in cols if c in df_fw.columns]
+
+        df_db, attrs, cluster_names = aplicar_dbscan(
+            df_fw,
+            cols,
+            eps=eps,
+            min_samples=min_samples
+        )
+
+        return jsonify({
+            "jugadores": df_db["Nombre"].tolist(),
+            "labels": df_db["cluster"].astype(int).tolist(),
+            "labelsOriginales": df_db["cluster_original"].astype(int).tolist(),
+            "coords2": df_db[["x_pca", "y_pca"]].astype(float).values.tolist(),
+            "clusterNames": cluster_names,
+            "attrs": attrs
+        })
+
+    except ValueError as ve:
+        return jsonify({"error": f"Parámetro inválido: {ve}"}), 400
+
+    except Exception as e:
+        return jsonify({"error": f"Error al generar DBSCAN: {e}"}), 500
