@@ -163,16 +163,19 @@ def faqs():
     return render_template("faqs.html")
 
 @app.route("/comparacion")
+@app.route("/comparacion")
 def comparacion():
-    # 1) Lista completa de nombres
     df_actual = obtener_dataframe_actual()
 
     jugadores = df_actual["Nombre"].dropna().unique().tolist()
 
     seleccionados = request.args.getlist("players[]")
 
-    j1 = seleccionados[0] if len(seleccionados) > 0 else (jugadores[0] if jugadores else "")
-    j2 = seleccionados[1] if len(seleccionados) > 1 else (jugadores[1] if len(jugadores) > 1 else j1)
+    jugador_default_1 = "Kylian Mbappé"
+    jugador_default_2 = "Lamine Yamal"
+
+    j1 = seleccionados[0] if len(seleccionados) > 0 else jugador_default_1
+    j2 = seleccionados[1] if len(seleccionados) > 1 else jugador_default_2
 
     return render_template(
         "comparacion.html",
