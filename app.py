@@ -182,6 +182,24 @@ def comparacion():
     )
 
 
+@app.route("/api/nombres_jugadores")
+def api_nombres_jugadores():
+    df_actual = obtener_dataframe_actual()
+
+    if "Nombre" not in df_actual.columns:
+        return jsonify([])
+
+    nombres = (
+        df_actual["Nombre"]
+        .dropna()
+        .astype(str)
+        .str.strip()
+    )
+
+    nombres = sorted(nombres[nombres != ""].unique().tolist())
+
+    return jsonify(nombres)
+
 
 
 @app.route("/mostrar_bd")
@@ -277,9 +295,52 @@ def mostrar_bd():
         if page < 1 or page > total_pages:
             abort(404)
 
-        start   = (page - 1) * PAGE_SIZE
-        end     = start + PAGE_SIZE
-        df_page = df_filtrado.iloc[start:end]
+        start = (page - 1) * PAGE_SIZE
+        end = start + PAGE_SIZE
+        df_page = df_filtrado.iloc[start:end].copy()
+
+        # Renombrado solo visual para que los atributos se entiendan mejor.
+        # No cambia la base de datos ni los filtros, solo los nombres que se muestran en la tabla.
+        mapa_columnas = {
+            "% Pase": "Precisión de pase",
+            "% disparos": "Precisión de disparo",
+            "Asis": "Asistencias",
+            "Asis/90": "Asistencias / 90 min",
+            "Bal aér/90": "Balones aéreos / 90 min",
+            "Desp": "Despejes",
+            "Entr/90": "Entradas / 90 min",
+            "Final": "Fin de contrato",
+            "Gol": "Goles",
+            "Gol/90": "Goles / 90 min",
+            "Media": "Valoración media",
+            "Min": "Minutos jugados",
+            "Min/Par": "Minutos por partido",
+            "Part": "Partidos",
+            "Pas Clv/90": "Pases clave / 90 min",
+            "Pases prog": "Pases progresivos",
+            "Pases prog/90": "Pases progresivos / 90 min",
+            "Pos Gan/90": "Posesiones ganadas / 90 min",
+            "Pos Perd/90": "Posesiones perdidas / 90 min",
+            "Reg": "Regates",
+            "Reg/90": "Regates / 90 min",
+            "Rob/90": "Robos / 90 min",
+            "Tir/90": "Tiros / 90 min",
+            "TirP/90": "Tiros a puerta / 90 min",
+            "Titular": "Titularidades",
+            "ValorNum": "Valor mínimo",
+            "xG": "Goles esperados (xG)",
+            # Columnas principales visibles en la tabla
+            "Valor de traspaso": "Valor mercado",
+            "Sueldo": "Sueldo anual",
+            "Altura": "Altura",
+            "Peso": "Peso",
+            "Posición": "Posición",
+            "Club": "Club",
+            "Edad": "Edad",
+            "Nombre": "Jugador"
+        }
+
+        df_page = df_page.rename(columns=mapa_columnas)
 
         table_html = df_page.to_html(
             index=False,
@@ -309,88 +370,12 @@ def mostrar_bd():
         return f"Error al filtrar/paginar: {str(e)}", 500
 
 
-@app.route("/api/nombres_jugadores")
-def api_nombres_jugadores():
-    df = obtener_dataframe_actual()
-    nombres = sorted(df["Nombre"].dropna().unique().tolist())
-    return jsonify(nombres)
-
-
-def buscar_foto_wikipedia(nombre):
-    """
-    Busca la miniatura de Wikipedia para un jugador:
-    1) Query de búsqueda “<nombre> futbolista”
-    2) Si no hay resultado o no hay thumbnail, busca <nombre> con opensearch
-    """
-    WIKI_API = "https://es.wikipedia.org/w/api.php"
-
-    # Helper para extraer thumbnail de un título dado
-    def obtener_thumbnail(titulo):
-        params_img = {
-            "action": "query",
-            "titles": titulo,
-            "prop": "pageimages",
-            "format": "json",
-            "pithumbsize": 300
-        }
-        resp2 = requests.get(WIKI_API, params=params_img, timeout=5)
-        if not resp2.ok:
-            return None
-        pages = resp2.json().get("query", {}).get("pages", {})
-        for p in pages.values():
-            thumb = p.get("thumbnail", {})
-            if thumb.get("source"):
-                return thumb["source"]
-        return None
-
-    # 1) Búsqueda con “futbolista”
-    params_search = {
-        "action": "query",
-        "list": "search",
-        "srsearch": f"{nombre} futbolista",
-        "format": "json",
-        "srlimit": 1
-    }
-    resp = requests.get(WIKI_API, params=params_search, timeout=5)
-    if resp.ok:
-        results = resp.json().get("query", {}).get("search", [])
-        if results:
-            thumb = obtener_thumbnail(results[0]["title"])
-            if thumb:
-                return thumb
-
-    # 2) Fallback: opensearch puro
-    params_open = {
-        "action": "opensearch",
-        "search": nombre,
-        "limit": 1,
-        "namespace": 0,
-        "format": "json"
-    }
-    resp3 = requests.get(WIKI_API, params=params_open, timeout=5)
-    if not resp3.ok:
-        return None
-    data = resp3.json()
-    # data[1] es lista de títulos
-    if len(data) > 1 and data[1]:
-        titulo2 = data[1][0]
-        thumb2 = obtener_thumbnail(titulo2)
-        if thumb2:
-            return thumb2
-
-    return None
-
-
-
-
 @app.route("/api/comparar")
 def api_comparar():
     j1 = request.args.get("jugador1")
     j2 = request.args.get("jugador2")
 
     df_actual = obtener_dataframe_actual()
-
-    attrs = ["Media", "Gol/90", "Asis/90", "Reg/90", "Pas Clv/90"]
 
     p1 = df_actual[df_actual["Nombre"] == j1]
     p2 = df_actual[df_actual["Nombre"] == j2]
@@ -400,31 +385,263 @@ def api_comparar():
 
     p1, p2 = p1.iloc[0], p2.iloc[0]
 
+    def obtener_grupo_posicion(posicion):
+        """
+        Agrupa la posición del jugador en una categoría general:
+        POR, DEF, MED o DEL.
+
+        La prioridad está pensada para evitar comparaciones incoherentes:
+        - Porteros siempre son POR.
+        - Si aparece DL, se considera perfil ofensivo.
+        - Si aparece DF o CR, se considera defensa.
+        - Si aparece MC/MCD/MCO, se considera centrocampista.
+        - ME/MP sin MC ni DF se consideran perfil ofensivo.
+        """
+        if pd.isna(posicion):
+            return ""
+
+        pos = str(posicion).upper()
+
+        if "POR" in pos:
+            return "POR"
+
+        # Si puede jugar como delantero centro, lo tratamos como delantero/ofensivo
+        if "DL" in pos:
+            return "DEL"
+
+        # Defensas y carrileros
+        if any(p in pos for p in ["DF", "DFC", "LI", "LD", "CR"]):
+            return "DEF"
+
+        # Centrocampistas
+        if any(p in pos for p in ["MC", "MCD", "MCO"]):
+            return "MED"
+
+        # Extremos y mediapuntas ofensivos
+        if any(p in pos for p in ["ME", "MP", "EI", "ED"]):
+            return "DEL"
+
+        return pos.split(",")[0].strip()
+
+    pos1 = obtener_grupo_posicion(p1.get("Posición", ""))
+    pos2 = obtener_grupo_posicion(p2.get("Posición", ""))
+
+    print("COMPARANDO:", j1, pos1, "VS", j2, pos2)
+
+    def extraer_codigos_posicion(posicion):
+        """
+        Extrae códigos de posición del texto.
+        Ejemplos:
+        'MP (DIC), DL (C)' -> {'MP', 'DL'}
+        'MC, ME (C), MP (DC)' -> {'MC', 'ME', 'MP'}
+        'POR' -> {'POR'}
+        """
+        if pd.isna(posicion):
+            return set()
+
+        pos = str(posicion).upper()
+
+        codigos_validos = {
+            "POR", "DF", "DFC", "LI", "LD", "CR",
+            "MC", "MCD", "MCO", "MP",
+            "DL", "ME", "EI", "ED"
+        }
+
+        encontrados = set(re.findall(r"\b[A-Z]{2,3}\b", pos))
+
+        return encontrados.intersection(codigos_validos)
+
+
+    def grupo_desde_codigo(codigo):
+        """
+        Convierte un código concreto de posición a grupo general.
+        """
+        if codigo == "POR":
+            return "POR"
+
+        if codigo in ["DF", "DFC", "LI", "LD", "CR"]:
+            return "DEF"
+
+        if codigo in ["MC", "MCD", "MCO"]:
+            return "MED"
+
+        if codigo in ["MP", "DL", "ME", "EI", "ED"]:
+            return "DEL"
+
+        return ""
+
+
+    codigos1 = extraer_codigos_posicion(p1.get("Posición", ""))
+    codigos2 = extraer_codigos_posicion(p2.get("Posición", ""))
+
+    codigos_comunes = codigos1.intersection(codigos2)
+
+    if not codigos_comunes:
+        return jsonify({
+            "error": (
+                f"No se pueden comparar jugadores de posiciones distintas "
+                f"({j1}: {p1.get('Posición', '')} / {j2}: {p2.get('Posición', '')}). "
+                "Selecciona dos jugadores que compartan al menos una posición."
+            )
+        }), 400
+
+
+    # Elegimos la posición común más relevante para decidir las métricas
+    prioridad_codigos = ["POR", "DL", "MP", "ME", "EI", "ED", "MC", "MCO", "MCD", "DF", "DFC", "LI", "LD", "CR"]
+
+    codigo_comun = next(
+        (codigo for codigo in prioridad_codigos if codigo in codigos_comunes),
+        list(codigos_comunes)[0]
+    )
+
+    pos1 = grupo_desde_codigo(codigo_comun)
+    pos2 = pos1
+
+    print("COMPARANDO:", j1, codigos1, "VS", j2, codigos2, "COMÚN:", codigo_comun, "GRUPO:", pos1)
+
+    metricas_por_grupo = {
+        "POR": [
+            "Media",
+            "Enc/90",
+            "Portería imbatida",
+            "Rp %",
+            "BDs",
+            "BRe",
+            "Pen. parados"
+        ],
+
+        "DEF": [
+            "Media",
+            "Entr/90",
+            "Rob/90",
+            "Desp",
+            "Bal aér/90",
+            "% Pase",
+            "Pases prog/90"
+        ],
+
+        "MED": [
+            "Media",
+            "Asis/90",
+            "Pas Clv/90",
+            "% Pase",
+            "Pases prog/90",
+            "Reg/90",
+            "Rob/90"
+        ],
+
+        "DEL": [
+            "Media",
+            "Gol/90",
+            "xG",
+            "Asis/90",
+            "Disparos",
+            "Tir/90",
+            "Reg/90"
+        ]
+    }
+
+    attrs = metricas_por_grupo.get(
+        pos1,
+        ["Media", "Gol/90", "Asis/90", "Reg/90", "Pas Clv/90"]
+    )
+
+    # Nos quedamos solo con columnas que existan realmente en el DataFrame
+    attrs = [a for a in attrs if a in df_actual.columns]
+
+    if len(attrs) < 2:
+        return jsonify({
+            "error": f"No hay suficientes métricas disponibles para comparar jugadores del grupo {pos1}."
+        }), 400
+
+    # Métricas donde un valor menor representa mejor rendimiento
+    metricas_menor_mejor = ["Enc/90", "Pos Perd/90", "FC"]
+
     def to_float(val):
-        return 0.0 if str(val).strip() in ["-", ""] else float(re.sub(r"[^\d\.]", "", str(val)))
+        """
+        Convierte valores del dataset a float.
+        Soporta:
+        - "-"
+        - ""
+        - porcentajes como "85%"
+        - unidades como "299.3 km"
+        - valores con coma decimal
+        """
+        if pd.isna(val):
+            return 0.0
+
+        texto = str(val).strip()
+
+        if texto in ["-", "", "nan", "None"]:
+            return 0.0
+
+        texto = texto.replace(",", ".")
+        limpio = re.sub(r"[^0-9\.\-]", "", texto)
+
+        if limpio in ["", "-", "."]:
+            return 0.0
+
+        try:
+            return float(limpio)
+        except ValueError:
+            return 0.0
 
     clean = {}
-    for a in attrs:
-        clean[a] = df_actual[a] \
-            .replace("-", np.nan) \
-            .astype(str) \
-            .str.replace(r"[^\d\.]", "", regex=True) \
-            .replace("", "0") \
-            .astype(float)
 
-    statsA = [round(percentileofscore(clean[a], to_float(p1[a])), 1) for a in attrs]
-    statsB = [round(percentileofscore(clean[a], to_float(p2[a])), 1) for a in attrs]
+    for a in attrs:
+        clean[a] = (
+            df_actual[a]
+            .apply(to_float)
+            .replace([np.inf, -np.inf], np.nan)
+            .fillna(0)
+        )
+
+    def calcular_percentil(nombre_metrica, valor):
+        percentil = percentileofscore(clean[nombre_metrica], valor)
+
+        # En estas métricas, cuanto menor es el valor, mejor.
+        # Ejemplo: en Enc/90 interesa encajar menos goles por partido.
+        if nombre_metrica in metricas_menor_mejor:
+            percentil = 100 - percentil
+
+        return round(percentil, 1)
+
+    statsA = [calcular_percentil(a, to_float(p1[a])) for a in attrs]
+    statsB = [calcular_percentil(a, to_float(p2[a])) for a in attrs]
 
     campos_perfil = [
         "Nombre", "Edad", "Altura", "Peso", "Posición", "Club",
-        "ValorNum", "Sueldo", "Media", "Gol/90", "Asis/90",
-        "Reg/90", "Pas Clv/90", "Disparos", "Min/Par"
+        "Valor de traspaso", "ValorNum", "Sueldo", "Media",
+
+        # Métricas ofensivas
+        "Gol", "Gol/90", "xG", "Asis", "Asis/90",
+        "Disparos", "Tir/90", "TirP/90", "% disparos",
+        "Reg", "Reg/90", "Pas Clv/90",
+
+        # Métricas de pase / creación
+        "% Pase", "Pases prog", "Pases prog/90", "Ps I/90", "Ps C/90",
+
+        # Métricas defensivas
+        "Entr/90", "Rob/90", "Desp", "Bal aér/90",
+        "Pos Gan/90", "Pos Perd/90",
+
+        # Métricas de portero
+        "Enc", "Enc/90", "Portería imbatida",
+        "Rp %", "BDs", "BRe", "Pen. recibidos",
+        "Pen. parados", "Prop. penaltis parados",
+
+        # Otros datos
+        "Min", "Min/Par", "Part", "Titular"
     ]
 
     def construir_perfil(p, nombre):
         perfil = {}
 
-        foto = buscar_foto_wikipedia(nombre)
+        foto = None
+
+        if "buscar_foto_wikipedia" in globals():
+            foto = buscar_foto_wikipedia(nombre)
+
         if foto:
             perfil["FotoURL"] = foto
 
@@ -441,16 +658,10 @@ def api_comparar():
         "statsB": statsB,
         "nameA": j1,
         "nameB": j2,
+        "grupo": pos1,
         "perfilA": construir_perfil(p1, j1),
         "perfilB": construir_perfil(p2, j2)
     })
-
-
-
-
-
-
-
 
 
 

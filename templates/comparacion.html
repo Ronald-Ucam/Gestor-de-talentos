@@ -7,164 +7,25 @@
 
   <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
   <!-- CSS -->
   <link rel="stylesheet" href="/static/css/style.css" />
+
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <!-- Font Awesome -->
   <link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-  integrity="sha512-..."
-  crossorigin="anonymous"
-  referrerpolicy="no-referrer"
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    integrity="sha512-..."
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
   />
-
-  <style>
-    #tablaComparacion {
-      width:100%;
-      border-collapse:collapse;
-      margin-top:30px;
-      background:var(--clr-glass);
-      backdrop-filter:blur(8px);
-      border-radius:var(--radius);
-      overflow:hidden;
-    }
-    #tablaComparacion th,
-    #tablaComparacion td {
-      border:1px solid var(--clr-primary-hover);
-      padding:12px;
-      text-align:center;
-    }
-    #tablaComparacion th {
-      background:var(--clr-primary);
-      color:#fff;
-    }
-    #tablaComparacion tbody tr:nth-child(even) {
-      background:rgba(0,0,0,0.05);
-    }
-    .foto-jugador {
-      max-width:100px;
-      border-radius:8px;
-      display:block;
-      margin:0 auto 10px;
-    }
-
-    /* Radar chart */
-    #radarChartContainer {
-      position:relative;
-      max-width:700px;
-      margin:40px auto 0;
-      background:var(--clr-glass);
-      backdrop-filter:blur(8px);
-      border-radius:var(--radius);
-      padding:20px;
-    }
-    #radarChart {
-      width:100% !important;
-      height:auto !important;
-    }
-
-    /* Campo de juego comparativo */
-    .pitch-comparison {
-      display:flex;
-      justify-content:space-around;
-      gap:2rem;
-      margin:40px 0;
-    }
-    .pitch-col {
-      text-align:center;
-    }
-    .pitch-svg {
-      background: url('/static/images/campofutbol.jpg') no-repeat center center;
-      background-size: cover;
-      width:340px;
-      height:480px;
-      border:2px solid #080;
-      border-radius:4px;
-      position:relative;
-    }
-    .marker {
-      filter: blur(2px);
-    }
-
-.table-wrapper {
-  overflow-x: auto;
-  margin-top: 30px;
-}
-
-/* Tablas de aspecto “card” */
-#tablaComparacion {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: sans-serif;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-/* Encabezado con fondo degradado y sticky */
-#tablaComparacion thead th {
-  position: sticky;
-  top: 0;
-  background: linear-gradient(90deg, #004d99, #0073e6);
-  color: #fff;
-  font-weight: 600;
-  padding: 12px 16px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Celdas */
-#tablaComparacion td {
-  padding: 12px 16px;
-  vertical-align: middle;
-  border-bottom: 1px solid #e0e0e0;
-  color: #333;
-}
-
-/* Líneas divisorias suaves */
-#tablaComparacion th + th,
-#tablaComparacion th + th + th {
-  border-left: 1px solid rgba(255,255,255,0.2);
-}
-
-/* Filas alternadas */
-#tablaComparacion tbody tr:nth-child(even) {
-  background: #f9f9f9;
-}
-
-/* Hover */
-#tablaComparacion tbody tr:hover {
-  background: #e6f2ff;
-}
-
-/* Campo “Campo” en negrita */
-#tablaComparacion td:first-child {
-  font-weight: 600;
-  color: #004d99;
-}
-
-/* Imágenes en la tabla */
-.foto-jugador {
-  max-width: 80px;
-  border-radius: 6px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-}
-
-/* Responsive: ajusta el padding en móviles */
-@media (max-width: 600px) {
-  #tablaComparacion th,
-  #tablaComparacion td {
-    padding: 8px 12px;
-  }
-}
-
-  </style>
 </head>
-<body>
 
+<body>
+  <div id="toastContainer" class="toast-container"></div>
   <!-- NAVBAR -->
   <header class="site-header">
     <div class="container">
@@ -172,6 +33,7 @@
         <img src="{{ url_for('static', filename='images/logo1.png') }}"
              alt="Gestor de Talentos FM" class="logo-img"/>
       </a>
+
       <nav class="main-nav">
         <a href="/"><span class="material-icons">home</span>Inicio</a>
         <a href="/faqs"><span class="material-icons">help_outline</span>Preguntas Frecuentes</a>
@@ -192,7 +54,7 @@
                 <span class="material-icons">person</span>
                 Información personal
               </a>
-              
+
               <a href="{{ url_for('user.mis_archivos') }}">
                 <span class="material-icons">folder</span>
                 Mis archivos
@@ -222,67 +84,222 @@
     </div>
   </header>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-background"></div>
-    <div class="hero-content container">
-      <h1 class="hero-title">Comparar Jugadores</h1>
-      <p class="hero-subtitle">Analiza el rendimiento de dos futbolistas lado a lado</p>
-    </div>
-  </section>
 
-  <!-- SECCIÓN PRINCIPAL -->
-  <main class="container main-content">
-    <h2 class="page-title">Escribe el nombre de dos jugadores</h2>
+ <!-- HERO COMPARACIÓN -->
+    <section class="compare-hero compare-hero--simple">
+      <div class="compare-hero__background"></div>
+      <div class="compare-hero__overlay"></div>
 
-    <!-- FILTROS -->
-    <section class="filters" style="justify-content:center; gap:1rem;">
-      <label>Jugador A:
-        <input id="inputA" list="jugadores" placeholder="Escribe nombre..." value="{{ selected1 }}">
-      </label>
-      <label>Jugador B:
-        <input id="inputB" list="jugadores" placeholder="Escribe nombre..." value="{{ selected2 }}">
-      </label>
-      <button id="btnComparar" class="filters button">Comparar</button>
-      <datalist id="jugadores">
-        {% for j in jugadores_list %}
-          <option value="{{ j }}">
-        {% endfor %}
-      </datalist>
+      <div class="compare-hero__content container">
+        <div class="compare-hero__text">
+          <span class="compare-hero__badge">
+            <span class="material-icons">compare_arrows</span>
+            Comparador de talentos
+          </span>
+
+          <h1>Compara jugadores y analiza sus diferencias clave</h1>
+
+          <p>
+            Selecciona dos futbolistas para revisar sus atributos, métricas de rendimiento,
+            gráfico radar y zona habitual dentro del campo.
+          </p>
+        </div>
+      </div>
     </section>
 
+  <!-- SECCIÓN PRINCIPAL -->
+  <main class="container main-content" id="comparador">
+    <!-- FILTROS -->
+   <section class="compare-search-section">
+      <div class="compare-search-header">
+        <span class="compare-search-badge">
+          <span class="material-icons">compare_arrows</span>
+          Comparador
+        </span>
+
+        <h2>Selecciona dos jugadores</h2>
+        <p>Busca dos futbolistas para comparar sus atributos, rendimiento y zonas de juego.</p>
+      </div>
+
+      <div class="compare-search-panel">
+        <div class="player-search-box player-search-box-a">
+          <label for="inputA">
+            <span class="player-label-dot"></span>
+            Jugador A
+          </label>
+
+          <div class="custom-autocomplete">
+            <input
+              id="inputA"
+              class="player-search-input"
+              type="text"
+              placeholder="Buscar jugador A..."
+              value="{{ selected1 }}"
+              autocomplete="off"
+            >
+            <div id="suggestionsA" class="suggestions-box"></div>
+          </div>
+        </div>
+
+        <div class="versus-pill">VS</div>
+
+        <div class="player-search-box player-search-box-b">
+          <label for="inputB">
+            <span class="player-label-dot"></span>
+            Jugador B
+          </label>
+
+          <div class="custom-autocomplete">
+            <input
+              id="inputB"
+              class="player-search-input"
+              type="text"
+              placeholder="Buscar jugador B..."
+              value="{{ selected2 }}"
+              autocomplete="off"
+            >
+            <div id="suggestionsB" class="suggestions-box"></div>
+          </div>
+        </div>
+
+        <button id="btnComparar" class="compare-main-button" type="button">
+          <span class="material-icons">analytics</span>
+          Comparar
+        </button>
+      </div>
+    </section>
+
+    <script id="jugadores-data" type="application/json">
+      {{ jugadores_list | tojson }}
+    </script>
+
+    <section class="comparison-dashboard">
+      <div class="comparison-dashboard__left">
+
     <!-- TABLA DE COMPARACIÓN -->
-  <div class="table-wrapper">
+    <section class="comparison-table-section">
+      <div class="comparison-table-header">
+        <div>
+          <span class="comparison-kicker">Perfil comparado</span>
+          <h3>Datos generales y atributos</h3>
+        </div>
+        <p>Comparación directa de los campos principales de cada jugador.</p>
+      </div>
 
-    <table id="tablaComparacion">
-      <thead>
-        <tr>
-          <th>Campo</th>
-          <th id="thA">Jugador A</th>
-          <th id="thB">Jugador B</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+      <div class="comparison-table-wrapper">
+        <table id="tablaComparacion" class="comparison-table">
+          <thead>
+            <tr>
+              <th>Atributo</th>
+              <th id="thA">Jugador A</th>
+              <th id="thB">Jugador B</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
 
+      </div>
+
+      <div class="comparison-dashboard__right">
 
     <!-- RADAR CHART -->
-    <div id="radarChartContainer">
-      <canvas id="radarChart"></canvas>
-    </div>
+    <section class="radar-showcase">
+      <div class="radar-header">
+        <div class="radar-title-block">
+          <span class="radar-badge">
+            <span class="material-icons">groups</span>
+            Gráfico de radar
+          </span>
+          <h3>Comparación de atributos</h3>
+          <p>Compara el rendimiento general entre jugadores</p>
+        </div>
 
-    <!-- CAMPO DE JUEGO COMPARATIVO -->
-    <div class="pitch-comparison">
-      <div class="pitch-col">
-        <h4 id="labelA"></h4>
-        <svg id="pitchA" class="pitch-svg"></svg>
+        <div class="radar-players-pill">
+          <div class="radar-player player-a">
+            <span class="legend-dot"></span>
+            <div>
+              <strong id="legendNameA">Jugador A</strong>
+              <small id="legendRoleA">Posición</small>
+            </div>
+          </div>
+
+          <div class="radar-player player-b">
+            <span class="legend-dot"></span>
+            <div>
+              <strong id="legendNameB">Jugador B</strong>
+              <small id="legendRoleB">Posición</small>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="pitch-col">
-        <h4 id="labelB"></h4>
-        <svg id="pitchB" class="pitch-svg"></svg>
+
+      <div class="radar-body">
+        <div class="radar-canvas-box">
+          <canvas id="radarChart"></canvas>
+        </div>
       </div>
-    </div>
+
+      <div class="radar-info-pill">
+        <span class="material-icons">info</span>
+        <span>
+          Cada eje representa un atributo normalizado (0-100). Valores más altos indican mejor rendimiento.
+        </span>
+      </div>
+    </section>
+
+    <!-- MAPA DE POSICIONES - PLANTILLA OSCURA -->
+    <section class="position-map-dark">
+      <div class="position-map-dark__overlay"></div>
+
+      <div class="position-map-dark__content">
+        <div class="position-map-dark__header">
+          <span class="position-map-dark__badge">
+            <span class="material-icons">sports_soccer</span>
+            MAPA DE POSICIÓN
+          </span>
+
+          <h3>Zona habitual en el campo</h3>
+          <p>Visualiza de forma aproximada las posiciones principales de cada jugador.</p>
+        </div>
+
+        <div class="position-map-dark__players">
+          <div class="dark-player-card dark-player-card--a">
+            <div class="dark-player-card__dot"></div>
+            <div class="dark-player-card__info">
+              <strong id="mapDarkNameA">Jugador A</strong>
+              <small id="mapDarkRolesA">Posiciones</small>
+            </div>
+          </div>
+
+          <div class="dark-player-card dark-player-card--b">
+            <div class="dark-player-card__dot"></div>
+            <div class="dark-player-card__info">
+              <strong id="mapDarkNameB">Jugador B</strong>
+              <small id="mapDarkRolesB">Posiciones</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="position-map-dark__pitch-shell">
+          <div class="position-map-dark__pitch">
+            <svg id="comparisonPitchDark" class="comparison-pitch-dark-svg"></svg>
+          </div>
+        </div>
+
+        <div class="position-map-dark__footer">
+          <span class="material-icons">info</span>
+          <span>
+            La zona marcada representa la posición o posiciones detectadas en la ficha del jugador.
+          </span>
+        </div>
+      </div>
+    </section>
+
+      </div>
+    </section>
+
   </main>
 
   <!-- FOOTER -->
@@ -291,12 +308,11 @@
       <div class="footer-section footer-about">
         <h4>Gestor de talentos FM</h4>
         <p>
-          Plataforma de análisis y comparación de talentos en Football Manager. 
+          Plataforma de análisis y comparación de talentos en Football Manager.
           Descubre, filtra y clustea jugadores según su rendimiento.
         </p>
       </div>
 
-      <!-- Enlaces rápidos -->
       <div class="footer-section footer-links">
         <h4>Enlaces útiles</h4>
         <ul>
@@ -307,15 +323,15 @@
         </ul>
       </div>
 
-      <!-- Contacto / Síguenos -->
       <div class="footer-section footer-social">
         <h4>Síguenos</h4>
         <div class="social-icons">
-          <a href="https://facebook.com/tuPagina"    aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-          <a href="https://twitter.com/tuCuenta"     aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-          <a href="https://instagram.com/tuCuenta"   aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-          <a href="https://linkedin.com/company/tu"   aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+          <a href="https://facebook.com/tuPagina" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="https://twitter.com/tuCuenta" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          <a href="https://instagram.com/tuCuenta" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="https://linkedin.com/company/tu" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
         </div>
+
         <p class="contact-email">
           <span class="material-icons">email</span>
           ronald@gestordetalentosfm.com
@@ -324,7 +340,7 @@
     </div>
 
     <div class="footer-bottom">
-      <p>© 2025 Gestordetalentos. Todos los derechos reservados.</p>
+      <p>© 2026 Gestordetalentos. Todos los derechos reservados.</p>
     </div>
   </footer>
 
@@ -332,54 +348,902 @@
     const ctx = document.getElementById('radarChart').getContext('2d');
     let radarChart = null;
 
-    const positionMap = {
-      POR: [{x:0.5,y:0.05}],
-      DFC: [{x:0.5,y:0.2}],
-      DF:  [{x:0.3,y:0.3},{x:0.7,y:0.3}],
-      MC:  [{x:0.5,y:0.5}],
-      MCO: [{x:0.5,y:0.6}],
-      MCD: [{x:0.3,y:0.5},{x:0.7,y:0.5}],
-      EI:  [{x:0.1,y:0.4}],
-      ED:  [{x:0.9,y:0.4}],
-      MP:  [{x:0.5,y:0.45}],
-      DL:  [{x:0.5,y:0.85}]
-    };
+    /* ========================================================= */
+    /* MAPA OSCURO DE POSICIONES                                */
+    /* ========================================================= */
 
-    function drawPitch(svgId, positions, color) {
-      const svg = document.getElementById(svgId);
-      svg.querySelectorAll('.marker').forEach(el => el.remove());
-      const w = svg.clientWidth, h = svg.clientHeight;
-      positions.forEach(pos => {
-        (positionMap[pos]||[]).forEach(pt => {
-          const sq = document.createElementNS('http://www.w3.org/2000/svg','rect');
-          const size = 70;
-          sq.setAttribute('x', pt.x * w - size/2);
-          sq.setAttribute('y', pt.y * h - size/2);
-          sq.setAttribute('width', size);
-          sq.setAttribute('height', size);
-          sq.setAttribute('rx', size/4);
-          sq.setAttribute('ry', size/4);
-          sq.setAttribute('fill', color);
-          sq.setAttribute('stroke','rgba(0,0,0,0.7)');
-          sq.setAttribute('stroke-width', '1');
-          sq.classList.add('marker');
-          svg.appendChild(sq);
+    function parsePositionEntries(positionText) {
+      return String(positionText || "")
+        .split(",")
+        .map(p => p.trim())
+        .filter(Boolean);
+    }
+
+    function getBaseCode(entry) {
+      const upper = String(entry || "").toUpperCase();
+      const match = upper.match(/\b(POR|DFC|DF|LI|LD|CR|MCD|MC|MCO|MP|ME|EI|ED|DL)\b/);
+      return match ? match[1] : null;
+    }
+
+    function getEntrySides(entry) {
+      const upper = String(entry || "").toUpperCase();
+      const match = upper.match(/\(([^)]+)\)/);
+
+      if (!match) return ["C"];
+
+      let token = match[1].replace(/\s+/g, "");
+      token = token.replace("DER", "D").replace("IZQ", "I");
+
+      const sides = [];
+
+      if (token.includes("D")) sides.push("D");
+      if (token.includes("I")) sides.push("I");
+      if (token.includes("C")) sides.push("C");
+
+      return sides.length ? [...new Set(sides)] : ["C"];
+    }
+
+    function getPositionPoint(code, side, originalEntry = "") {
+      const baseMap = {
+        POR: { x: 8,  y: 31 },
+
+        DFC: { x: 20, y: 31 },
+        DF:  { x: 22, y: 31 },
+        LI:  { x: 24, y: 18 },
+        LD:  { x: 24, y: 44 },
+
+        CR:  { x: 38, y: 31 },
+        MCD: { x: 42, y: 31 },
+        MC:  { x: 50, y: 31 },
+        ME:  { x: 56, y: 31 },
+        MCO: { x: 58, y: 31 },
+        MP:  { x: 64, y: 31 },
+
+        EI:  { x: 72, y: 18 },
+        ED:  { x: 72, y: 44 },
+        DL:  { x: 82, y: 31 }
+      };
+
+      if (!baseMap[code]) return null;
+
+      let { x, y } = baseMap[code];
+
+      const sideShift = {
+        I: -12,
+        D: 12,
+        C: 0
+      };
+
+      const movable = ["DFC", "DF", "CR", "MCD", "MC", "ME", "MCO", "MP", "DL"];
+
+      if (movable.includes(code)) {
+        y += sideShift[side] || 0;
+      }
+
+      const hasParenthesis = /\(/.test(originalEntry);
+      const label = hasParenthesis ? `${code} (${side})` : code;
+
+      return {
+        x,
+        y,
+        code,
+        side,
+        label
+      };
+    }
+
+
+
+    function buildMapPoints(entries, playerKey, playerName) {
+      const points = [];
+
+      entries.forEach(entry => {
+        const code = getBaseCode(entry);
+        if (!code) return;
+
+        const sides = getEntrySides(entry);
+
+        sides.forEach(side => {
+          const point = getPositionPoint(code, side, entry);
+
+          if (point) {
+            points.push({
+              ...point,
+              player: playerKey,
+              playerName: playerName,
+              dx: 0,
+              dy: 0
+            });
+          }
+        });
+      });
+
+      return points;
+    }
+
+    function applyDarkOffsets(points) {
+      points.forEach(p => {
+        p.dx = 0;
+        p.dy = 0;
+      });
+    }
+
+
+    function separateSharedPositions(points) {
+      const groups = {};
+
+      points.forEach(p => {
+        const key = `${p.code}-${p.side}-${Math.round(p.x)}-${Math.round(p.y)}`;
+
+        if (!groups[key]) {
+          groups[key] = [];
+        }
+
+        groups[key].push(p);
+      });
+
+      Object.values(groups).forEach(group => {
+        if (group.length <= 1) return;
+
+        group.sort((a, b) => {
+          return String(a.playerName || "").localeCompare(String(b.playerName || ""));
+        });
+
+        const total = group.length;
+
+        group.forEach((p, index) => {
+          if (total === 2) {
+            const offsets = [
+              { dx: -3.4, dy: -1.4 },
+              { dx:  3.4, dy:  1.4 }
+            ];
+
+            p.dx += offsets[index].dx;
+            p.dy += offsets[index].dy;
+          } else {
+            const angle = (Math.PI * 2 * index) / total;
+            const radius = 3.8;
+
+            p.dx += Math.cos(angle) * radius;
+            p.dy += Math.sin(angle) * radius;
+          }
         });
       });
     }
 
+
+    function avoidMarkerCollisions(points) {
+      const minDistance = 7.4;
+      const maxOffset = 5.5;
+      const iterations = 6;
+
+      for (let iter = 0; iter < iterations; iter++) {
+        for (let i = 0; i < points.length; i++) {
+          for (let j = i + 1; j < points.length; j++) {
+            const a = points[i];
+            const b = points[j];
+
+            const ax = a.x + a.dx;
+            const ay = a.y + a.dy;
+            const bx = b.x + b.dx;
+            const by = b.y + b.dy;
+
+            let diffX = bx - ax;
+            let diffY = by - ay;
+
+            let dist = Math.sqrt(diffX * diffX + diffY * diffY);
+
+            if (dist === 0) {
+              diffX = 0.1;
+              diffY = 0.1;
+              dist = 0.14;
+            }
+
+            if (dist < minDistance) {
+              const push = (minDistance - dist) / 2;
+              const ux = diffX / dist;
+              const uy = diffY / dist;
+
+              a.dx -= ux * push;
+              a.dy -= uy * push;
+              b.dx += ux * push;
+              b.dy += uy * push;
+
+              // Limitar cuánto puede alejarse cada punto de su posición real
+              [a, b].forEach(p => {
+                const current = Math.sqrt(p.dx * p.dx + p.dy * p.dy);
+
+                if (current > maxOffset) {
+                  const scale = maxOffset / current;
+                  p.dx *= scale;
+                  p.dy *= scale;
+                }
+              });
+            }
+          }
+        }
+      }
+    }
+
+
+    function applyLabelOffsets(points) {
+      const groups = {};
+
+      points.forEach(p => {
+        // agrupamos puntos cercanos para separar sus etiquetas
+        const key = `${Math.round(p.x / 8)}-${Math.round(p.y / 8)}`;
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(p);
+      });
+
+      const crowdedSlots = [
+        { dx: -12, dy: -6, anchor: "end" },
+        { dx:  12, dy: -6, anchor: "start" },
+        { dx: -12, dy:  6, anchor: "end" },
+        { dx:  12, dy:  6, anchor: "start" },
+        { dx:   0, dy: -10, anchor: "middle" },
+        { dx:   0, dy:  10, anchor: "middle" },
+        { dx: -14, dy:   0, anchor: "end" },
+        { dx:  14, dy:   0, anchor: "start" }
+      ];
+
+      Object.values(groups).forEach(group => {
+        if (group.length === 1) {
+          const p = group[0];
+
+          // solo etiqueta: colocación inteligente según zona del campo
+          if (p.x < 30) {
+            p.labelDx = 8;
+            p.labelDy = 0;
+            p.labelAnchor = "start";
+          } else if (p.x > 70) {
+            p.labelDx = -8;
+            p.labelDy = 0;
+            p.labelAnchor = "end";
+          } else if (p.y < 20) {
+            p.labelDx = 0;
+            p.labelDy = 8;
+            p.labelAnchor = "middle";
+          } else if (p.y > 42) {
+            p.labelDx = 0;
+            p.labelDy = -8;
+            p.labelAnchor = "middle";
+          } else {
+            p.labelDx = 0;
+            p.labelDy = 8;
+            p.labelAnchor = "middle";
+          }
+        } else {
+          // si están juntas, se reparten alrededor del grupo
+          group.sort((a, b) => a.y - b.y || a.x - b.x);
+
+          group.forEach((p, index) => {
+            const slot = crowdedSlots[index % crowdedSlots.length];
+            p.labelDx = slot.dx;
+            p.labelDy = slot.dy;
+            p.labelAnchor = slot.anchor;
+          });
+        }
+      });
+    }
+
+
+    function drawDarkMarker(svg, point, config) {
+      const ns = "http://www.w3.org/2000/svg";
+
+      const x = point.x + (point.dx || 0);
+      const y = point.y + (point.dy || 0);
+
+      const group = document.createElementNS(ns, "g");
+
+      // Halo exterior del color del jugador
+      const halo = document.createElementNS(ns, "circle");
+      halo.setAttribute("cx", x);
+      halo.setAttribute("cy", y);
+      halo.setAttribute("r", 5.8);
+      halo.setAttribute("fill", config.halo);
+      halo.setAttribute("class", "pitch-dark-marker-halo");
+
+      // Glow difuminado
+      const glow = document.createElementNS(ns, "circle");
+      glow.setAttribute("cx", x);
+      glow.setAttribute("cy", y);
+      glow.setAttribute("r", 4.9);
+      glow.setAttribute("fill", config.glow);
+      glow.setAttribute("class", "pitch-dark-marker-glow");
+
+      // Sombra sutil
+      const shadow = document.createElementNS(ns, "ellipse");
+      shadow.setAttribute("cx", x);
+      shadow.setAttribute("cy", y + 2.3);
+      shadow.setAttribute("rx", 2.8);
+      shadow.setAttribute("ry", 1.1);
+      shadow.setAttribute("fill", "rgba(0,0,0,0.22)");
+      shadow.setAttribute("class", "pitch-dark-marker-shadow");
+
+      // Núcleo principal
+      const core = document.createElementNS(ns, "circle");
+      core.setAttribute("cx", x);
+      core.setAttribute("cy", y);
+      core.setAttribute("r", 3.05);
+      core.setAttribute("fill", config.main);
+      core.setAttribute("class", "pitch-dark-marker-core");
+
+      // Aro exterior del mismo color, NO blanco
+      const ring = document.createElementNS(ns, "circle");
+      ring.setAttribute("cx", x);
+      ring.setAttribute("cy", y);
+      ring.setAttribute("r", 3.65);
+      ring.setAttribute("stroke", config.ring);
+      ring.setAttribute("class", "pitch-dark-marker-ring");
+
+      // Aro interior suave
+      const innerRing = document.createElementNS(ns, "circle");
+      innerRing.setAttribute("cx", x);
+      innerRing.setAttribute("cy", y);
+      innerRing.setAttribute("r", 2.3);
+      innerRing.setAttribute("stroke", config.inner);
+      innerRing.setAttribute("class", "pitch-dark-marker-inner-ring");
+
+      // Brillo superior leve
+      const highlight = document.createElementNS(ns, "circle");
+      highlight.setAttribute("cx", x - 0.9);
+      highlight.setAttribute("cy", y - 1.0);
+      highlight.setAttribute("r", 0.9);
+      highlight.setAttribute("fill", "rgba(255,255,255,0.20)");
+      highlight.setAttribute("class", "pitch-dark-marker-highlight");
+
+      const code = point.code || "";
+      const side = point.side || "";
+
+      group.appendChild(halo);
+      group.appendChild(glow);
+      group.appendChild(shadow);
+      group.appendChild(core);
+      group.appendChild(ring);
+      group.appendChild(innerRing);
+      group.appendChild(highlight);
+
+      if (side && side !== "C") {
+        const codeText = document.createElementNS(ns, "text");
+        codeText.setAttribute("x", x);
+        codeText.setAttribute("y", y - 0.68);
+        codeText.setAttribute("class", "pitch-dark-marker-code");
+        codeText.textContent = code;
+
+        const sideText = document.createElementNS(ns, "text");
+        sideText.setAttribute("x", x);
+        sideText.setAttribute("y", y + 1.22);
+        sideText.setAttribute("class", "pitch-dark-marker-side");
+        sideText.textContent = side;
+
+        group.appendChild(codeText);
+        group.appendChild(sideText);
+      } else {
+        const codeText = document.createElementNS(ns, "text");
+        codeText.setAttribute("x", x);
+        codeText.setAttribute("y", y + 0.12);
+        codeText.setAttribute("class", "pitch-dark-marker-code");
+        codeText.textContent = code;
+
+        group.appendChild(codeText);
+      }
+
+      svg.appendChild(group);
+    }
+
+    function drawDarkPitchBase(svg) {
+      svg.innerHTML = "";
+      svg.setAttribute("viewBox", "0 0 100 62");
+      svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+
+      const ns = "http://www.w3.org/2000/svg";
+
+      function add(el) {
+        svg.appendChild(el);
+      }
+
+      function line(x1, y1, x2, y2) {
+        const el = document.createElementNS(ns, "line");
+        el.setAttribute("x1", x1);
+        el.setAttribute("y1", y1);
+        el.setAttribute("x2", x2);
+        el.setAttribute("y2", y2);
+        el.setAttribute("class", "pitch-dark-line");
+        add(el);
+      }
+
+      function rect(x, y, w, h) {
+        const el = document.createElementNS(ns, "rect");
+        el.setAttribute("x", x);
+        el.setAttribute("y", y);
+        el.setAttribute("width", w);
+        el.setAttribute("height", h);
+        el.setAttribute("class", "pitch-dark-line");
+        add(el);
+      }
+
+      function circle(cx, cy, r, cls = "pitch-dark-line") {
+        const el = document.createElementNS(ns, "circle");
+        el.setAttribute("cx", cx);
+        el.setAttribute("cy", cy);
+        el.setAttribute("r", r);
+        el.setAttribute("class", cls);
+        add(el);
+      }
+
+      function path(d) {
+        const el = document.createElementNS(ns, "path");
+        el.setAttribute("d", d);
+        el.setAttribute("class", "pitch-dark-line");
+        add(el);
+      }
+
+      // Borde exterior
+      rect(3, 3, 94, 56);
+
+      // Línea central
+      line(50, 3, 50, 59);
+
+      // Círculo central
+      circle(50, 31, 7);
+      circle(50, 31, 0.45, "pitch-dark-spot");
+
+      // Área izquierda
+      rect(3, 14, 18, 34);
+      rect(3, 22, 7, 18);
+      circle(12, 31, 0.45, "pitch-dark-spot");
+      path("M 21 24 A 7 7 0 0 1 21 38");
+
+      // Área derecha
+      rect(79, 14, 18, 34);
+      rect(90, 22, 7, 18);
+      circle(88, 31, 0.45, "pitch-dark-spot");
+      path("M 79 24 A 7 7 0 0 0 79 38");
+
+      // Porterías pequeñas
+      rect(0.8, 26, 2.2, 10);
+      rect(97, 26, 2.2, 10);
+    }
+
+    function renderComparisonPitchDark(entriesA, entriesB, nameA, nameB) {
+      const svg = document.getElementById("comparisonPitchDark");
+
+      if (!svg) return;
+
+      drawDarkPitchBase(svg);
+      drawPitchDirection(svg);
+
+      const colors = {
+        A: {
+          main: "#2f7cff",
+          glow: "rgba(47, 124, 255, 0.42)",
+          halo: "rgba(47, 124, 255, 0.24)",
+          ring: "rgba(119, 174, 255, 0.95)",
+          inner: "rgba(204, 225, 255, 0.35)"
+        },
+        B: {
+          main: "#f28b1d",
+          glow: "rgba(242, 139, 29, 0.42)",
+          halo: "rgba(242, 139, 29, 0.24)",
+          ring: "rgba(255, 185, 96, 0.95)",
+          inner: "rgba(255, 231, 196, 0.35)"
+        }
+      };
+
+        const pointsA = buildMapPoints(entriesA, "A", nameA);
+        const pointsB = buildMapPoints(entriesB, "B", nameB);
+        const allPoints = [...pointsA, ...pointsB];
+
+        applyDarkOffsets(allPoints);
+        separateSharedPositions(allPoints);
+        avoidMarkerCollisions(allPoints);
+
+        pointsA.forEach(point => drawDarkMarker(svg, point, colors.A));
+        pointsB.forEach(point => drawDarkMarker(svg, point, colors.B));
+    }
+
+
+    function drawPitchDirection(svg) {
+      const ns = "http://www.w3.org/2000/svg";
+
+      function add(el) {
+        svg.appendChild(el);
+      }
+
+      function text(x, y, value) {
+        const label = document.createElementNS(ns, "text");
+        label.setAttribute("x", x);
+        label.setAttribute("y", y);
+        label.setAttribute("class", "pitch-dark-direction-text");
+        label.textContent = value;
+        add(label);
+      }
+
+      function roundedRect(x, y, w, h) {
+        const rect = document.createElementNS(ns, "rect");
+        rect.setAttribute("x", x);
+        rect.setAttribute("y", y);
+        rect.setAttribute("width", w);
+        rect.setAttribute("height", h);
+        rect.setAttribute("rx", 1.8);
+        rect.setAttribute("class", "pitch-dark-direction-bg");
+        add(rect);
+      }
+
+      roundedRect(6, 5.4, 15, 4.4);
+      roundedRect(79, 5.4, 15, 4.4);
+
+      text(13.5, 7.65, "Defiende");
+      text(86.5, 7.65, "Ataca");
+
+      const line = document.createElementNS(ns, "line");
+      line.setAttribute("x1", 40);
+      line.setAttribute("y1", 7.7);
+      line.setAttribute("x2", 60);
+      line.setAttribute("y2", 7.7);
+      line.setAttribute("class", "pitch-dark-direction-arrow");
+      add(line);
+
+      const arrow = document.createElementNS(ns, "path");
+      arrow.setAttribute("d", "M 60 7.7 L 57.5 6.4 M 60 7.7 L 57.5 9");
+      arrow.setAttribute("class", "pitch-dark-direction-arrow");
+      add(arrow);
+
+      text(50, 4.8, "Dirección de juego");
+    }
+    /* ========================================================= */
+    /* COMPARACIÓN PRINCIPAL                                    */
+    /* ========================================================= */
+
+    const jugadoresDisponibles = JSON.parse(
+      document.getElementById("jugadores-data").textContent
+    );
+
+    function setupPlayerAutocomplete(inputId, suggestionsId) {
+      const input = document.getElementById(inputId);
+      const box = document.getElementById(suggestionsId);
+
+      if (!input || !box) return;
+
+      let activeIndex = -1;
+      let currentResults = [];
+
+      function normalizeText(text) {
+        return String(text || "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "");
+      }
+
+      function closeSuggestions() {
+        box.classList.remove("active");
+        box.innerHTML = "";
+        activeIndex = -1;
+        currentResults = [];
+      }
+
+      function renderSuggestions() {
+        const query = normalizeText(input.value.trim());
+
+        if (query.length < 2) {
+          closeSuggestions();
+          return;
+        }
+
+        currentResults = jugadoresDisponibles
+          .filter(nombre => normalizeText(nombre).includes(query))
+          .slice(0, 6);
+
+        box.innerHTML = "";
+
+        if (!currentResults.length) {
+          box.innerHTML = `<div class="suggestion-empty">No se encontraron jugadores</div>`;
+          box.classList.add("active");
+          return;
+        }
+
+        currentResults.forEach((nombre, index) => {
+          const item = document.createElement("div");
+          item.className = "suggestion-item";
+          item.textContent = nombre;
+
+          item.addEventListener("mousedown", event => {
+            event.preventDefault();
+            input.value = nombre;
+            closeSuggestions();
+          });
+
+          if (index === activeIndex) {
+            item.classList.add("active");
+          }
+
+          box.appendChild(item);
+        });
+
+        box.classList.add("active");
+      }
+
+      input.addEventListener("input", () => {
+        activeIndex = -1;
+        renderSuggestions();
+      });
+
+      input.addEventListener("focus", () => {
+        renderSuggestions();
+      });
+
+      input.addEventListener("keydown", event => {
+        if (!box.classList.contains("active")) return;
+
+        if (event.key === "ArrowDown") {
+          event.preventDefault();
+          activeIndex = Math.min(activeIndex + 1, currentResults.length - 1);
+          renderSuggestions();
+        }
+
+        if (event.key === "ArrowUp") {
+          event.preventDefault();
+          activeIndex = Math.max(activeIndex - 1, 0);
+          renderSuggestions();
+        }
+
+        if (event.key === "Enter" && activeIndex >= 0) {
+          event.preventDefault();
+          input.value = currentResults[activeIndex];
+          closeSuggestions();
+        }
+
+        if (event.key === "Escape") {
+          closeSuggestions();
+        }
+      });
+
+      document.addEventListener("click", event => {
+        if (!input.contains(event.target) && !box.contains(event.target)) {
+          closeSuggestions();
+        }
+      });
+    }
+
+    setupPlayerAutocomplete("inputA", "suggestionsA");
+    setupPlayerAutocomplete("inputB", "suggestionsB");
+
+
+
+    function getPlayerImageUrl(playerName) {
+      return `/static/images/players/${encodeURIComponent(playerName)}.jpg`;
+    }
+
+    function renderTablePlayerHeader(thId, playerName) {
+      const th = document.getElementById(thId);
+      th.innerHTML = "";
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "table-player-header";
+
+      const img = document.createElement("img");
+      img.className = "table-player-photo";
+      img.src = getPlayerImageUrl(playerName);
+      img.alt = playerName;
+
+      img.onerror = () => {
+        img.onerror = null;
+        img.src = "/static/images/players/default_player.jpg";
+      };
+
+      const name = document.createElement("span");
+      name.className = "table-player-name";
+      name.textContent = playerName;
+
+      wrapper.appendChild(img);
+      wrapper.appendChild(name);
+      th.appendChild(wrapper);
+    }
+
+
+
+
+
+
+
+    const ATTR_LABELS = {
+      "% Pase": "Precisión de pase",
+      "% disparos": "Precisión de disparo",
+      "Altura": "Altura",
+      "Asis": "Asistencias",
+      "Asis/90": "Asistencias por 90 min",
+      "Bal aér/90": "Balones aéreos por 90 min",
+      "Club": "Club",
+      "Desp": "Despejes",
+      "Disparos": "Disparos totales",
+      "Edad": "Edad",
+      "Entr/90": "Entradas por 90 min",
+      "Gol": "Goles",
+      "Gol/90": "Goles por 90 min",
+      "Media": "Valoración media",
+      "Min": "Minutos jugados",
+      "Min/Par": "Minutos por partido",
+      "Part": "Partidos jugados",
+      "Pas Clv/90": "Pases clave por 90 min",
+      "Pases prog": "Pases progresivos",
+      "Pases prog/90": "Pases progresivos por 90 min",
+      "Peso": "Peso",
+      "Pos Gan/90": "Posesiones ganadas por 90 min",
+      "Pos Perd/90": "Posesiones perdidas por 90 min",
+      "Posición": "Posición",
+      "Ps C/90": "Pases completados por 90 min",
+      "Ps I/90": "Pases intentados por 90 min",
+      "Reg": "Regates",
+      "Reg/90": "Regates por 90 min",
+      "Rob/90": "Robos por 90 min",
+      "Sueldo": "Sueldo anual",
+      "Tir/90": "Tiros por 90 min",
+      "TirP/90": "Tiros a puerta por 90 min",
+      "Titular": "Partidos como titular",
+      "Valor de traspaso": "Valor de mercado",
+      "xG": "Goles esperados"
+    };
+
+    const HIDDEN_FIELDS = new Set([
+      "FotoURL",
+      "Nombre",
+      "ValorNum",
+      "BDs",
+      "BRe",
+      "Enc",
+      "Enc/90",
+      "Pen. parados",
+      "Pen. recibidos",
+      "Portería imbatida",
+      "Prop. penaltis parados",
+      "Rp %"
+    ]);
+
+    function getReadableAttributeName(field) {
+      return ATTR_LABELS[field] || field;
+    }
+
+    function isEmptyTableValue(value) {
+      if (value === null || value === undefined) return true;
+
+      const text = String(value).trim();
+
+      if (text === "") return true;
+      if (text === "-") return true;
+      if (text === "–") return true;
+      if (text.toLowerCase() === "nan") return true;
+      if (text.toLowerCase() === "none") return true;
+
+      return false;
+    }
+
+    function isZeroValue(value) {
+      if (value === null || value === undefined) return false;
+
+      const text = String(value).trim();
+
+      if (text === "0") return true;
+      if (text === "0.0") return true;
+      if (text === "0.00") return true;
+      if (text === "0%") return true;
+
+      return false;
+    }
+
+    function shouldHideAttribute(field, valueA, valueB) {
+      if (HIDDEN_FIELDS.has(field)) return true;
+
+      const bothEmpty = isEmptyTableValue(valueA) && isEmptyTableValue(valueB);
+      if (bothEmpty) return true;
+
+      const bothZero = isZeroValue(valueA) && isZeroValue(valueB);
+      if (bothZero) return true;
+
+      return false;
+    }
+
+
+
+
+
+
+    function showToast(message, type = "error", title = "Aviso") {
+      const container = document.getElementById("toastContainer");
+      if (!container) return;
+
+      const toast = document.createElement("div");
+      toast.className = `app-toast app-toast--${type}`;
+
+      const icon = type === "success" ? "check_circle" : "warning";
+
+      toast.innerHTML = `
+        <div class="app-toast__icon">
+          <span class="material-icons">${icon}</span>
+        </div>
+        <div class="app-toast__content">
+          <strong>${title}</strong>
+          <span>${message}</span>
+        </div>
+      `;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.add("hide");
+
+        toast.addEventListener("animationend", () => {
+          toast.remove();
+        }, { once: true });
+      }, 4200);
+    }
+
+
+
+
+
+
+
+
     document.getElementById('btnComparar').addEventListener('click', () => {
       const j1 = encodeURIComponent(document.getElementById('inputA').value.trim());
       const j2 = encodeURIComponent(document.getElementById('inputB').value.trim());
-      if (!j1 || !j2) return alert('Escribe ambos jugadores.');
+
+      if (!j1 || !j2) {
+        showToast("Escribe el nombre de ambos jugadores antes de comparar.", "error", "Faltan jugadores");
+        return;
+      }
 
       fetch(`/api/comparar?jugador1=${j1}&jugador2=${j2}`)
-        .then(res => res.json())
+        .then(async res => {
+          const data = await res.json();
+
+          if (!res.ok || data.error) {
+            throw new Error(data.error || "Error al comparar jugadores.");
+          }
+
+          return data;
+        })
         .then(data => {
           const { labels, statsA, statsB, nameA, nameB, perfilA, perfilB } = data;
 
-          // Radar chart
+          /* ===================== */
+          /* LEYENDA DEL RADAR      */
+          /* ===================== */
+
+          document.getElementById('legendNameA').textContent = nameA;
+          document.getElementById('legendNameB').textContent = nameB;
+
+          document.getElementById('legendRoleA').textContent =
+            perfilA["Posición"] || "Posición no disponible";
+
+          document.getElementById('legendRoleB').textContent =
+            perfilB["Posición"] || "Posición no disponible";
+
+          /* ===================== */
+          /* MAPA OSCURO            */
+          /* ===================== */
+
+          document.getElementById("mapDarkNameA").textContent = nameA;
+          document.getElementById("mapDarkNameB").textContent = nameB;
+
+          document.getElementById("mapDarkRolesA").textContent =
+            perfilA["Posición"] || "Posición no disponible";
+
+          document.getElementById("mapDarkRolesB").textContent =
+            perfilB["Posición"] || "Posición no disponible";
+
+          const entriesA = parsePositionEntries(perfilA["Posición"] || "");
+          const entriesB = parsePositionEntries(perfilB["Posición"] || "");
+
+          renderComparisonPitchDark(entriesA, entriesB, nameA, nameB);
+
+          /* ===================== */
+          /* RADAR CHART            */
+          /* ===================== */
+
           if (radarChart) radarChart.destroy();
+
           radarChart = new Chart(ctx, {
             type: 'radar',
             data: {
@@ -389,74 +1253,127 @@
                   label: nameA,
                   data: statsA,
                   fill: true,
-                  backgroundColor: 'rgba(0,77,153,0.2)',
-                  borderColor: '#004d99',
-                  pointBackgroundColor: '#004d99'
+                  backgroundColor: 'rgba(13, 110, 253, 0.16)',
+                  borderColor: '#0d6efd',
+                  pointBackgroundColor: '#0d6efd',
+                  pointBorderColor: '#ffffff',
+                  pointHoverBackgroundColor: '#0d6efd',
+                  pointHoverBorderColor: '#ffffff',
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                  borderWidth: 3
                 },
                 {
                   label: nameB,
                   data: statsB,
                   fill: true,
-                  backgroundColor: 'rgba(255,153,51,0.2)',
-                  borderColor: '#ff9933',
-                  pointBackgroundColor: '#ff9933'
+                  backgroundColor: 'rgba(242, 139, 29, 0.18)',
+                  borderColor: '#f28b1d',
+                  pointBackgroundColor: '#f28b1d',
+                  pointBorderColor: '#ffffff',
+                  pointHoverBackgroundColor: '#f28b1d',
+                  pointHoverBorderColor: '#ffffff',
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                  borderWidth: 3
                 }
               ]
             },
             options: {
-              scales: {
-                r: {
-                  beginAtZero: true,
-                  suggestedMax: 100,
-                  ticks: { stepSize: 20 },
-                  pointLabels: { font: { size: 14 } }
+              responsive: true,
+              maintainAspectRatio: false,
+              layout: {
+                padding: 10
+              },
+              elements: {
+                line: {
+                  tension: 0
                 }
               },
-              plugins: { legend: { position: 'top' } },
-              responsive: true,
-              maintainAspectRatio: false
+              plugins: {
+                legend: {
+                  display: false
+                },
+                tooltip: {
+                  backgroundColor: 'rgba(34, 45, 58, 0.95)',
+                  titleColor: '#fff',
+                  bodyColor: '#fff',
+                  borderColor: 'rgba(255,255,255,0.15)',
+                  borderWidth: 1,
+                  padding: 10
+                }
+              },
+              scales: {
+                r: {
+                  min: 0,
+                  max: 100,
+                  beginAtZero: true,
+                  ticks: {
+                    stepSize: 20,
+                    backdropColor: 'transparent',
+                    color: '#6b786f',
+                    font: {
+                      size: 12,
+                      weight: '600'
+                    }
+                  },
+                  angleLines: {
+                    color: 'rgba(255,255,255,0.45)'
+                  },
+                  grid: {
+                    color: 'rgba(255,255,255,0.36)'
+                  },
+                  pointLabels: {
+                    color: '#2c3b2f',
+                    font: {
+                      size: 15,
+                      weight: '700'
+                    }
+                  }
+                }
+              }
             }
           });
 
-          // Tabla
-          document.getElementById('thA').textContent = nameA;
-          document.getElementById('thB').textContent = nameB;
+          /* ===================== */
+          /* TABLA                  */
+          /* ===================== */
+
+          renderTablePlayerHeader("thA", nameA);
+          renderTablePlayerHeader("thB", nameB);
+
           const tbody = document.querySelector('#tablaComparacion tbody');
           tbody.innerHTML = '';
-          let campos = [...new Set([...Object.keys(perfilA), ...Object.keys(perfilB)])]
-                        .filter(c => c !== 'FotoURL');
-          if (perfilA.FotoURL || perfilB.FotoURL) {
-            const trPhoto = document.createElement('tr');
-            trPhoto.innerHTML = `
-              <td>Foto</td>
-              <td>${perfilA.FotoURL?`<img src="${perfilA.FotoURL}" class="foto-jugador"/>`:''}</td>
-              <td>${perfilB.FotoURL?`<img src="${perfilB.FotoURL}" class="foto-jugador"/>`:''}</td>
-            `;
-            tbody.appendChild(trPhoto);
-          }
+
+          const campos = [...new Set([...Object.keys(perfilA), ...Object.keys(perfilB)])]
+            .filter(c => !shouldHideAttribute(c, perfilA[c], perfilB[c]));
+
           campos.forEach(c => {
+            const valueA = perfilA[c] ?? "";
+            const valueB = perfilB[c] ?? "";
+
+            if (shouldHideAttribute(c, valueA, valueB)) return;
+
             const tr = document.createElement('tr');
+
             tr.innerHTML = `
-              <td>${c}</td>
-              <td>${perfilA[c]||''}</td>
-              <td>${perfilB[c]||''}</td>
+              <td>${getReadableAttributeName(c)}</td>
+              <td>${valueA}</td>
+              <td>${valueB}</td>
             `;
+
             tbody.appendChild(tr);
           });
-
-          document.getElementById('labelA').textContent = nameA;
-          document.getElementById('labelB').textContent = nameB;
-          const extractCodes = s =>
-            s.split(',').map(x=> (x.match(/\b[A-Z]{2,3}\b/)||[])[0]).filter(Boolean);
-
-          drawPitch('pitchA', extractCodes(perfilA.Posición||''), 'rgba(0,0,255,0.4)');
-          drawPitch('pitchB', extractCodes(perfilB.Posición||''), 'rgba(255,0,0,0.4)');
+        })
+        .catch(err => {
+          showToast(err.message, "error", "No se puede realizar la comparación, ambos tienen que tener la misma posición de juego");
         });
     });
 
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('btnComparar').click();
     });
-  </script>
+</script>
+
 </body>
 </html>

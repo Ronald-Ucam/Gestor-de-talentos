@@ -71,39 +71,191 @@
 
 
   <style>
+/* ===================================== */
+/* LEYENDA COMPACTA Y VISUAL             */
+/* ===================================== */
+
 .legend {
-  background: var(--clr-glass);
-  backdrop-filter: blur(8px);
-  border-radius: var(--radius);
-  padding: 20px;
-  margin: 20px auto;
   max-width: 1100px;
+  margin: 2rem auto 3rem;
+  padding: 1.15rem 1.2rem;
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.90), rgba(255,255,255,0.78));
+  border: 1px solid rgba(255,255,255,0.62);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.12);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
-.legend h3 {
-  margin-bottom: 12px;
-  font-size: 1.4rem;
-  color: var(--clr-primary);
-  text-align: center;
+
+.legend-header-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
 }
-.legend-content {
-  max-height: 300px;
+
+.legend-badge-compact {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 63, 120, 0.10);
+  color: #003f78;
+}
+
+.legend-badge-compact .material-icons {
+  font-size: 1.25rem;
+}
+
+.legend-title-block {
+  min-width: 0;
+}
+
+.legend-kicker {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.24rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(255, 179, 71, 0.18);
+  color: #8a5200;
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 0.25rem;
+}
+
+.legend-title-block h3 {
+  margin: 0;
+  color: #003f78;
+  font-size: 1.35rem;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.legend-title-block p {
+  margin: 0.2rem 0 0;
+  color: #607286;
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.legend-grid {
+  max-height: 330px;
   overflow-y: auto;
-  padding-right: 10px;
-}
-.legend-content dl {
+  padding-right: 0.35rem;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 8px 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
 }
-.legend-content dt {
-  font-weight: 600;
-  color: var(--clr-primary-hover);
+
+/* Scroll fino */
+.legend-grid::-webkit-scrollbar {
+  width: 9px;
 }
-.legend-content dd {
-  margin: 0 0 8px;
-  color: var(--clr-text);
-  font-size: 0.9rem;
+
+.legend-grid::-webkit-scrollbar-track {
+  background: rgba(226,232,240,0.75);
+  border-radius: 999px;
 }
+
+.legend-grid::-webkit-scrollbar-thumb {
+  background: #8a96a3;
+  border-radius: 999px;
+}
+
+.legend-grid::-webkit-scrollbar-thumb:hover {
+  background: #4a5568;
+}
+
+.legend-item {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 145px 1fr;
+  gap: 0.55rem;
+  align-items: center;
+  min-height: 48px;
+  padding: 0.55rem 0.7rem;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.88);
+  border: 1px solid rgba(210, 224, 238, 0.9);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.045);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.legend-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55rem;
+  bottom: 0.55rem;
+  width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #003f78, #ffb347);
+}
+
+.legend-item:hover {
+  transform: translateY(-1px);
+  background: #ffffff;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.075);
+}
+
+.legend-key {
+  color: #003f78;
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 1.2;
+  padding-left: 0.3rem;
+}
+
+.legend-value {
+  color: #5d6f82;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .legend-grid {
+    grid-template-columns: 1fr;
+    max-height: 430px;
+  }
+
+  .legend-item {
+    grid-template-columns: 130px 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .legend {
+    padding: 1rem;
+  }
+
+  .legend-header-compact {
+    align-items: flex-start;
+  }
+
+  .legend-badge-compact {
+    width: 36px;
+    height: 36px;
+  }
+
+  .legend-item {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  .legend-value {
+    padding-left: 0.3rem;
+  }
+}
+
 
 /* ===== Rejilla principal ===== */
 section.filters {
@@ -328,6 +480,123 @@ details.advanced-filters .adv-grid label dr {
   text-align: center;
 }
 
+/* ===================================== */
+/* AUTOCOMPLETADO HOME - NOMBRE JUGADOR  */
+/* ===================================== */
+
+.filter-field-autocomplete {
+  position: relative;
+}
+
+.home-autocomplete {
+  position: relative;
+}
+
+.home-suggestions-box {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  left: 0;
+  right: 0;
+  z-index: 5000;
+  display: none;
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 0.35rem;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.98);
+  border: 1px solid rgba(16, 42, 67, 0.12);
+  box-shadow: 0 18px 36px rgba(0,0,0,0.16);
+}
+
+.home-suggestions-box.active {
+  display: block;
+}
+
+.home-suggestion-item {
+  padding: 0.7rem 0.85rem;
+  border-radius: 12px;
+  color: #243447;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.home-suggestion-item:hover,
+.home-suggestion-item.active {
+  background: rgba(0, 77, 153, 0.09);
+  color: var(--clr-primary);
+}
+
+.home-suggestion-empty {
+  padding: 0.75rem 0.85rem;
+  color: #7b8794;
+  font-size: 0.88rem;
+}
+
+/* ===================================== */
+/* FIX AUTOCOMPLETADO HOME - DEFINITIVO  */
+/* ===================================== */
+
+.players-filter-section,
+.players-filter-grid,
+.filter-field-autocomplete,
+.home-autocomplete {
+  overflow: visible !important;
+}
+
+.filter-field-autocomplete {
+  position: relative;
+}
+
+.home-autocomplete {
+  position: relative;
+  width: 100%;
+}
+
+.home-suggestions-box {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  left: 0;
+  right: 0;
+  z-index: 999999 !important;
+  display: none;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 0.35rem;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.99);
+  border: 1px solid rgba(16, 42, 67, 0.12);
+  box-shadow: 0 18px 36px rgba(0,0,0,0.20);
+}
+
+.home-suggestions-box.active {
+  display: block !important;
+}
+
+.home-suggestion-item {
+  padding: 0.7rem 0.85rem;
+  border-radius: 12px;
+  color: #243447;
+  font-size: 0.9rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.home-suggestion-item:hover,
+.home-suggestion-item.active {
+  background: rgba(0, 77, 153, 0.09);
+  color: var(--clr-primary);
+}
+
+.home-suggestion-empty {
+  padding: 0.75rem 0.85rem;
+  color: #7b8794;
+  font-size: 0.88rem;
+}
+
+
   </style>
 </head>
 <body>
@@ -411,15 +680,62 @@ details.advanced-filters .adv-grid label dr {
     {% endwith %}
 
   <!-- HERO -->
-  <section class="hero">
-  <div class="hero-background"></div>
-    <div class="hero-content container">
-      <h1 class="hero-title">Gestor de Jugadores</h1>
-      <p class="hero-subtitle">
-        ¡Encuentra y compara talentos de Football Manager!
-      </p>
-        <a href="#players" class="btn-hero">Ver Jugadores <span class="material-icons">arrow_forward</span></a>
-      </a>
+  <section class="home-hero">
+    <div class="home-hero__background"></div>
+    <div class="home-hero__overlay"></div>
+
+    <div class="home-hero__content container">
+      <div class="home-hero__text">
+        <span class="home-hero__badge">
+          <span class="material-icons">sports_soccer</span>
+          Gestor de Talentos FM
+        </span>
+
+        <h1>Analiza, filtra y compara talentos de Football Manager</h1>
+
+        <p>
+          Explora jugadores, detecta perfiles interesantes y compara su rendimiento
+          con métricas visuales, radar de atributos y mapa de posiciones.
+        </p>
+
+        <div class="home-hero__actions">
+          <a href="#players" class="home-hero__btn home-hero__btn--primary">
+            Ver jugadores
+            <span class="material-icons">arrow_forward</span>
+          </a>
+
+          <a href="/comparacion" class="home-hero__btn home-hero__btn--secondary">
+            Ir al comparador
+            <span class="material-icons">compare_arrows</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="home-hero__panel">
+        <div class="home-hero__stat">
+          <span class="material-icons">manage_search</span>
+          <div>
+            <strong>Filtrado avanzado</strong>
+            <small>Busca por edad, posición, goles, asistencias y más.</small>
+          </div>
+        </div>
+
+        <div class="home-hero__stat">
+          <span class="material-icons">compare_arrows</span>
+          <div>
+            <strong>Comparación directa</strong>
+            <small>Enfrenta dos jugadores y revisa sus diferencias clave.</small>
+          </div>
+        </div>
+
+        <div class="home-hero__stat">
+          <span class="material-icons">scatter_plot</span>
+          <div>
+            <strong>Clustering</strong>
+            <small>Agrupa jugadores según rendimiento y perfil deportivo.</small>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -429,28 +745,39 @@ details.advanced-filters .adv-grid label dr {
   <main class="container main-content" id="players">
     <h2 class="page-title">Lista de Jugadores</h2>
     
-    <section class="upload-html-section">
+    <section class="upload-html-section upload-html-section-modern">
 
       {% if current_user.is_authenticated %}
 
-        <div class="upload-html-box">
-          <div class="upload-html-info">
-            <span class="material-icons upload-icon">upload_file</span>
-            <div>
-              <strong>Subir archivo HTML</strong>
-              <p class="upload-desc">
-                Selecciona un archivo <b>.html</b> exportado desde Football Manager u otra herramienta compatible. 
-                El sistema procesará e integrará la información de jugadores contenida en él.
-              </p>
-            </div>
+        <div class="upload-html-card upload-html-card--active">
+          <div class="upload-html-card__icon">
+            <span class="material-icons">cloud_upload</span>
           </div>
 
-          <form class="upload-html-form" action="/upload_html" method="POST" enctype="multipart/form-data">
-            <input type="file" id="htmlFile" name="htmlFile" accept=".html,.htm" required />
-            <button type="submit">
-              <span class="material-icons" style="vertical-align: middle;">cloud_upload</span> Subir HTML
-            </button>
-          </form>
+          <div class="upload-html-card__content">
+            <span class="upload-html-card__badge">Base de datos personalizada</span>
+
+            <h3>Importar jugadores desde Football Manager</h3>
+
+            <p>
+              Sube un archivo <strong>.html</strong> exportado desde Football Manager.
+              El sistema procesará la información y actualizará la base de jugadores.
+            </p>
+
+            <form class="upload-html-form upload-html-form-modern" action="/upload_html" method="POST" enctype="multipart/form-data">
+              <label class="upload-file-label" for="htmlFile">
+                <span class="material-icons">description</span>
+                <span id="fileNameText">Seleccionar archivo HTML</span>
+              </label>
+
+              <input type="file" id="htmlFile" name="htmlFile" accept=".html,.htm" required />
+
+              <button type="submit" class="upload-submit-btn">
+                <span class="material-icons">cloud_upload</span>
+                Subir archivo
+              </button>
+            </form>
+          </div>
 
           <div id="loadingOverlay" class="loading-overlay hidden">
             <div>
@@ -462,22 +789,26 @@ details.advanced-filters .adv-grid label dr {
 
       {% else %}
 
-        <div class="upload-html-box">
-          <div class="upload-html-info">
-            <span class="material-icons upload-icon">lock</span>
-            <div>
-              <strong>Inicia sesión para subir tus propios archivos</strong>
-              <p class="upload-desc">
-                Puedes explorar la aplicación con los datos de ejemplo sin registrarte. 
-                Para importar y guardar tus propios archivos HTML de Football Manager necesitas iniciar sesión.
-              </p>
-            </div>
+        <div class="upload-html-card upload-html-card--locked">
+          <div class="upload-html-card__icon upload-html-card__icon--locked">
+            <span class="material-icons">lock</span>
           </div>
 
-          <a href="{{ url_for('auth.login') }}" class="btn-login-upload">
-            <span class="material-icons">login</span>
-            Iniciar sesión
-          </a>
+          <div class="upload-html-card__content">
+            <span class="upload-html-card__badge">Acceso limitado</span>
+
+            <h3>Inicia sesión para importar tus propios datos</h3>
+
+            <p>
+              Puedes explorar la aplicación con los datos de ejemplo. Para subir y guardar
+              tus propios archivos HTML de Football Manager necesitas iniciar sesión.
+            </p>
+
+            <a href="{{ url_for('auth.login') }}" class="upload-login-btn">
+              <span class="material-icons">login</span>
+              Iniciar sesión
+            </a>
+          </div>
         </div>
 
       {% endif %}
@@ -486,74 +817,147 @@ details.advanced-filters .adv-grid label dr {
 
 
     <!-- FILTROS DE BÚSQUEDA -->
-    <section class="filters">
+    <!-- FILTROS DE BÚSQUEDA -->
+    <section class="players-filter-section">
+        <div class="players-filter-header">
+          <span class="players-filter-badge">
+            <span class="material-icons">manage_search</span>
+            Búsqueda de jugadores
+          </span>
 
-      
-      <label>Nombre:
-        <input
-          type="text"
-          id="filtroNombre"
-          list="nombresList"
-          placeholder="Ej. Messi"
-          autocomplete="off"
-        />
-      </label>
-      <datalist id="nombresList"></datalist>
-
-      <label>Edad:
-        <input type="number" id="filtroEdad" placeholder="Ej. 21" />
-      </label>
-      <label>Posición:
-        <select id="filtroPosicion">
-          <option value="">Todas</option>
-          <option value="Delantero">Delantero</option>
-          <option value="Centrocampista">Centrocampista</option>
-          <option value="Defensa">Defensa</option>
-          <option value="Portero">Portero</option>
-        </select>
-      </label>
-      <label>Titularidad:
-        <select id="filtroPartidos">
-          <option value="">Cualquiera</option>
-          <option value="0">No ha jugado</option>
-          <option value="1-5">Pocos (1-5)</option>
-          <option value="6-15">Rotación (6-15)</option>
-          <option value="16-25">Ocasional (16-25)</option>
-          <option value="26+">Indiscutible (26+)</option>
-        </select>
-      </label>
-
-
-    <details class="advanced-filters">
-      <summary>Más filtros ▾</summary>
-        <div class="adv-grid">
-
-          <label>Goles:
-            <dr>Max:</dr>
-            <input type="number" id="filtroGolesMax" placeholder="Máx. 30" style="width:8em" />
-            Min:
-            <input type="number" id="filtroGolesMin" placeholder="Mín. 0" style="width:8em" />
-            
-          </label>
-
-          <label>Asistencias:
-            <dr>Max:</dr>
-            <input type="number" id="filtroAsistMax" placeholder="Máx. 20" style="width:8em" />
-            Min:
-            <input type="number" id="filtroAsistMin" placeholder="Mín. 0" style="width:8em" />
-          </label>
-
-          <label>Disparos:
-            <dr>Max:</dr>
-            <input type="number" id="filtroDisparosMax" placeholder="Máx. 50" style="width:8em" />
-            Min:
-            <input type="number" id="filtroDisparosMin" placeholder="Mín. 0" style="width:8em" />
-          </label>
+          <div>
+            <h3>Filtra la base de datos</h3>
+            <p>Encuentra jugadores por nombre, edad, posición, titularidad y métricas ofensivas.</p>
+          </div>
         </div>
-    </details>
-    
-    <button onclick="aplicarFiltros()">Buscar</button>
-    </section>
+
+        <div class="players-filter-grid">
+          <label class="filter-field filter-field-autocomplete">Nombre
+            <div class="home-autocomplete">
+              <input
+                type="text"
+                id="filtroNombre"
+                placeholder="Ej. Mbappé"
+                autocomplete="off"
+              />
+              <div id="homeNameSuggestions" class="home-suggestions-box"></div>
+            </div>
+          </label>
+
+          <label class="filter-field">Edad
+            <input
+              type="number"
+              id="filtroEdad"
+              placeholder="Ej. 21"
+              min="15"
+              max="50"
+              step="1"
+            />          
+          </label>
+
+          <label class="filter-field">Posición
+            <select id="filtroPosicion" class="native-hidden-select">
+              <option value="">Todas</option>
+              <option value="Delantero">Delantero</option>
+              <option value="Centrocampista">Centrocampista</option>
+              <option value="Defensa">Defensa</option>
+              <option value="Portero">Portero</option>
+            </select>
+
+            <div class="custom-select" data-select-id="filtroPosicion">
+              <button type="button" class="custom-select__button">
+                <span class="custom-select__text">Todas</span>
+                <span class="material-icons">expand_more</span>
+              </button>
+
+              <div class="custom-select__menu">
+                <button type="button" class="custom-select__option active" data-value="">Todas</button>
+                <button type="button" class="custom-select__option" data-value="Delantero">Delantero</button>
+                <button type="button" class="custom-select__option" data-value="Centrocampista">Centrocampista</button>
+                <button type="button" class="custom-select__option" data-value="Defensa">Defensa</button>
+                <button type="button" class="custom-select__option" data-value="Portero">Portero</button>
+              </div>
+            </div>
+          </label>
+
+          <label class="filter-field">Titularidad
+            <select id="filtroPartidos" class="native-hidden-select">
+              <option value="">Cualquiera</option>
+              <option value="0">No ha jugado</option>
+              <option value="1-5">Pocos (1-5)</option>
+              <option value="6-15">Rotación (6-15)</option>
+              <option value="16-25">Ocasional (16-25)</option>
+              <option value="26+">Indiscutible (26+)</option>
+            </select>
+
+            <div class="custom-select" data-select-id="filtroPartidos">
+              <button type="button" class="custom-select__button">
+                <span class="custom-select__text">Cualquiera</span>
+                <span class="material-icons">expand_more</span>
+              </button>
+
+              <div class="custom-select__menu">
+                <button type="button" class="custom-select__option active" data-value="">Cualquiera</button>
+                <button type="button" class="custom-select__option" data-value="0">No ha jugado</button>
+                <button type="button" class="custom-select__option" data-value="1-5">Pocos (1-5)</button>
+                <button type="button" class="custom-select__option" data-value="6-15">Rotación (6-15)</button>
+                <button type="button" class="custom-select__option" data-value="16-25">Ocasional (16-25)</button>
+                <button type="button" class="custom-select__option" data-value="26+">Indiscutible (26+)</button>
+              </div>
+            </div>
+          </label>
+
+          <button class="players-filter-button" onclick="aplicarFiltros()" type="button">
+            <span class="material-icons">search</span>
+            Buscar
+          </button>
+        </div>
+
+        <details class="advanced-filters players-advanced-filters">
+          <summary>
+            <span class="material-icons">tune</span>
+            Más filtros
+          </summary>
+
+          <div class="players-advanced-grid">
+            <div class="advanced-filter-card">
+              <strong>Goles</strong>
+              <div class="range-fields">
+                <label>Min.
+                  <input type="number" id="filtroGolesMin" placeholder="0" />
+                </label>
+                <label>Máx.
+                  <input type="number" id="filtroGolesMax" placeholder="30" />
+                </label>
+              </div>
+            </div>
+
+            <div class="advanced-filter-card">
+              <strong>Asistencias</strong>
+              <div class="range-fields">
+                <label>Min.
+                  <input type="number" id="filtroAsistMin" placeholder="0" />
+                </label>
+                <label>Máx.
+                  <input type="number" id="filtroAsistMax" placeholder="20" />
+                </label>
+              </div>
+            </div>
+
+            <div class="advanced-filter-card">
+              <strong>Disparos</strong>
+              <div class="range-fields">
+                <label>Min.
+                  <input type="number" id="filtroDisparosMin" placeholder="0" />
+                </label>
+                <label>Máx.
+                  <input type="number" id="filtroDisparosMax" placeholder="50" />
+                </label>
+              </div>
+            </div>
+          </div>
+        </details>
+      </section>
 
     <section class="results">
       <div class="pitch-frame">
@@ -561,99 +965,111 @@ details.advanced-filters .adv-grid label dr {
       </div>
     </section>
 
-<section class="legend container">
-  <h3>Leyenda de columnas</h3>
-  <div class="legend-content">
-    <dl>
-      <dt>Nombre</dt><dd>Nombre completo del jugador</dd>
-      <dt>Edad</dt><dd>Años cumplidos</dd>
-      <dt>Valor de traspaso</dt><dd>Valor estimado de mercado (€)</dd>
-      <dt>Suledo</dt><dd>Salario anual (€)</dd>
-      <dt>Final</dt><dd>Fecha de fin de contrato</dd>
-      <dt>Altura</dt><dd>Altura en centímetros</dd>
-      <dt>Peso</dt><dd>Peso en kilogramos</dd>
-      <dt>Posición</dt><dd>Posición dominante en el campo</dd>
-      <dt>Club</dt><dd>Equipo actual</dd>
-      <dt>Cedido por</dt><dd>Club propietario (si está cedido)</dd>
-      <dt>Procedencia</dt><dd>Club de procedencia</dd>
-      <dt>Nac</dt><dd>País de nacimiento</dd>
-      <dt>2ª Nac</dt><dd>Segunda nacionalidad</dd>
-      <dt>Pierna buena</dt><dd>Pie dominante</dd>
-      <dt>Cláus. Resc.</dt><dd>Cláusula de rescisión (€)</dd>
-      <dt>Part</dt><dd>Partidos jugados</dd>
-      <dt>Titular</dt><dd>Partidos como titular</dd>
-      <dt>Min</dt><dd>Minutos totales jugados</dd>
-      <dt>Min/Par</dt><dd>Minutos por partido</dd>
-      <dt>Media</dt><dd>Calificación media de rendimiento</dd>
-      <dt>Gol</dt><dd>Goles marcados</dd>
-      <dt>xG</dt><dd>Goles esperados</dd>
-      <dt>xG-SP</dt><dd>xG sin penaltis</dd>
-      <dt>xG-HR</dt><dd>xG en jugadas de balón parado</dd>
-      <dt>Gol/90</dt><dd>Goles por 90 minutos</dd>
-      <dt>Asis</dt><dd>Asistencias</dd>
-      <dt>xA</dt><dd>Asistencias esperadas</dd>
-      <dt>Asis/90</dt><dd>Asistencias por 90 minutos</dd>
-      <dt>Disparos</dt><dd>Total de disparos</dd>
-      <dt>TaP</dt><dd>Tiros a puerta</dd>
-      <dt>TirP/90</dt><dd>Tiros a puerta por 90 min</dd>
-      <dt>% disparos</dt><dd>Porcentaje de tiros a puerta</dd>
-      <dt>Tir/90</dt><dd>Disparos por 90 min</dd>
-      <dt>Pen</dt><dd>Penaltis lanzados</dd>
-      <dt>Pen M</dt><dd>Penaltis marcados</dd>
-      <dt>Pen %</dt><dd>Éxito en penaltis (%)</dd>
-      <dt>Fdj</dt><dd>Faltas cometidas</dd>
-      <dt>OCG</dt><dd>Ocasiones de gol creadas</dd>
-      <dt>Oc C/90</dt><dd>Ocasiones creadas por 90 min</dd>
-      <dt>Pas Cl</dt><dd>Pases completados</dd>
-      <dt>Pas Clv/90</dt><dd>Pases clave por 90 min</dd>
-      <dt>Ps I/90</dt><dd>Pases interiores por 90 min</dd>
-      <dt>Ps C/90</dt><dd>Pases cruzados por 90 min</dd>
-      <dt>Pas I</dt><dd>Pases interiores totales</dd>
-      <dt>Pas C</dt><dd>Pases cruzados totales</dd>
-      <dt>% Pase</dt><dd>Precisión de pase (%)</dd>
-      <dt>Pases prog</dt><dd>Pases progresivos</dd>
-      <dt>Pases prog/90</dt><dd>Pases progresivos por 90 min</dd>
-      <dt>Cen.In</dt><dd>Centros interiores</dd>
-      <dt>Cen.Com</dt><dd>Centros completados</dd>
-      <dt>Cen.C/I</dt><dd>Centros con éxito (%)</dd>
-      <dt>Reg</dt><dd>Regates logrados</dd>
-      <dt>Reg/90</dt><dd>Regates por 90 min</dd>
-      <dt>Cab Int</dt><dd>Intercepciones</dd>
-      <dt>Bal aér/90</dt><dd>Duelo aéreo ganado por 90 min</dd>
-      <dt>Cab</dt><dd>Duelo aéreo ganado</dd>
-      <dt>Cab G/90</dt><dd>Duelo aéreo ganado por 90 min</dd>
-      <dt>Rcg %</dt><dd>Éxito duelos aéreos (%)</dd>
-      <dt>Ent Cl</dt><dd>Entradas limpiadoras</dd>
-      <dt>Ent C</dt><dd>Entradas totales</dd>
-      <dt>Entr/90</dt><dd>Entradas por 90 min</dd>
-      <dt>Ent P</dt><dd>Entradas precisas</dd>
-      <dt>FR</dt><dd>Faltas recibidas</dd>
-      <dt>FC</dt><dd>Faltas cometidas</dd>
-      <dt>Ama</dt><dd>Tarjetas amarillas</dd>
-      <dt>Roj.</dt><dd>Tarjetas rojas</dd>
-      <dt>Rob</dt><dd>Balones recuperados</dd>
-      <dt>Rob/90</dt><dd>Recuperaciones por 90 min</dd>
-      <dt>Desp</dt><dd>Despejes</dd>
-      <dt>Pos Gan/90</dt><dd>Posesión ganada por 90 min</dd>
-      <dt>Pos Perd/90</dt><dd>Posesión perdida por 90 min</dd>
-      <dt>Esprints/90</dt><dd>Esprints por 90 min</dd>
-      <dt>Distancia</dt><dd>Distancia total recorrida (km)</dd>
-      <dt>Enc</dt><dd>Entradas en campo rival</dd>
-      <dt>Enc/90</dt><dd>Entradas rival por 90 min</dd>
-      <dt>Portería imbatida</dt><dd>Partidos sin encajar gol</dd>
-      <dt>Pep %</dt><dd>Paradas efectivas (%)</dd>
-      <dt>BAt</dt><dd>Balones atrapados</dd>
-      <dt>BDs</dt><dd>Balones despejados</dd>
-      <dt>BRe</dt><dd>Balones rechazados</dd>
-      <dt>Rp %</dt><dd>Éxito paradas (%)</dd>
-      <dt>Pen. recibidos</dt><dd>Penaltis recibidos</dd>
-      <dt>Pen. parados</dt><dd>Penaltis detenidos</dd>
-      <dt>Prop. penaltis parados</dt><dd>Proporción de penaltis detenidos</dd>
-      <dt>JPar</dt><dd>Jugada de portero/parada</dd>
-      <dt>ValorNum</dt><dd>Valor numérico del jugador (€ sin formato)</dd>
-    </dl>
-  </div>
-</section>
+  <section class="legend container">
+    <div class="legend-header-compact">
+      <span class="legend-badge-compact">
+        <span class="material-icons">info</span>
+      </span>
+
+      <div class="legend-title-block">
+        <span class="legend-kicker">Guía de columnas</span>
+        <h3>Leyenda de columnas</h3>
+        <p>Consulta el significado de los principales campos utilizados en la tabla de jugadores.</p>
+      </div>
+    </div>
+
+    <div class="legend-grid">
+      <div class="legend-item"><span class="legend-key">Jugador</span><span class="legend-value">Nombre completo del futbolista.</span></div>
+      <div class="legend-item"><span class="legend-key">Edad</span><span class="legend-value">Años cumplidos.</span></div>
+      <div class="legend-item"><span class="legend-key">Valor mercado</span><span class="legend-value">Valor estimado de mercado o traspaso.</span></div>
+      <div class="legend-item"><span class="legend-key">Sueldo anual</span><span class="legend-value">Salario anual del jugador.</span></div>
+      <div class="legend-item"><span class="legend-key">Fin de contrato</span><span class="legend-value">Fecha de finalización del contrato.</span></div>
+      <div class="legend-item"><span class="legend-key">Altura</span><span class="legend-value">Altura del jugador en centímetros.</span></div>
+      <div class="legend-item"><span class="legend-key">Peso</span><span class="legend-value">Peso del jugador en kilogramos.</span></div>
+      <div class="legend-item"><span class="legend-key">Posición</span><span class="legend-value">Posición o posiciones naturales en el campo.</span></div>
+      <div class="legend-item"><span class="legend-key">Club</span><span class="legend-value">Equipo actual del jugador.</span></div>
+      <div class="legend-item"><span class="legend-key">Cedido por</span><span class="legend-value">Club propietario si el jugador está cedido.</span></div>
+      <div class="legend-item"><span class="legend-key">Procedencia</span><span class="legend-value">Club o liga de procedencia.</span></div>
+      <div class="legend-item"><span class="legend-key">Nac</span><span class="legend-value">País de nacimiento.</span></div>
+      <div class="legend-item"><span class="legend-key">2ª Nac</span><span class="legend-value">Segunda nacionalidad del jugador.</span></div>
+      <div class="legend-item"><span class="legend-key">Pierna buena</span><span class="legend-value">Pie dominante del jugador.</span></div>
+      <div class="legend-item"><span class="legend-key">Cláus. Resc.</span><span class="legend-value">Cláusula de rescisión.</span></div>
+      <div class="legend-item"><span class="legend-key">Part</span><span class="legend-value">Partidos jugados.</span></div>
+      <div class="legend-item"><span class="legend-key">Titular</span><span class="legend-value">Partidos disputados como titular.</span></div>
+      <div class="legend-item"><span class="legend-key">Min</span><span class="legend-value">Minutos totales jugados.</span></div>
+      <div class="legend-item"><span class="legend-key">Min/Par</span><span class="legend-value">Media de minutos por partido.</span></div>
+      <div class="legend-item"><span class="legend-key">Media</span><span class="legend-value">Valoración media de rendimiento.</span></div>
+
+      <div class="legend-item"><span class="legend-key">Gol</span><span class="legend-value">Goles marcados.</span></div>
+      <div class="legend-item"><span class="legend-key">xG</span><span class="legend-value">Goles esperados.</span></div>
+      <div class="legend-item"><span class="legend-key">xG-SP</span><span class="legend-value">Goles esperados sin penaltis.</span></div>
+      <div class="legend-item"><span class="legend-key">xG-HR</span><span class="legend-value">xG en jugadas de balón parado.</span></div>
+      <div class="legend-item"><span class="legend-key">Gol/90</span><span class="legend-value">Goles por cada 90 minutos.</span></div>
+      <div class="legend-item"><span class="legend-key">Asis</span><span class="legend-value">Asistencias realizadas.</span></div>
+      <div class="legend-item"><span class="legend-key">xA</span><span class="legend-value">Asistencias esperadas.</span></div>
+      <div class="legend-item"><span class="legend-key">Asis/90</span><span class="legend-value">Asistencias por cada 90 minutos.</span></div>
+      <div class="legend-item"><span class="legend-key">Disparos</span><span class="legend-value">Número total de disparos.</span></div>
+      <div class="legend-item"><span class="legend-key">TaP</span><span class="legend-value">Tiros a puerta.</span></div>
+      <div class="legend-item"><span class="legend-key">TirP/90</span><span class="legend-value">Tiros a puerta por 90 minutos.</span></div>
+      <div class="legend-item"><span class="legend-key">% disparos</span><span class="legend-value">Porcentaje de tiros que van a puerta.</span></div>
+      <div class="legend-item"><span class="legend-key">Tir/90</span><span class="legend-value">Disparos por cada 90 minutos.</span></div>
+      <div class="legend-item"><span class="legend-key">Pen</span><span class="legend-value">Penaltis lanzados.</span></div>
+      <div class="legend-item"><span class="legend-key">Pen M</span><span class="legend-value">Penaltis marcados.</span></div>
+      <div class="legend-item"><span class="legend-key">Pen %</span><span class="legend-value">Porcentaje de acierto en penaltis.</span></div>
+
+      <div class="legend-item"><span class="legend-key">OCG</span><span class="legend-value">Ocasiones de gol creadas.</span></div>
+      <div class="legend-item"><span class="legend-key">Oc C/90</span><span class="legend-value">Ocasiones creadas por 90 minutos.</span></div>
+      <div class="legend-item"><span class="legend-key">Pas Cl</span><span class="legend-value">Pases completados.</span></div>
+      <div class="legend-item"><span class="legend-key">Pas Clv/90</span><span class="legend-value">Pases clave por 90 minutos.</span></div>
+      <div class="legend-item"><span class="legend-key">Ps I/90</span><span class="legend-value">Pases interiores por 90 minutos.</span></div>
+      <div class="legend-item"><span class="legend-key">Ps C/90</span><span class="legend-value">Pases cruzados por 90 minutos.</span></div>
+      <div class="legend-item"><span class="legend-key">Pas I</span><span class="legend-value">Pases interiores totales.</span></div>
+      <div class="legend-item"><span class="legend-key">Pas C</span><span class="legend-value">Pases cruzados totales.</span></div>
+      <div class="legend-item"><span class="legend-key">% Pase</span><span class="legend-value">Precisión de pase.</span></div>
+      <div class="legend-item"><span class="legend-key">Pases prog</span><span class="legend-value">Pases progresivos realizados.</span></div>
+      <div class="legend-item"><span class="legend-key">Pases prog/90</span><span class="legend-value">Pases progresivos por 90 minutos.</span></div>
+      <div class="legend-item"><span class="legend-key">Cen.In</span><span class="legend-value">Centros interiores.</span></div>
+      <div class="legend-item"><span class="legend-key">Cen.Com</span><span class="legend-value">Centros completados.</span></div>
+      <div class="legend-item"><span class="legend-key">Cen.C/I</span><span class="legend-value">Porcentaje de éxito en centros.</span></div>
+      <div class="legend-item"><span class="legend-key">Reg</span><span class="legend-value">Regates completados.</span></div>
+      <div class="legend-item"><span class="legend-key">Reg/90</span><span class="legend-value">Regates por 90 minutos.</span></div>
+
+      <div class="legend-item"><span class="legend-key">Cab Int</span><span class="legend-value">Intercepciones.</span></div>
+      <div class="legend-item"><span class="legend-key">Bal aér/90</span><span class="legend-value">Duelos aéreos ganados por 90 minutos.</span></div>
+      <div class="legend-item"><span class="legend-key">Cab</span><span class="legend-value">Duelos aéreos ganados.</span></div>
+      <div class="legend-item"><span class="legend-key">Cab G/90</span><span class="legend-value">Duelos aéreos ganados por 90 minutos.</span></div>
+      <div class="legend-item"><span class="legend-key">Rcg %</span><span class="legend-value">Porcentaje de éxito en duelos aéreos.</span></div>
+      <div class="legend-item"><span class="legend-key">Ent Cl</span><span class="legend-value">Entradas limpias.</span></div>
+      <div class="legend-item"><span class="legend-key">Ent C</span><span class="legend-value">Entradas totales.</span></div>
+      <div class="legend-item"><span class="legend-key">Entr/90</span><span class="legend-value">Entradas por cada 90 minutos.</span></div>
+      <div class="legend-item"><span class="legend-key">Ent P</span><span class="legend-value">Entradas precisas.</span></div>
+      <div class="legend-item"><span class="legend-key">FR</span><span class="legend-value">Faltas recibidas.</span></div>
+      <div class="legend-item"><span class="legend-key">FC</span><span class="legend-value">Faltas cometidas.</span></div>
+      <div class="legend-item"><span class="legend-key">Ama</span><span class="legend-value">Tarjetas amarillas.</span></div>
+      <div class="legend-item"><span class="legend-key">Roj.</span><span class="legend-value">Tarjetas rojas.</span></div>
+      <div class="legend-item"><span class="legend-key">Rob</span><span class="legend-value">Balones recuperados.</span></div>
+      <div class="legend-item"><span class="legend-key">Rob/90</span><span class="legend-value">Recuperaciones por 90 minutos.</span></div>
+      <div class="legend-item"><span class="legend-key">Desp</span><span class="legend-value">Despejes realizados.</span></div>
+      <div class="legend-item"><span class="legend-key">Pos Gan/90</span><span class="legend-value">Posesiones ganadas por 90 minutos.</span></div>
+      <div class="legend-item"><span class="legend-key">Pos Perd/90</span><span class="legend-value">Posesiones perdidas por 90 minutos.</span></div>
+      <div class="legend-item"><span class="legend-key">Esprints/90</span><span class="legend-value">Esprints por 90 minutos.</span></div>
+      <div class="legend-item"><span class="legend-key">Distancia</span><span class="legend-value">Distancia total recorrida.</span></div>
+      <div class="legend-item"><span class="legend-key">Enc</span><span class="legend-value">Entradas en campo rival.</span></div>
+      <div class="legend-item"><span class="legend-key">Enc/90</span><span class="legend-value">Entradas en campo rival por 90 minutos.</span></div>
+
+      <div class="legend-item"><span class="legend-key">Portería imbatida</span><span class="legend-value">Partidos sin encajar gol.</span></div>
+      <div class="legend-item"><span class="legend-key">Pep %</span><span class="legend-value">Porcentaje de paradas efectivas.</span></div>
+      <div class="legend-item"><span class="legend-key">BAt</span><span class="legend-value">Balones atrapados.</span></div>
+      <div class="legend-item"><span class="legend-key">BDs</span><span class="legend-value">Balones despejados.</span></div>
+      <div class="legend-item"><span class="legend-key">BRe</span><span class="legend-value">Balones rechazados.</span></div>
+      <div class="legend-item"><span class="legend-key">Rp %</span><span class="legend-value">Porcentaje de éxito en paradas.</span></div>
+      <div class="legend-item"><span class="legend-key">Pen. recibidos</span><span class="legend-value">Penaltis recibidos.</span></div>
+      <div class="legend-item"><span class="legend-key">Pen. parados</span><span class="legend-value">Penaltis detenidos.</span></div>
+      <div class="legend-item"><span class="legend-key">Prop. penaltis parados</span><span class="legend-value">Proporción de penaltis detenidos.</span></div>
+      <div class="legend-item"><span class="legend-key">JPar</span><span class="legend-value">Acciones o jugadas de parada del portero.</span></div>
+      <div class="legend-item"><span class="legend-key">ValorNum</span><span class="legend-value">Valor numérico usado internamente para cálculos.</span></div>
+    </div>
+  </section>
 
   </main>
 
@@ -697,7 +1113,7 @@ details.advanced-filters .adv-grid label dr {
   </div>
 
   <div class="footer-bottom">
-    <p>© 2025 Gestordetalentos. Todos los derechos reservados.</p>
+    <p>© 2026 Gestordetalentos. Todos los derechos reservados.</p>
   </div>
 </footer>
 
@@ -750,32 +1166,138 @@ details.advanced-filters .adv-grid label dr {
     iframe.src = `${srcBase}?_=${new Date().getTime()}`;
   }
 
-  async function actualizarNombresList() {
-    const dl = document.getElementById('nombresList');
-    if (dl.childElementCount) return; 
+  let nombresJugadoresCache = [];
+
+  function normalizarTexto(texto) {
+    return String(texto || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+  }
+
+  async function cargarNombresJugadores() {
+    if (nombresJugadoresCache.length > 0) {
+      return nombresJugadoresCache;
+    }
+
     try {
-      const res = await fetch('/api/nombres_jugadores');
-      const nombres = await res.json();
-      nombres.forEach(n => {
-        const opt = document.createElement('option');
-        opt.value = n;
-        dl.appendChild(opt);
-      });
+      const res = await fetch("/api/nombres_jugadores");
+
+      if (!res.ok) {
+        throw new Error("No se pudieron cargar los nombres de jugadores.");
+      }
+
+      const data = await res.json();
+      nombresJugadoresCache = Array.isArray(data) ? data : [];
+      return nombresJugadoresCache;
     } catch (err) {
-      console.error('Error cargando nombres:', err);
+      console.error("Error cargando nombres:", err);
+      return [];
     }
   }
 
-  document
-    .getElementById('filtroNombre')
-    .addEventListener('focus', actualizarNombresList);
+  function cerrarSugerenciasNombre() {
+    const box = document.getElementById("homeNameSuggestions");
 
-  const form = document.querySelector('.upload-html-form');
-  const overlay = document.getElementById('loadingOverlay');
+    if (!box) return;
 
-  form.addEventListener('submit', () => {
-    overlay.classList.remove('hidden');
+    box.classList.remove("active");
+    box.innerHTML = "";
+  }
+
+  async function mostrarSugerenciasNombre() {
+    const input = document.getElementById("filtroNombre");
+    const box = document.getElementById("homeNameSuggestions");
+
+    if (!input || !box) return;
+
+    const query = normalizarTexto(input.value.trim());
+
+    box.innerHTML = "";
+
+    if (query.length < 2) {
+      cerrarSugerenciasNombre();
+      return;
+    }
+
+    const nombres = await cargarNombresJugadores();
+
+    const resultados = nombres
+      .filter(nombre => normalizarTexto(nombre).includes(query))
+      .slice(0, 8);
+
+    if (!resultados.length) {
+      box.innerHTML = `<div class="home-suggestion-empty">No se encontraron jugadores</div>`;
+      box.classList.add("active");
+      return;
+    }
+
+    resultados.forEach((nombre, index) => {
+      const item = document.createElement("div");
+      item.className = "home-suggestion-item";
+      item.textContent = nombre;
+
+      if (index === 0) {
+        item.classList.add("active");
+      }
+
+      item.addEventListener("mousedown", event => {
+        event.preventDefault();
+        input.value = nombre;
+        cerrarSugerenciasNombre();
+      });
+
+      box.appendChild(item);
+    });
+
+    box.classList.add("active");
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    const filtroNombre = document.getElementById("filtroNombre");
+    const homeNameSuggestions = document.getElementById("homeNameSuggestions");
+
+    if (filtroNombre && homeNameSuggestions) {
+      cargarNombresJugadores();
+
+      filtroNombre.addEventListener("focus", mostrarSugerenciasNombre);
+      filtroNombre.addEventListener("input", mostrarSugerenciasNombre);
+
+      filtroNombre.addEventListener("keydown", event => {
+        if (event.key === "Enter" && homeNameSuggestions.classList.contains("active")) {
+          const firstSuggestion = homeNameSuggestions.querySelector(".home-suggestion-item");
+
+          if (firstSuggestion) {
+            event.preventDefault();
+            filtroNombre.value = firstSuggestion.textContent;
+            cerrarSugerenciasNombre();
+          }
+        }
+
+        if (event.key === "Escape") {
+          cerrarSugerenciasNombre();
+        }
+      });
+
+      document.addEventListener("click", event => {
+        if (
+          !filtroNombre.contains(event.target) &&
+          !homeNameSuggestions.contains(event.target)
+        ) {
+          cerrarSugerenciasNombre();
+        }
+      });
+    }
   });
+
+  const form = document.querySelector(".upload-html-form");
+  const overlay = document.getElementById("loadingOverlay");
+
+  if (form && overlay) {
+    form.addEventListener("submit", () => {
+      overlay.classList.remove("hidden");
+    });
+  }
 
   setTimeout(function () {
     const flashBox = document.getElementById("flashMessages");
@@ -789,8 +1311,129 @@ details.advanced-filters .adv-grid label dr {
       }, 500);
     }
   }, 3000);
+
+
+
+  const htmlFileInput = document.getElementById("htmlFile");
+  const fileNameText = document.getElementById("fileNameText");
+
+  if (htmlFileInput && fileNameText) {
+    htmlFileInput.addEventListener("change", () => {
+      fileNameText.textContent = htmlFileInput.files.length
+        ? htmlFileInput.files[0].name
+        : "Seleccionar archivo HTML";
+    });
+  }
+
+
+
+  const filtroEdad = document.getElementById("filtroEdad");
+
+if (filtroEdad) {
+  filtroEdad.addEventListener("input", () => {
+    let value = Number(filtroEdad.value);
+
+    if (filtroEdad.value === "") return;
+
+    if (value < 15) {
+      filtroEdad.value = 15;
+    }
+
+    if (value > 50) {
+      filtroEdad.value = 50;
+    }
+
+    if (!Number.isInteger(value)) {
+      filtroEdad.value = Math.round(value);
+    }
+  });
+}
+
+
+
+function initCustomSelects() {
+  const customSelects = document.querySelectorAll(".custom-select");
+
+  customSelects.forEach(customSelect => {
+    const selectId = customSelect.dataset.selectId;
+    const nativeSelect = document.getElementById(selectId);
+    const button = customSelect.querySelector(".custom-select__button");
+    const text = customSelect.querySelector(".custom-select__text");
+    const options = customSelect.querySelectorAll(".custom-select__option");
+
+    if (!nativeSelect || !button || !text) return;
+
+    button.addEventListener("click", event => {
+      event.stopPropagation();
+
+      document.querySelectorAll(".custom-select.open").forEach(openSelect => {
+        if (openSelect !== customSelect) {
+          openSelect.classList.remove("open");
+        }
+      });
+
+      customSelect.classList.toggle("open");
+    });
+
+    options.forEach(option => {
+      option.addEventListener("click", event => {
+        event.stopPropagation();
+
+        const value = option.dataset.value;
+        const label = option.textContent.trim();
+
+        nativeSelect.value = value;
+        text.textContent = label;
+
+        options.forEach(opt => opt.classList.remove("active"));
+        option.classList.add("active");
+
+        customSelect.classList.remove("open");
+
+        nativeSelect.dispatchEvent(new Event("change"));
+      });
+    });
+  });
+
+  document.addEventListener("click", () => {
+    document.querySelectorAll(".custom-select.open").forEach(select => {
+      select.classList.remove("open");
+    });
+  });
+}
+
+  window.addEventListener("message", function (event) {
+    if (!event.data || event.data.type !== "resizeTablaJugadores") return;
+
+    const iframe = document.getElementById("tablaJugadores");
+    if (!iframe) return;
+
+    iframe.style.height = event.data.height + "px";
+  });
+
+
+window.addEventListener("DOMContentLoaded", initCustomSelects);
+
+
 </script>
 
+<script>
+  window.addEventListener("message", function (event) {
+    if (!event.data || event.data.type !== "resizeTablaJugadores") return;
 
+    const iframe = document.getElementById("tablaJugadores");
+    if (!iframe) return;
+
+    const nuevaAltura = Number(event.data.height);
+
+    if (!Number.isFinite(nuevaAltura) || nuevaAltura < 300) return;
+
+    const alturaActual = iframe.getBoundingClientRect().height;
+
+    if (Math.abs(alturaActual - nuevaAltura) > 8) {
+      iframe.style.height = nuevaAltura + "px";
+    }
+  });
+</script>
 </body>
 </html>

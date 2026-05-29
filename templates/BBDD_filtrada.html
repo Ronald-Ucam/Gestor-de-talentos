@@ -3,242 +3,689 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Jugadores Filtrados</title>
+  <title>Jugadores filtrados</title>
+
   <link rel="stylesheet" href="/static/css/style.css" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: 'Inter', Arial, sans-serif;
+      color: #17324d;
+      overflow-y: hidden;
+    }
 
-<style>
+    .filtered-table-page {
+      padding: 0;
+      background: transparent;
+    }
 
-.no-results {
-  text-align: center;
-  padding: 3rem 1rem;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 8px;
-  max-width: 600px;
-  margin: 2rem auto;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-.no-results .material-icons {
-  font-size: 48px;
-  color: var(--clr-primary);
-  display: block;
-  margin-bottom: 0.5rem;
-}
-.no-results h2 {
-  margin: 0.5rem 0;
-  color: var(--clr-primary-hover);
-}
-.no-results p {
-  margin-bottom: 1.5rem;
-  color: var(--clr-text);
-}
-.no-results .btn {
-  background: var(--clr-primary);
-  color: #fff;
-  padding: 0.6rem 1.2rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.95rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.no-results .btn:hover {
-  background: var(--clr-primary-hover);
-}
+    .players-table-panel {
+      width: 100%;
+      overflow: hidden;
+      border-radius: 26px;
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.14);
+    }
 
-
-.compare-area {
+    .players-table-panel__header {
       display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 12px;
-    }
-    .compare-btn {
-      background: var(--clr-accent);
-      color: var(--clr-primary);
-      padding: 0.6rem 1.2rem;
-      border: none;
-      border-radius: var(--radius);
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .compare-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1.15rem 1.35rem;
+      background: linear-gradient(135deg, rgba(0,51,102,0.98), rgba(0,89,179,0.92));
+      color: #ffffff;
     }
 
-
-    .selected-list {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-    .selected-item {
-      background: #E8F5E9;
-      color: #388E3C;
-      border: 1px solid #388E3C;
-      padding: 0.4rem 0.8rem;
-      border-radius: var(--radius);
+    .players-table-panel__badge {
+      width: fit-content;
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      gap: 0.42rem;
+      padding: 0.32rem 0.72rem;
+      border-radius: 999px;
+      background: rgba(255,179,71,0.18);
+      color: #ffca78;
+      font-size: 0.68rem;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .players-table-panel__badge .material-icons {
       font-size: 0.95rem;
     }
-    .remove-btn {
-      background: transparent;
+
+    .players-table-panel__header h2 {
+      margin: 0.5rem 0 0.15rem;
+      color: #ffffff;
+      font-size: 1.32rem;
+      font-weight: 900;
+      line-height: 1.15;
+    }
+
+    .players-table-panel__header p {
+      margin: 0;
+      color: rgba(235,245,255,0.82);
+      font-size: 0.86rem;
+    }
+
+    .compare-btn-modern {
+      min-height: 42px;
       border: none;
+      border-radius: 13px;
+      padding: 0 1rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.48rem;
+      background: linear-gradient(135deg, #ffb347, #ff9f1c);
+      color: #08223f;
+      font-weight: 850;
+      font-size: 0.88rem;
+      box-shadow: 0 12px 26px rgba(255,159,28,0.26);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .compare-btn-modern:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 32px rgba(255,159,28,0.34);
+    }
+
+    .compare-btn-modern .material-icons {
+      font-size: 1.05rem;
+    }
+
+    .selected-list-modern {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+      padding: 0.75rem 1.2rem;
+      background: rgba(244,248,252,0.86);
+      border-bottom: 1px solid rgba(220,230,242,0.9);
+    }
+
+    .selected-list-modern:empty::before {
+      content: "No hay jugadores seleccionados";
+      color: #718096;
+      font-size: 0.84rem;
+      font-weight: 650;
+    }
+
+    .selected-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      max-width: 260px;
+      padding: 0.45rem 0.68rem;
+      border-radius: 999px;
+      background: rgba(232,245,233,0.95);
+      color: #1f7a3a;
+      border: 1px solid rgba(56,142,60,0.35);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+      font-weight: 750;
+      font-size: 0.84rem;
+    }
+
+    .remove-btn {
+      width: 20px;
+      height: 20px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(229,57,53,0.10);
       color: #e53935;
-      font-size: 1.1rem;
-      font-weight: bold;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      font-weight: 900;
       cursor: pointer;
       line-height: 1;
     }
 
+    .remove-btn:hover {
+      background: rgba(229,57,53,0.18);
+    }
+
+    .players-table-scroll-top {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      height: 16px;
+      background: #ffffff;
+      border-bottom: 1px solid #e4eaf1;
+    }
+
+    .players-table-scroll-spacer {
+      height: 1px;
+    }
+
+    .players-table-responsive {
+      width: 100%;
+      max-height: 560px;
+      overflow-x: auto;
+      overflow-y: auto;
+      background: #ffffff;
+    }
+
+    .players-table-responsive table {
+      min-width: 1250px;
+      width: max-content;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: #ffffff;
+      font-size: 0.8rem;
+      line-height: 1.28;
+    }
+
+    .players-table-responsive table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: #003f78;
+      color: #ffffff;
+      padding: 0.55rem 0.52rem;
+      text-align: left;
+      font-size: 0.76rem;
+      font-weight: 800;
+      white-space: nowrap;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.08);
+    }
+
+    .players-table-responsive table tbody td {
+      padding: 0.52rem 0.52rem;
+      color: #243447;
+      border-bottom: 1px solid #edf1f6;
+      background: #ffffff;
+      vertical-align: middle;
+      font-size: 0.8rem;
+    }
+
+    .players-table-responsive table tbody tr:nth-child(even) td {
+      background: #f7f9fc;
+    }
+
+    .players-table-responsive table tbody tr:hover td {
+      background: #eef6ff;
+      color: #003366;
+    }
 
     table th.select-col,
     table td.select-col {
-      width: 40px;
-      padding: 4px 6px;
+      width: 48px;
+      min-width: 48px;
       text-align: center;
+      white-space: nowrap;
+    }
+
+    .players-table-responsive input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      accent-color: #0059b3;
+      cursor: pointer;
+    }
+
+    .players-table-scroll-top::-webkit-scrollbar,
+    .players-table-responsive::-webkit-scrollbar {
+      height: 11px;
+      width: 11px;
+    }
+
+    .players-table-scroll-top::-webkit-scrollbar-track,
+    .players-table-responsive::-webkit-scrollbar-track {
+      background: #edf2f7;
+      border-radius: 999px;
+    }
+
+    .players-table-scroll-top::-webkit-scrollbar-thumb,
+    .players-table-responsive::-webkit-scrollbar-thumb {
+      background: #8a96a3;
+      border-radius: 999px;
+    }
+
+    .players-table-scroll-top::-webkit-scrollbar-thumb:hover,
+    .players-table-responsive::-webkit-scrollbar-thumb:hover {
+      background: #4a5568;
+    }
+
+    .pagination {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      justify-content: center;
+      align-items: center;
+      list-style: none;
+      padding: 1rem 1rem 1.15rem;
+      margin: 0;
+      background: #ffffff;
+    }
+
+    .page-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 36px;
+      min-height: 36px;
+      padding: 0.45rem 0.7rem;
+      border-radius: 9px;
+      border: 1px solid #d6dee8;
+      background: #ffffff;
+      color: #003f78;
+      font-weight: 750;
+      text-decoration: none;
+    }
+
+    .page-item.active .page-link {
+      background: #003f78;
+      color: #ffffff;
+      border-color: #003f78;
+    }
+
+    .page-item.disabled .page-link {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .table-compare-toast {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-12px);
+      z-index: 99999;
+      width: min(92vw, 560px);
+      padding: 1rem 1.1rem;
+      border-radius: 16px;
+      background: rgba(9, 22, 39, 0.96);
+      color: #ffffff;
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: 0 18px 38px rgba(0,0,0,0.32);
+      display: flex;
+      align-items: flex-start;
+      gap: 0.85rem;
+      opacity: 0;
+      animation: tableToastIn 0.28s ease forwards;
+    }
+
+    .table-compare-toast.hide {
+      animation: tableToastOut 0.28s ease forwards;
+    }
+
+    .table-compare-toast .material-icons {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 90, 90, 0.16);
+      color: #ff7a7a;
+      font-size: 1.25rem;
+    }
+
+    .table-compare-toast strong {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.95rem;
+      font-weight: 800;
+    }
+
+    .table-compare-toast p {
+      margin: 0;
+      color: rgba(236, 244, 255, 0.84);
+      font-size: 0.86rem;
+      line-height: 1.4;
+    }
+
+    @keyframes tableToastIn {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-12px) scale(0.96);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+      }
+    }
+
+    @keyframes tableToastOut {
+      from {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+      }
+      to {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-12px) scale(0.96);
+      }
+    }
+
+    @media (max-width: 760px) {
+      .players-table-panel__header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1rem;
+      }
+
+      .compare-btn-modern {
+        width: 100%;
+      }
+
+      .selected-list-modern {
+        padding: 0.75rem 1rem;
+      }
+    }
+
+
+    /* ===================================== */
+    /* TABLA - MEJORA VISUAL DE DATOS        */
+    /* ===================================== */
+
+    .players-table-responsive table {
+      font-size: 0.82rem;
+      color: #243447;
+    }
+
+    .players-table-responsive table thead th {
+      background: linear-gradient(135deg, #003f78, #00549c);
+      color: #ffffff;
+      font-size: 0.78rem;
+      font-weight: 850;
+      letter-spacing: 0.015em;
+      text-transform: none;
+    }
+
+    .players-table-responsive table tbody td {
+      color: #263849;
+      font-weight: 550;
+    }
+
+    .players-table-responsive table tbody tr:nth-child(even) td {
+      background: #f4f8fc;
+    }
+
+    .players-table-responsive table tbody tr:nth-child(odd) td {
+      background: #ffffff;
+    }
+
+    .players-table-responsive table tbody tr:hover td {
+      background: #eaf4ff;
+      color: #003366;
+    }
+
+    /* Nombre del jugador */
+    .players-table-responsive table tbody td:nth-child(2) {
+      color: #003f78;
+      font-weight: 800;
+    }
+
+    /* Edad */
+    .players-table-responsive table tbody td:nth-child(3) {
+      text-align: center;
+      font-weight: 750;
+    }
+
+    /* Valor mercado */
+    .players-table-responsive table tbody td:nth-child(4) {
+      color: #0f5132;
+      font-weight: 750;
+    }
+
+    /* Sueldo anual */
+    .players-table-responsive table tbody td:nth-child(5) {
+      color: #5c3b00;
+      font-weight: 700;
+    }
+
+    /* Fin de contrato */
+    .players-table-responsive table tbody td:nth-child(6) {
+      color: #44546a;
+      font-weight: 650;
+    }
+
+    /* Altura y peso */
+    .players-table-responsive table tbody td:nth-child(7),
+    .players-table-responsive table tbody td:nth-child(8) {
+      text-align: center;
+      font-weight: 700;
+    }
+
+    /* Posición */
+    .players-table-responsive table tbody td:nth-child(9) {
+      color: #003366;
+      font-weight: 800;
+    }
+
+    /* Club */
+    .players-table-responsive table tbody td:nth-child(10) {
+      color: #1f2c3d;
+      font-weight: 800;
+    }
+
+    /* Checkbox más limpio */
+    .players-table-responsive input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      accent-color: #0059b3;
+    }
+
+    /* Etiqueta para valores vacíos */
+    .empty-data-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.22rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(113, 128, 150, 0.12);
+      color: #718096;
+      font-size: 0.72rem;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    /* Pequeña etiqueta para posiciones */
+    .position-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.25rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(0, 63, 120, 0.08);
+      color: #003f78;
+      font-size: 0.75rem;
+      font-weight: 850;
+      line-height: 1.2;
+    }
+
+    /* Que las celdas largas respiren mejor */
+    .players-table-responsive table tbody td {
+      line-height: 1.35;
     }
   </style>
 </head>
+
 <body>
-  <div class="container" style="margin-top:20px;">
+  <div class="filtered-table-page">
+    <section class="players-table-panel">
+      <div class="players-table-panel__header">
+        <div>
+          <span class="players-table-panel__badge">
+            <span class="material-icons">groups</span>
+            Base de jugadores
+          </span>
 
-    <!-- ÁREA DE BOTÓN + LISTA SELECCIONADOS -->
-    <div class="compare-area">
-      <button id="btnCompareTable" class="compare-btn">
-        Comparar Seleccionados
-      </button>
-      <div id="selectedList" class="selected-list"></div>
-    </div>
+          <h2>Jugadores disponibles</h2>
+          <p>Selecciona dos futbolistas de la tabla para enviarlos al comparador.</p>
+        </div>
 
-    <!-- LA TABLA QUE VIENE DEL IFRAME -->
-    <div class="table-responsive">
-      {{ table_html | safe }}
-    </div>
+        <button id="btnCompareTable" class="compare-btn compare-btn-modern" type="button">
+          <span class="material-icons">compare_arrows</span>
+          Comparar seleccionados
+        </button>
+      </div>
 
-    <!-- PAGINACIÓN (igual que antes) -->
-    <nav aria-label="Paginación de jugadores" style="margin-top:20px;">
-          <ul class="pagination justify-content-center">
-            {# << Anterior #}
-            {% if page > 1 %}
-              <li class="page-item">
-                <a class="page-link"
-                  href="{{ url_for('mostrar_bd') }}?{% for k,v in filtros.items() %}{{k}}={{v}}&{% endfor %}page={{ page-1 }}">
-                  &laquo; Anterior
-                </a>
-              </li>
+      <div id="selectedList" class="selected-list selected-list-modern"></div>
+
+      <div class="players-table-scroll-top" id="playersTableScrollTop">
+        <div class="players-table-scroll-spacer" id="playersTableScrollSpacer"></div>
+      </div>
+
+      <div class="table-responsive players-table-responsive" id="playersTableResponsive">
+        {{ table_html | safe }}
+      </div>
+
+      <nav aria-label="Paginación de jugadores">
+        <ul class="pagination justify-content-center">
+          {% if page > 1 %}
+            <li class="page-item">
+              <a class="page-link"
+                href="{{ url_for('mostrar_bd') }}?{% for k,v in filtros.items() %}{{k}}={{v}}&{% endfor %}page={{ page-1 }}">
+                &laquo; Anterior
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">&laquo; Anterior</span></li>
+          {% endif %}
+
+          <li class="page-item {% if page == 1 %}active{% endif %}">
+            {% if page == 1 %}
+              <span class="page-link">1</span>
             {% else %}
-              <li class="page-item disabled"><span class="page-link">&laquo; Anterior</span></li>
+              <a class="page-link"
+                href="{{ url_for('mostrar_bd') }}?{% for k,v in filtros.items() %}{{k}}={{v}}&{% endfor %}page=1">1</a>
             {% endif %}
+          </li>
 
-            {# Siempre mostramos el 1 #}
-            <li class="page-item {% if page == 1 %}active{% endif %}">
-              {% if page == 1 %}
-                <span class="page-link">1</span>
+          {% set window = 2 %}
+          {% set start = (page - window if page - window > 2 else 2) %}
+          {% set end   = (page + window if page + window < total_pages -1 else total_pages -1) %}
+
+          {% if start > 2 %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% endif %}
+
+          {% for p in range(start, end+1) %}
+            <li class="page-item {% if p == page %}active{% endif %}">
+              {% if p == page %}
+                <span class="page-link">{{ p }}</span>
               {% else %}
                 <a class="page-link"
-                  href="{{ url_for('mostrar_bd') }}?{% for k,v in filtros.items() %}{{k}}={{v}}&{% endfor %}page=1">1</a>
+                  href="{{ url_for('mostrar_bd') }}?{% for k,v in filtros.items() %}{{k}}={{v}}&{% endfor %}page={{ p }}">
+                  {{ p }}
+                </a>
               {% endif %}
             </li>
+          {% endfor %}
 
-            {# Ventana de páginas #}
-            {% set window = 2 %}
-            {% set start = (page - window if page - window > 2 else 2) %}
-            {% set end   = (page + window if page + window < total_pages -1 else total_pages -1) %}
+          {% if end < total_pages - 1 %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% endif %}
 
-            {% if start > 2 %}
-              <li class="page-item disabled"><span class="page-link">…</span></li>
-            {% endif %}
-
-            {% for p in range(start, end+1) %}
-              <li class="page-item {% if p == page %}active{% endif %}">
-                {% if p == page %}
-                  <span class="page-link">{{ p }}</span>
-                {% else %}
-                  <a class="page-link"
-                    href="{{ url_for('mostrar_bd') }}?{% for k,v in filtros.items() %}{{k}}={{v}}&{% endfor %}page={{ p }}">
-                    {{ p }}
-                  </a>
-                {% endif %}
-              </li>
-            {% endfor %}
-
-            {% if end < total_pages - 1 %}
-              <li class="page-item disabled"><span class="page-link">…</span></li>
-            {% endif %}
-
-            {% if total_pages > 1 %}
-              <li class="page-item {% if page == total_pages %}active{% endif %}">
-                {% if page == total_pages %}
-                  <span class="page-link">{{ total_pages }}</span>
-                {% else %}
-                  <a class="page-link"
-                    href="{{ url_for('mostrar_bd') }}?{% for k,v in filtros.items() %}{{k}}={{v}}&{% endfor %}page={{ total_pages }}">
-                    {{ total_pages }}
-                  </a>
-                {% endif %}
-              </li>
-            {% endif %}
-
-            {% if page < total_pages %}
-              <li class="page-item">
+          {% if total_pages > 1 %}
+            <li class="page-item {% if page == total_pages %}active{% endif %}">
+              {% if page == total_pages %}
+                <span class="page-link">{{ total_pages }}</span>
+              {% else %}
                 <a class="page-link"
-                  href="{{ url_for('mostrar_bd') }}?{% for k,v in filtros.items() %}{{k}}={{v}}&{% endfor %}page={{ page+1 }}">
-                  Siguiente &raquo;
+                  href="{{ url_for('mostrar_bd') }}?{% for k,v in filtros.items() %}{{k}}={{v}}&{% endfor %}page={{ total_pages }}">
+                  {{ total_pages }}
                 </a>
-              </li>
-            {% else %}
-              <li class="page-item disabled">
-                <span class="page-link">Siguiente &raquo;</span>
-              </li>
-            {% endif %}
-          </ul>
-        </nav>
+              {% endif %}
+            </li>
+          {% endif %}
+
+          {% if page < total_pages %}
+            <li class="page-item">
+              <a class="page-link"
+                href="{{ url_for('mostrar_bd') }}?{% for k,v in filtros.items() %}{{k}}={{v}}&{% endfor %}page={{ page+1 }}">
+                Siguiente &raquo;
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Siguiente &raquo;</span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </section>
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const table = document.querySelector('.table-responsive table');
-      if (!table) return;
+    function showCompareMessage(message, type = "error") {
+      const oldToast = document.querySelector(".table-compare-toast");
+      if (oldToast) oldToast.remove();
 
-      // 1 ELIMINAR "Inf" (columna 0) del <thead>
-      const headerRow = table.querySelector('thead tr');
-      if (headerRow && headerRow.cells.length) {
+      const toast = document.createElement("div");
+      toast.className = `table-compare-toast table-compare-toast--${type}`;
+
+      const icon = type === "success" ? "check_circle" : "warning";
+
+      toast.innerHTML = `
+        <span class="material-icons">${icon}</span>
+        <div>
+          <strong>${type === "success" ? "Comparación válida" : "No se puede comparar"}</strong>
+          <p>${message}</p>
+        </div>
+      `;
+
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.add("hide");
+        toast.addEventListener("animationend", () => toast.remove(), { once: true });
+      }, 4200);
+    }
+
+    function initPlayersTable() {
+      const table = document.querySelector("#playersTableResponsive table");
+      if (!table) return;
+      mejorarVisualmenteCeldasTabla(table);
+
+      const headerRow = table.querySelector("thead tr");
+      if (!headerRow) return;
+
+      if (headerRow.cells.length) {
         headerRow.deleteCell(0);
       }
-      // 2 INSERTAR nueva cabecera "Seleccionar" en posición 0
-      const thSel = document.createElement('th');
-      thSel.textContent = 'Seleccionar';
-      thSel.classList.add('select-col');
+
+      const thSel = document.createElement("th");
+      thSel.textContent = "Seleccionar";
+      thSel.classList.add("select-col");
       headerRow.insertBefore(thSel, headerRow.firstChild);
 
       const maxAllowed = 2;
       let selected = [];
 
-      // 3 Para cada fila: eliminar celda Inf y añadir checkbox
-      table.querySelectorAll('tbody tr').forEach(row => {
-        // eliminar la primera celda (Inf)
+      table.querySelectorAll("tbody tr").forEach(row => {
         if (row.cells.length) row.deleteCell(0);
 
-        // insertar celda de selección
         const td = row.insertCell(0);
-        td.classList.add('select-col');
-        const chk = document.createElement('input');
-        chk.type = 'checkbox';
-        chk.value = row.cells[1]?.textContent.trim() || '';
+        td.classList.add("select-col");
+
+        const chk = document.createElement("input");
+        chk.type = "checkbox";
+        chk.value = row.cells[1]?.textContent.trim() || "";
+
         td.appendChild(chk);
 
-        chk.addEventListener('change', () => {
+        chk.addEventListener("change", () => {
           if (chk.checked) {
             selected.push(chk);
+
             if (selected.length > maxAllowed) {
               const old = selected.shift();
               old.checked = false;
@@ -246,42 +693,186 @@
           } else {
             selected = selected.filter(c => c !== chk);
           }
+
           renderSelected();
         });
       });
 
-      const selectedListDiv = document.getElementById('selectedList');
-      const btnCompare = document.getElementById('btnCompareTable');
+      const selectedListDiv = document.getElementById("selectedList");
+      const btnCompare = document.getElementById("btnCompareTable");
 
-      // 4 Mostrar la lista de seleccionados
       function renderSelected() {
-        selectedListDiv.innerHTML = '';
+        selectedListDiv.innerHTML = "";
+
         selected.forEach(chk => {
-          const span = document.createElement('span');
-          span.classList.add('selected-item');
-          span.textContent = chk.value;
-          const xbtn = document.createElement('button');
-          xbtn.classList.add('remove-btn');
-          xbtn.textContent = '×';
-          xbtn.addEventListener('click', () => {
+          const span = document.createElement("span");
+          span.classList.add("selected-item");
+
+          const nameText = document.createElement("span");
+          nameText.textContent = chk.value;
+          span.appendChild(nameText);
+
+          const xbtn = document.createElement("button");
+          xbtn.classList.add("remove-btn");
+          xbtn.textContent = "×";
+
+          xbtn.addEventListener("click", () => {
             chk.checked = false;
-            chk.dispatchEvent(new Event('change'));
+            chk.dispatchEvent(new Event("change"));
           });
+
           span.appendChild(xbtn);
           selectedListDiv.appendChild(span);
         });
       }
 
-      // 5 Al hacer clic en Comparar, abrimos la ventana de comparación
-      btnCompare.addEventListener('click', () => {
+      btnCompare.addEventListener("click", () => {
         if (selected.length !== maxAllowed) {
-          alert(`Selecciona exactamente ${maxAllowed} jugadores.`);
+          showCompareMessage(`Selecciona exactamente ${maxAllowed} jugadores.`, "error");
           return;
         }
-        const [j1, j2] = selected.map(c => encodeURIComponent(c.value));
-        window.open(`/comparacion?players[]=${j1}&players[]=${j2}`, '_blank');
+
+        const jugador1 = selected[0].value;
+        const jugador2 = selected[1].value;
+
+        const j1 = encodeURIComponent(jugador1);
+        const j2 = encodeURIComponent(jugador2);
+
+        fetch(`/api/comparar?jugador1=${j1}&jugador2=${j2}`)
+          .then(async res => {
+            const data = await res.json();
+
+            if (!res.ok || data.error) {
+              throw new Error(data.error || "Estos jugadores no son compatibles para comparar.");
+            }
+
+            return data;
+          })
+          .then(() => {
+            window.open(`/comparacion?players[]=${j1}&players[]=${j2}`, "_blank");
+          })
+          .catch(err => {
+            showCompareMessage(err.message, "error");
+          });
       });
+    }
+
+    function mejorarVisualmenteCeldasTabla(table) {
+      table.querySelectorAll("tbody td").forEach(td => {
+        const value = td.textContent.trim();
+
+        if (
+          value === "-" ||
+          value === "" ||
+          value.toLowerCase() === "nan" ||
+          value.toLowerCase() === "none"
+        ) {
+          td.innerHTML = `<span class="empty-data-badge">Sin dato</span>`;
+        }
+      });
+
+      const headerCells = Array.from(table.querySelectorAll("thead th"));
+      const posicionIndex = headerCells.findIndex(th =>
+        th.textContent.trim().toLowerCase() === "posición"
+      );
+
+      if (posicionIndex !== -1) {
+        table.querySelectorAll("tbody tr").forEach(row => {
+          const td = row.cells[posicionIndex];
+
+          if (!td) return;
+
+          const value = td.textContent.trim();
+
+          if (
+            value &&
+            value !== "-" &&
+            !td.querySelector(".empty-data-badge")
+          ) {
+            td.innerHTML = `<span class="position-pill">${value}</span>`;
+          }
+        });
+      }
+    }
+
+    function initTableHorizontalScrollSync() {
+      const topScroll = document.getElementById("playersTableScrollTop");
+      const topSpacer = document.getElementById("playersTableScrollSpacer");
+      const tableWrapper = document.getElementById("playersTableResponsive");
+
+      if (!topScroll || !topSpacer || !tableWrapper) return;
+
+      const table = tableWrapper.querySelector("table");
+      if (!table) return;
+
+      function updateSpacerWidth() {
+        topSpacer.style.width = table.scrollWidth + "px";
+      }
+
+      updateSpacerWidth();
+
+      let syncingTop = false;
+      let syncingBottom = false;
+
+      topScroll.addEventListener("scroll", () => {
+        if (syncingTop) return;
+
+        syncingBottom = true;
+        tableWrapper.scrollLeft = topScroll.scrollLeft;
+        syncingBottom = false;
+      });
+
+      tableWrapper.addEventListener("scroll", () => {
+        if (syncingBottom) return;
+
+        syncingTop = true;
+        topScroll.scrollLeft = tableWrapper.scrollLeft;
+        syncingTop = false;
+      });
+
+      window.addEventListener("resize", updateSpacerWidth);
+
+      setTimeout(updateSpacerWidth, 150);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      initPlayersTable();
+      initTableHorizontalScrollSync();
     });
   </script>
+
+  <script>
+    function ajustarAlturaIframe() {
+      const panel = document.querySelector(".players-table-panel");
+      if (!panel) return;
+
+      const altura = Math.ceil(panel.getBoundingClientRect().height) + 6;
+
+      window.parent.postMessage({
+        type: "resizeTablaJugadores",
+        height: altura
+      }, "*");
+    }
+
+    window.addEventListener("load", ajustarAlturaIframe);
+
+    document.addEventListener("DOMContentLoaded", () => {
+      ajustarAlturaIframe();
+
+      const panel = document.querySelector(".players-table-panel");
+
+      if (panel && "ResizeObserver" in window) {
+        const observer = new ResizeObserver(() => {
+          ajustarAlturaIframe();
+        });
+
+        observer.observe(panel);
+      }
+
+      setTimeout(ajustarAlturaIframe, 300);
+      setTimeout(ajustarAlturaIframe, 800);
+    });
+  </script>
+
 </body>
 </html>

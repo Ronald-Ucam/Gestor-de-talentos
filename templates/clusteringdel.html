@@ -7,7 +7,7 @@
 
   <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-  <!-- CSS -->
+  <!-- CSS-->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
   <!-- Chart.js y plugin de zoom/pan -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -17,287 +17,1529 @@
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
+      color: #111827;
       background:
-        linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)),
+        linear-gradient(rgba(4, 18, 36, 0.68), rgba(4, 18, 36, 0.72)),
         url('{{ url_for("static", filename="images/clusteringwin.png") }}') center/cover fixed;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       min-height: 100vh;
+      padding: 1.4rem;
     }
-    .main-content {
-      background: rgba(255,255,255,0.6);
-      backdrop-filter: blur(8px);
-      border-radius: var(--radius);
-      padding: 2rem;
-      margin: 2rem;
-      max-width: 900px;
-      width: 100%;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+
+    .forward-window {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      display: grid;
+      gap: 1.1rem;
+      overflow: visible;
     }
-    .page-title {
-      text-align: center;
-      color: var(--clr-primary);
-      font-size: clamp(1.5rem,2.5vw,2rem);
-      margin-bottom: 1.5rem;
+
+    .gk-header-card,
+    .gk-controls-card,
+    .gk-chart-card,
+    .gk-guide-card,
+    .gk-table-card {
+      border-radius: 26px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(255,255,255,0.78));
+      border: 1px solid rgba(255,255,255,0.62);
+      box-shadow: 0 18px 42px rgba(0,0,0,0.22);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
     }
-    .cluster-form {
+
+    .gk-header-card {
+      position: relative;
+      overflow: hidden;
+      padding: 1.5rem;
       display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
+      justify-content: space-between;
+      gap: 1.2rem;
+      align-items: center;
+    }
+
+    .gk-header-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 88% 20%, rgba(255,179,71,0.22), transparent 32%),
+        radial-gradient(circle at 8% 90%, rgba(0,89,179,0.16), transparent 35%);
+      pointer-events: none;
+    }
+
+    .gk-header-card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .gk-badge,
+    .gk-mini-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      width: fit-content;
+      border-radius: 999px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .gk-badge {
+      padding: 0.42rem 0.82rem;
+      background: rgba(0, 51, 102, 0.09);
+      color: #003366;
+      font-size: 0.74rem;
+    }
+
+    .gk-mini-badge {
+      padding: 0.34rem 0.72rem;
+      background: rgba(0, 51, 102, 0.08);
+      color: #003366;
+      font-size: 0.68rem;
+    }
+
+    .gk-badge .material-icons,
+    .gk-mini-badge .material-icons {
+      font-size: 1rem;
+    }
+
+    .gk-header-card h1 {
+      margin: 0.75rem 0 0.35rem;
+      color: #061b31;
+      font-size: clamp(1.75rem, 3vw, 2.45rem);
+      line-height: 1.08;
+      font-weight: 950;
+      letter-spacing: -0.035em;
+    }
+
+    .gk-header-card p {
+      max-width: 760px;
+      margin: 0;
+      color: #1f2c3d;
+      font-size: 0.96rem;
+      line-height: 1.55;
+      font-weight: 500;
+    }
+
+    .gk-header-icon {
+      width: 78px;
+      height: 78px;
+      border-radius: 24px;
+      display: inline-flex;
+      align-items: center;
       justify-content: center;
-      align-items: center;
-      margin-bottom: 2rem;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #003366, #0059b3);
+      color: #ffffff;
+      box-shadow: 0 16px 30px rgba(0,51,102,0.28);
     }
-    .cluster-form label {
-      font-weight: 600;
+
+    .gk-header-icon .material-icons {
+      font-size: 2.35rem;
+    }
+
+    .gk-controls-card {
+      position: relative;
+      z-index: 40;
+      padding: 1.15rem;
+      overflow: visible;
+    }
+
+    .gk-form {
+      display: grid;
+      grid-template-columns: 1fr 0.75fr 1.35fr auto;
+      gap: 0.85rem;
+      align-items: end;
+      margin: 0;
+      overflow: visible;
+    }
+
+    .gk-field {
+      min-width: 0;
       display: flex;
+      flex-direction: column;
+      gap: 0.42rem;
+      color: #1f2c3d;
+      font-size: 0.86rem;
+      font-weight: 850;
+    }
+
+    .gk-field--wide {
+      min-width: 230px;
+    }
+
+    .gk-field-title {
+      display: inline-flex;
       align-items: center;
-      gap: 0.25rem;
-      color: var(--clr-text);
+      gap: 0.4rem;
     }
-    .cluster-form input[type="number"],
-    .cluster-form input[type="text"],
-    .cluster-form select {
-      padding: 0.4rem 0.6rem;
-      border: 1px solid #ccc;
-      border-radius: var(--radius);
-      font-size: 0.9rem;
+
+    .gk-field-title .material-icons {
+      color: #003366;
+      font-size: 1rem;
     }
+
+    .gk-field input,
+    .gk-field select {
+      height: 44px;
+      width: 100%;
+      border: 1px solid rgba(16, 42, 67, 0.16);
+      border-radius: 14px;
+      padding: 0 0.85rem;
+      background: rgba(255,255,255,0.96);
+      color: #111827;
+      font-size: 0.92rem;
+      font-weight: 650;
+      outline: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+
+    .gk-field input:focus,
+    .gk-field select:focus {
+      border-color: rgba(0, 77, 153, 0.55);
+      box-shadow: 0 0 0 4px rgba(0, 77, 153, 0.10);
+    }
+
     #epsControl,
     #minSamplesControl {
       display: none;
     }
 
-
-    .cluster-form input[type="checkbox"] {
-      transform: scale(1.2);
-      margin-right: 0.3rem;
+    .gk-filter-group {
+      grid-column: 1 / -2;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
     }
-    .cluster-form button {
-      background: var(--clr-primary);
-      color: #fff;
-      padding: 0.6rem 1.2rem;
-      border: none;
-      border-radius: var(--radius);
-      font-weight: 600;
+
+    .gk-check {
+      min-height: 38px;
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      transition: transform var(--transition), box-shadow var(--transition);
+      gap: 0.45rem;
+      padding: 0.45rem 0.72rem;
+      border-radius: 999px;
+      background: rgba(0, 51, 102, 0.07);
+      border: 1px solid rgba(0, 51, 102, 0.10);
+      color: #1f2c3d;
+      font-size: 0.84rem;
+      font-weight: 750;
       cursor: pointer;
     }
-    .cluster-form button:hover {
-      background: var(--clr-primary-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+
+    .gk-check input {
+      accent-color: #003366;
+      transform: scale(1.08);
     }
 
-    #chart-container {
+    .gk-submit-btn {
+      height: 44px;
+      min-width: 145px;
+      border: none;
+      border-radius: 14px;
+      padding: 0 1.1rem;
+      background: linear-gradient(135deg, #003366, #0059b3);
+      color: #ffffff;
+      font-weight: 900;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.48rem;
+      box-shadow: 0 12px 24px rgba(0,51,102,0.24);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .gk-submit-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 30px rgba(0,51,102,0.30);
+    }
+
+    .gk-card-header {
+      padding: 1.15rem 1.2rem 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .gk-card-header h2 {
+      margin: 0.55rem 0 0;
+      color: #061b31;
+      font-size: 1.25rem;
+      font-weight: 950;
+    }
+
+    .gk-card-header p {
+      max-width: 360px;
+      margin: 0.25rem 0 0;
+      color: #1f2c3d;
+      font-size: 0.86rem;
+      line-height: 1.45;
+      font-weight: 500;
+    }
+
+    .gk-native-select {
+      display: none !important;
+    }
+
+    .gk-field--algorithm {
       position: relative;
-      background: rgba(255,255,255,0.8);
-      backdrop-filter: blur(4px);
+      z-index: 80;
+      overflow: visible;
+    }
+
+    .gk-algorithm-select {
+      position: relative;
+      z-index: 90;
+      width: 100%;
+      overflow: visible;
+    }
+
+    .gk-algorithm-select__button {
+      height: 44px;
+      width: 100%;
+      border: 1px solid rgba(16, 42, 67, 0.16);
+      border-radius: 14px;
+      padding: 0 0.75rem 0 0.9rem;
+      background: rgba(255,255,255,0.96);
+      color: #111827;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 850;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.7rem;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .gk-algorithm-select__button:hover,
+    .gk-algorithm-select.open .gk-algorithm-select__button {
+      border-color: rgba(0, 77, 153, 0.52);
+      box-shadow: 0 0 0 4px rgba(0, 77, 153, 0.10);
+    }
+
+    .gk-algorithm-select__left {
+      min-width: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+
+    .gk-algorithm-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 10px;
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: rgba(0, 51, 102, 0.09);
+      color: #003366;
+      font-size: 1rem !important;
+    }
+
+    .gk-algorithm-arrow {
+      color: #003366;
+      font-size: 1.25rem !important;
+      transition: transform 0.2s ease;
+    }
+
+    .gk-algorithm-select.open .gk-algorithm-arrow {
+      transform: rotate(180deg);
+    }
+
+    .gk-algorithm-select__menu {
+      position: absolute;
+      top: calc(100% + 0.5rem);
+      left: 0;
+      right: 0;
+      z-index: 99999;
+      display: none;
+      padding: 0.45rem;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.98);
+      border: 1px solid rgba(16, 42, 67, 0.12);
+      box-shadow: 0 18px 36px rgba(0,0,0,0.18);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .gk-algorithm-select.open .gk-algorithm-select__menu {
+      display: grid;
+      gap: 0.35rem;
+      animation: gkSelectIn 0.16s ease;
+    }
+
+    .gk-algorithm-select__option {
+      width: 100%;
+      border: none;
+      background: transparent;
+      padding: 0.72rem 0.75rem;
+      border-radius: 14px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.65rem;
+      align-items: center;
+      text-align: left;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      color: #1f2c3d;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+
+    .gk-algorithm-select__option > .material-icons {
+      width: 34px;
+      height: 34px;
       border-radius: 12px;
-      padding: 1rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      height: 400px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 51, 102, 0.08);
+      color: #003366;
+      font-size: 1.1rem;
+    }
+
+    .gk-algorithm-select__option strong {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 900;
+      color: #061b31;
+      line-height: 1.15;
+    }
+
+    .gk-algorithm-select__option small {
+      display: block;
+      margin-top: 0.12rem;
+      font-size: 0.76rem;
+      font-weight: 650;
+      color: #536273;
+      line-height: 1.25;
+    }
+
+    .gk-algorithm-select__option:hover {
+      background: rgba(0, 77, 153, 0.08);
+      transform: translateX(2px);
+    }
+
+    .gk-algorithm-select__option.active {
+      background: linear-gradient(135deg, rgba(0,51,102,0.12), rgba(0,89,179,0.08));
+    }
+
+    .gk-algorithm-select__option.active > .material-icons {
+      background: linear-gradient(135deg, #003366, #0059b3);
+      color: #ffffff;
+    }
+
+    @keyframes gkSelectIn {
+      from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .gk-chart-card,
+    .gk-guide-card,
+    .gk-table-card {
+      position: relative;
+      z-index: 1;
+    }
+
+    .gk-autocomplete {
+      position: relative;
+      width: 100%;
+    }
+
+    .gk-autocomplete__input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .gk-autocomplete__input-wrap input {
+      padding-right: 3rem !important;
+    }
+
+    .gk-autocomplete__toggle {
+      position: absolute;
+      right: 0.55rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 34px;
+      height: 34px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(0, 51, 102, 0.08);
+      color: #003366;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .gk-autocomplete__toggle:hover {
+      background: rgba(0, 51, 102, 0.14);
+    }
+
+    .gk-autocomplete.open .gk-autocomplete__toggle .material-icons {
+      transform: rotate(180deg);
+    }
+
+    .gk-autocomplete__toggle .material-icons {
+      font-size: 1.15rem;
+      transition: transform 0.2s ease;
+    }
+
+    .gk-autocomplete__menu {
+      position: absolute;
+      top: calc(100% + 0.5rem);
+      left: 0;
+      right: 0;
+      z-index: 99999;
+      display: none;
+      max-height: 260px;
+      overflow-y: auto;
+      padding: 0.45rem;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.98);
+      border: 1px solid rgba(16, 42, 67, 0.12);
+      box-shadow: 0 18px 36px rgba(0,0,0,0.20);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .gk-autocomplete.open .gk-autocomplete__menu {
+      display: grid;
+      gap: 0.3rem;
+      animation: gkAutoIn 0.16s ease;
+    }
+
+    .gk-suggestion {
+      width: 100%;
+      border: none;
+      background: transparent;
+      padding: 0.72rem 0.8rem;
+      border-radius: 14px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.65rem;
+      align-items: center;
+      text-align: left;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+
+    .gk-suggestion:hover,
+    .gk-suggestion.active {
+      background: rgba(0, 77, 153, 0.08);
+      transform: translateX(2px);
+    }
+
+    .gk-suggestion__icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 51, 102, 0.08);
+      color: #003366;
+    }
+
+    .gk-suggestion__icon .material-icons {
+      font-size: 1.05rem;
+    }
+
+    .gk-suggestion__text {
+      min-width: 0;
+    }
+
+    .gk-suggestion__name {
+      display: block;
+      color: #061b31;
+      font-size: 0.9rem;
+      font-weight: 850;
+      line-height: 1.2;
+    }
+
+    .gk-suggestion__meta {
+      display: block;
+      margin-top: 0.08rem;
+      color: #5b6b7a;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .gk-suggestion mark {
+      background: rgba(255, 179, 71, 0.35);
+      color: inherit;
+      padding: 0 0.08rem;
+      border-radius: 4px;
+    }
+
+    .gk-suggestion-empty {
+      padding: 0.85rem 0.9rem;
+      border-radius: 14px;
+      color: #5b6b7a;
+      font-size: 0.86rem;
+      text-align: center;
+      background: rgba(0, 51, 102, 0.04);
+    }
+
+    @keyframes gkAutoIn {
+      from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .gk-chart-container {
+      position: relative;
+      margin: 1rem;
+      height: 430px;
+      padding: 1.35rem 1.25rem 1.15rem;
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(0, 89, 179, 0.16), transparent 32%),
+        radial-gradient(circle at 88% 78%, rgba(255, 179, 71, 0.22), transparent 34%),
+        linear-gradient(180deg, rgba(255,255,255,0.98), rgba(232,241,249,0.98));
+      border: 1px solid rgba(0, 51, 102, 0.14);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.95),
+        0 12px 28px rgba(0,0,0,0.10);
     }
 
     #clusterChart {
       width: 100% !important;
       height: 100% !important;
+      border-radius: 18px;
+      cursor: crosshair;
     }
+
     .pan-btn {
       position: absolute;
-      width: 32px; height: 32px;
-      background: var(--clr-accent);
-      color: var(--clr-primary);
-      border: none;
-      border-radius: 4px;
-      font-size: 1rem;
-      line-height: 32px;
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      line-height: 40px;
+      background: rgba(255, 179, 71, 0.92);
+      color: #08223f;
+      border: 1px solid rgba(255,255,255,0.35);
+      font-size: 1.05rem;
       text-align: center;
       cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      transition: background var(--transition);
+      box-shadow:
+        0 10px 22px rgba(0,0,0,0.14),
+        inset 0 1px 0 rgba(255,255,255,0.45);
+      opacity: 0.92;
+      transition: background 0.2s ease, color 0.2s ease, opacity 0.2s ease;
       z-index: 10;
+      font-weight: 900;
     }
+
     .pan-btn:hover {
-      background: var(--clr-primary-hover);
-      color: #fff;
+      background: #ffb347;
+      color: #061b31;
+      opacity: 1;
     }
-    #panUp    { top:21%; left:50%;  transform:translate(-50%,-50%); }
-    #panDown  { bottom:21%; left:50%;transform:translate(-50%,50%); }
-    #panLeft  { left:10.5%;top:50%;  transform:translate(-50%,-50%); }
-    #panRight { right:6%;   top:50%;  transform:translate(50%,-50%); }
+
+    #panUp {
+      top: 106px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    #panDown {
+      bottom: 58px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    #panLeft {
+      left: 82px;
+      top: 55%;
+      transform: translateY(-50%);
+    }
+
+    #panRight {
+      right: 42px;
+      top: 55%;
+      transform: translateY(-50%);
+    }
+
+    .reset-zoom-btn {
+      position: absolute;
+      right: 16px;
+      top: 16px;
+      z-index: 20;
+      min-height: 36px;
+      border: none;
+      border-radius: 999px;
+      padding: 0 0.85rem;
+      background: rgba(0, 51, 102, 0.10);
+      color: #003366;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 850;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.10);
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .reset-zoom-btn .material-icons {
+      font-size: 1rem;
+    }
+
+    .reset-zoom-btn:hover {
+      background: rgba(0, 51, 102, 0.16);
+      transform: translateY(-1px);
+    }
+
+    .gk-guide-modern {
+      padding: 1.35rem;
+      overflow: hidden;
+    }
+
+    .gk-guide-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.1rem;
+    }
+
+    .gk-guide-header h2 {
+      margin: 0.65rem 0 0.3rem;
+      color: #061b31;
+      font-size: 1.35rem;
+      font-weight: 950;
+      letter-spacing: -0.02em;
+    }
+
+    .gk-guide-header p {
+      max-width: 780px;
+      margin: 0;
+      color: #1f2c3d;
+      font-size: 0.94rem;
+      line-height: 1.55;
+      font-weight: 500;
+    }
+
+    .gk-guide-steps {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.85rem;
+    }
+
+    .gk-guide-step {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.8rem;
+      padding: 1rem;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.68);
+      border: 1px solid rgba(220, 230, 242, 0.92);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+    }
+
+    .gk-guide-step__number {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #003366, #0059b3);
+      color: #ffffff;
+      font-size: 0.9rem;
+      font-weight: 950;
+      box-shadow: 0 10px 18px rgba(0,51,102,0.20);
+    }
+
+    .gk-guide-step h3 {
+      margin: 0 0 0.25rem;
+      color: #061b31;
+      font-size: 0.98rem;
+      font-weight: 950;
+    }
+
+    .gk-guide-step p {
+      margin: 0;
+      color: #1f2c3d;
+      font-size: 0.86rem;
+      line-height: 1.5;
+      font-weight: 500;
+    }
+
+    .gk-guide-tip {
+      margin-top: 1rem;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.8rem;
+      align-items: flex-start;
+      padding: 0.95rem 1rem;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(255,179,71,0.18), rgba(255,255,255,0.62));
+      border: 1px solid rgba(255, 179, 71, 0.32);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+    }
+
+    .gk-guide-tip__icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 13px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,179,71,0.25);
+      font-size: 1.1rem;
+    }
+
+    .gk-guide-tip p {
+      margin: 0;
+      color: #1f2c3d;
+      font-size: 0.9rem;
+      line-height: 1.55;
+      font-weight: 500;
+    }
+
+    .gk-guide-tip strong {
+      color: #061b31;
+      font-weight: 950;
+    }
+
+    .gk-table-card {
+      padding: 1.35rem;
+      overflow: hidden;
+    }
+
+    .gk-table-card .gk-card-header {
+      padding: 0;
+      margin-bottom: 1rem;
+    }
+
+    .gk-table-card .gk-card-header h2 {
+      margin-top: 0.65rem;
+      font-size: 1.45rem;
+      color: #061b31;
+    }
+
+    .gk-table-wrapper {
+      margin: 0;
+      border-radius: 22px;
+      overflow: hidden;
+      border: 1px solid rgba(0, 51, 102, 0.12);
+      background: rgba(255,255,255,0.92);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+    }
 
     table#table-clusters {
       width: 100%;
-      border-collapse: collapse;
-      background: rgba(255,255,255,0.8);
-      backdrop-filter: blur(4px);
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    th, td {
-      padding: 0.75rem 1rem;
-      text-align: left;
-    }
-    th {
-      background: var(--clr-primary);
-      color: #fff;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
-    tr:nth-child(even) td {
-      background: rgba(0,0,0,0.03);
+      border-collapse: separate;
+      border-spacing: 0;
+      background: transparent;
     }
 
-    .pagination-controls {
+    table#table-clusters thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      padding: 1rem 1.15rem;
+      background: linear-gradient(135deg, #003366, #0059b3);
+      color: #ffffff;
+      font-size: 0.82rem;
+      font-weight: 950;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    table#table-clusters thead th:first-child {
+      border-top-left-radius: 20px;
+    }
+
+    table#table-clusters thead th:last-child {
+      border-top-right-radius: 20px;
+    }
+
+    table#table-clusters tbody td {
+      padding: 0.88rem 1.15rem;
+      color: #111827;
+      font-size: 0.92rem;
+      border-bottom: 1px solid rgba(220, 230, 242, 0.85);
+      background: rgba(255,255,255,0.92);
+    }
+
+    table#table-clusters tbody tr:nth-child(even) td {
+      background: rgba(245, 249, 253, 0.95);
+    }
+
+    table#table-clusters tbody tr:hover td {
+      background: rgba(232, 242, 255, 0.98);
+    }
+
+    table#table-clusters tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    table#table-clusters tbody td:first-child {
+      color: #003366;
+      font-weight: 900;
+    }
+
+    table#table-clusters tbody tr {
+      cursor: pointer;
+    }
+
+    .cluster-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.42rem 0.72rem;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 850;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .cluster-pill::before {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .cluster-pill--goles {
+      background: rgba(66, 165, 245, 0.12);
+      color: #0b5c99;
+      border-color: rgba(66, 165, 245, 0.25);
+    }
+
+    .cluster-pill--goles::before {
+      background: #42a5f5;
+    }
+
+    .cluster-pill--xg {
+      background: rgba(255, 99, 132, 0.12);
+      color: #b4234a;
+      border-color: rgba(255, 99, 132, 0.25);
+    }
+
+    .cluster-pill--xg::before {
+      background: #ff6384;
+    }
+
+    .cluster-pill--disparos {
+      background: rgba(255, 159, 64, 0.13);
+      color: #a45700;
+      border-color: rgba(255, 159, 64, 0.28);
+    }
+
+    .cluster-pill--disparos::before {
+      background: #ff9f40;
+    }
+
+    .cluster-pill--regates {
+      background: rgba(255, 205, 86, 0.18);
+      color: #856000;
+      border-color: rgba(255, 205, 86, 0.34);
+    }
+
+    .cluster-pill--regates::before {
+      background: #ffcd56;
+    }
+
+    .cluster-pill--pases {
+      background: rgba(139, 92, 246, 0.13);
+      color: #5b21b6;
+      border-color: rgba(139, 92, 246, 0.28);
+    }
+
+    .cluster-pill--pases::before {
+      background: #8b5cf6;
+    }
+
+    .cluster-pill--default {
+      background: rgba(0, 51, 102, 0.08);
+      color: #003366;
+      border-color: rgba(0, 51, 102, 0.14);
+    }
+
+    .cluster-pill--default::before {
+      background: #003366;
+    }
+
+    .gk-table-card .pagination-controls {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-    .pagination-controls button {
-      background: var(--clr-accent);
-      border: none;
-      padding: 0.4rem 0.8rem;
-      border-radius: var(--radius);
-      cursor: pointer;
-      font-weight: 600;
-      transition: background var(--transition);
-    }
-    .pagination-controls button:disabled {
-      opacity: 0.5;
-      cursor: default;
-    }
-    .cluster-guide {
-      margin: 2rem auto;
-      max-width: 900px;
-    }
-    .cluster-guide-content {
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 8px;
-      padding: 1.5rem 2rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      line-height: 1.6;
-    }
-    .cluster-guide-content p {
-      margin-bottom: 1rem;
-      color: #333;
-    }
-    .cluster-guide-content ol {
-      margin: 0 0 1rem 1.2rem;
-      color: #444;
-    }
-    .cluster-guide-content li {
-      margin-bottom: 0.6rem;
-    }
-    .cluster-guide-content .tip {
-      background: #e8f5e9;
-      border-left: 4px solid #4caf50;
-      padding: 0.6rem 1rem;
-      border-radius: 4px;
-      color: #2e7d32;
-      margin-top: 1rem;
+      gap: 0.8rem;
+      margin: 1rem 0 0;
     }
 
+    .gk-table-card .pagination-controls button {
+      min-height: 40px;
+      border: none;
+      border-radius: 999px;
+      padding: 0.5rem 0.95rem;
+      background: rgba(0, 51, 102, 0.08);
+      color: #003366;
+      cursor: pointer;
+      font-weight: 900;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .gk-table-card .pagination-controls button:hover:not(:disabled) {
+      background: rgba(0, 51, 102, 0.14);
+      transform: translateY(-1px);
+    }
+
+    .gk-table-card .pagination-controls button:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    #pageInfo {
+      padding: 0.45rem 0.8rem;
+      border-radius: 999px;
+      background: rgba(0, 51, 102, 0.06);
+      color: #061b31;
+      font-size: 0.86rem;
+      font-weight: 900;
+    }
+
+    @media (max-width: 980px) {
+      body {
+        padding: 1rem;
+      }
+
+      .gk-form {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .gk-filter-group {
+        grid-column: 1 / -1;
+      }
+
+      .gk-submit-btn {
+        width: 100%;
+      }
+
+      .gk-card-header {
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .gk-guide-steps {
+        grid-template-columns: 1fr;
+      }
+
+      .gk-guide-modern {
+        padding: 1rem;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .gk-header-card {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1.2rem;
+      }
+
+      .gk-header-icon {
+        width: 62px;
+        height: 62px;
+        border-radius: 18px;
+      }
+
+      .gk-form {
+        grid-template-columns: 1fr;
+      }
+
+      .gk-chart-container {
+        height: 340px;
+        margin: 0.8rem;
+      }
+
+      .gk-filter-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .gk-check {
+        width: 100%;
+        border-radius: 14px;
+      }
+
+      .pan-btn {
+        width: 34px;
+        height: 34px;
+        line-height: 34px;
+        border-radius: 12px;
+        font-size: 0.95rem;
+      }
+
+      #panUp {
+        top: 92px;
+      }
+
+      #panDown {
+        bottom: 50px;
+      }
+
+      #panLeft {
+        left: 58px;
+      }
+
+      #panRight {
+        right: 28px;
+      }
+
+      .reset-zoom-btn {
+        right: 10px;
+        top: 10px;
+        font-size: 0.72rem;
+        padding: 0 0.65rem;
+      }
+
+      .gk-table-card {
+        padding: 1rem;
+      }
+
+      table#table-clusters tbody td,
+      table#table-clusters thead th {
+        padding: 0.8rem 0.85rem;
+        font-size: 0.84rem;
+      }
+
+      .cluster-pill {
+        white-space: normal;
+        border-radius: 14px;
+      }
+
+      .pagination-controls {
+        flex-wrap: wrap;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <main class="main-content">
-    <h2 class="page-title">Clustering de Delanteros</h2>
+  <main class="forward-window">
+    <section class="gk-header-card">
+      <div>
+        <span class="gk-badge">
+          <span class="material-icons">sports_soccer</span>
+          Clustering de delanteros
+        </span>
 
-    <form id="clusterForm" class="cluster-form">
-      <label><span class="material-icons">analytics</span>Algoritmo:
-        <select id="inputAlgoritmo">
-          <option value="kmeans" selected>K-Means</option>
-          <option value="dbscan">DBSCAN</option>
-        </select>
-      </label>
+        <h1>Análisis de perfiles de delanteros</h1>
 
-      <label id="kControl"><span class="material-icons">filter_alt</span>K:
-        <input type="number" id="inputK" value="4" min="1" max="7" />
-      </label>
-
-      <label id="epsControl"><span class="material-icons">scatter_plot</span>EPS:
-        <input type="number" id="inputEps" value="1.5" min="0.1" max="5" step="0.1" />
-      </label>
-
-      <label id="minSamplesControl"><span class="material-icons">groups</span>Mín. muestras:
-        <input type="number" id="inputMinSamples" value="5" min="2" max="20" />
-      </label>
-
-
-      <label><span class="material-icons">person_search</span>Delantero ref:
-        <input type="text" id="inputRef" list="delanterosList" placeholder="Escribe nombre…" autocomplete="off"/>
-      </label>
-      <label><input type="checkbox" id="ageFilter"/> Edad ±4 años</label>
-      <label><input type="checkbox" id="heightFilter"/> Altura ±5 cm</label>
-      <label><input type="checkbox" id="valueFilter"/> Valor ±10 M€</label>
-      <button type="submit"><span class="material-icons">play_arrow</span>Clustear</button>
-    </form>
-
-    <datalist id="delanterosList"></datalist>
-
-
-    <div id="chart-container">
-      <div id="panUp"    class="pan-btn">↑</div>
-      <div id="panDown"  class="pan-btn">↓</div>
-      <div id="panLeft"  class="pan-btn">←</div>
-      <div id="panRight" class="pan-btn">→</div>
-      <canvas id="clusterChart"></canvas>
-    </div>
-    <section class="cluster-guide">
-      <div class="cluster-guide-content">
         <p>
-          El clustering agrupa a los jugadores en “cohortes” según sus características estadísticas
-          (por ejemplo, goles por 90′, xG, disparos, precisión de pase, etc.).  
-          Cuando eliges un <strong>Jugador de referencia</strong>, el sistema:
+          Agrupa delanteros con características similares usando K-Means o DBSCAN.
+          Puedes seleccionar un delantero de referencia y aplicar filtros para encontrar perfiles parecidos.
         </p>
-        <ol>
-          <li>Resalta en el scatter plot al jugador seleccionado.</li>
-          <li>
-            Muestra en la tabla todos los jugadores de su mismo clúster, es decir,
-            aquellos con perfiles estadísticos similares.
-          </li>
-          <li>
-            Te ayuda a identificar rápidamente otros futbolistas que rinden de forma
-            parecida (ideal para comparar o buscar recambios).
-          </li>
-        </ol>
-        <p class="tip">
-          ⚽ <em>Tip:</em> Usa <strong>K-Means</strong> cuando quieras dividir los delanteros
-          en un número fijo de grupos. Usa <strong>DBSCAN</strong> para detectar jugadores
-          con perfiles atípicos o diferentes al patrón general.
+      </div>
+
+      <div class="gk-header-icon">
+        <span class="material-icons">sports_soccer</span>
+      </div>
+    </section>
+
+    <section class="gk-controls-card">
+      <form id="clusterForm" class="cluster-form gk-form">
+        <label class="gk-field gk-field--algorithm">
+          <span class="gk-field-title">
+            <span class="material-icons">analytics</span>
+            Algoritmo
+          </span>
+
+          <select id="inputAlgoritmo" class="gk-native-select">
+            <option value="kmeans" selected>K-Means</option>
+            <option value="dbscan">DBSCAN</option>
+          </select>
+
+          <div class="gk-algorithm-select" id="algorithmSelect">
+            <button class="gk-algorithm-select__button" type="button" id="algorithmSelectButton">
+              <span class="gk-algorithm-select__left">
+                <span class="gk-algorithm-icon material-icons">grain</span>
+                <span id="algorithmSelectText">K-Means</span>
+              </span>
+              <span class="material-icons gk-algorithm-arrow">expand_more</span>
+            </button>
+
+            <div class="gk-algorithm-select__menu" id="algorithmSelectMenu">
+              <button class="gk-algorithm-select__option active" type="button" data-value="kmeans" data-icon="grain">
+                <span class="material-icons">grain</span>
+                <span>
+                  <strong>K-Means</strong>
+                  <small>Grupos definidos</small>
+                </span>
+              </button>
+
+              <button class="gk-algorithm-select__option" type="button" data-value="dbscan" data-icon="bubble_chart">
+                <span class="material-icons">bubble_chart</span>
+                <span>
+                  <strong>DBSCAN</strong>
+                  <small>Detecta perfiles atípicos</small>
+                </span>
+              </button>
+            </div>
+          </div>
+        </label>
+
+        <label id="kControl" class="gk-field">
+          <span class="gk-field-title">
+            <span class="material-icons">filter_alt</span>
+            Número de grupos
+          </span>
+          <input type="number" id="inputK" value="4" min="1" max="7" />
+        </label>
+
+        <label id="epsControl" class="gk-field">
+          <span class="gk-field-title">
+            <span class="material-icons">scatter_plot</span>
+            EPS
+          </span>
+          <input type="number" id="inputEps" value="1.5" min="0.1" max="5" step="0.1" />
+        </label>
+
+        <label id="minSamplesControl" class="gk-field">
+          <span class="gk-field-title">
+            <span class="material-icons">groups</span>
+            Mín. muestras
+          </span>
+          <input type="number" id="inputMinSamples" value="5" min="2" max="20" />
+        </label>
+
+        <label class="gk-field gk-field--wide">
+          <span class="gk-field-title">
+            <span class="material-icons">person_search</span>
+            Delantero para encontrar similares
+          </span>
+
+          <div class="gk-autocomplete" id="gkAutocomplete">
+            <div class="gk-autocomplete__input-wrap">
+              <input
+                type="text"
+                id="inputRef"
+                placeholder="Escribe el nombre de un delantero…"
+                autocomplete="off"
+              />
+              <button type="button" class="gk-autocomplete__toggle" id="toggleSuggestions">
+                <span class="material-icons">expand_more</span>
+              </button>
+            </div>
+
+            <div class="gk-autocomplete__menu" id="suggestionsMenu"></div>
+          </div>
+        </label>
+
+        <div class="gk-filter-group">
+          <label class="gk-check">
+            <input type="checkbox" id="ageFilter"/>
+            <span>Edad ±4 años</span>
+          </label>
+
+          <label class="gk-check">
+            <input type="checkbox" id="heightFilter"/>
+            <span>Altura ±5 cm</span>
+          </label>
+
+          <label class="gk-check">
+            <input type="checkbox" id="valueFilter"/>
+            <span>Valor ±10 M€</span>
+          </label>
+        </div>
+
+        <button type="submit" class="gk-submit-btn">
+          <span class="material-icons">play_arrow</span>
+          Clustear
+        </button>
+      </form>
+    </section>
+
+    <section class="gk-chart-card">
+      <div class="gk-card-header">
+        <div>
+          <span class="gk-mini-badge">
+            <span class="material-icons">bubble_chart</span>
+            Mapa de grupos
+          </span>
+          <h2>Distribución de delanteros</h2>
+        </div>
+
+        <p>
+          Usa la rueda del ratón para ampliar el gráfico. Para mover la vista,
+          mantén Shift pulsado y arrastra, o utiliza las flechas.
+        </p>
+      </div>
+
+      <div id="chart-container" class="gk-chart-container">
+        <button id="resetZoom" class="reset-zoom-btn" type="button">
+          <span class="material-icons">restart_alt</span>
+          Restablecer vista
+        </button>
+
+        <div id="panUp"    class="pan-btn">↑</div>
+        <div id="panDown"  class="pan-btn">↓</div>
+        <div id="panLeft"  class="pan-btn">←</div>
+        <div id="panRight" class="pan-btn">→</div>
+        <canvas id="clusterChart"></canvas>
+      </div>
+    </section>
+
+    <section class="cluster-guide gk-guide-card gk-guide-modern">
+      <div class="gk-guide-header">
+        <div>
+          <span class="gk-mini-badge">
+            <span class="material-icons">info</span>
+            Cómo interpretar el resultado
+          </span>
+
+          <h2>Guía rápida del análisis</h2>
+
+          <p>
+            El clustering agrupa delanteros según métricas ofensivas como goles, xG,
+            disparos, regates, asistencias y participación en ataque.
+          </p>
+        </div>
+      </div>
+
+      <div class="gk-guide-steps">
+        <article class="gk-guide-step">
+          <span class="gk-guide-step__number">1</span>
+          <div>
+            <h3>Elige el algoritmo</h3>
+            <p>
+              Usa <strong>K-Means</strong> para crear grupos definidos o <strong>DBSCAN</strong>
+              para detectar perfiles más atípicos.
+            </p>
+          </div>
+        </article>
+
+        <article class="gk-guide-step">
+          <span class="gk-guide-step__number">2</span>
+          <div>
+            <h3>Selecciona un delantero</h3>
+            <p>
+              Puedes escribir un delantero de referencia o hacer clic sobre un punto del gráfico
+              para llevarlo al buscador.
+            </p>
+          </div>
+        </article>
+
+        <article class="gk-guide-step">
+          <span class="gk-guide-step__number">3</span>
+          <div>
+            <h3>Aplica filtros</h3>
+            <p>
+              Limita la búsqueda por edad, altura o valor para obtener resultados más cercanos
+              al perfil que quieres analizar.
+            </p>
+          </div>
+        </article>
+
+        <article class="gk-guide-step">
+          <span class="gk-guide-step__number">4</span>
+          <div>
+            <h3>Revisa el grupo</h3>
+            <p>
+              Consulta la tabla para ver los delanteros que pertenecen al mismo clúster o grupo
+              de rendimiento.
+            </p>
+          </div>
+        </article>
+      </div>
+
+      <div class="gk-guide-tip">
+        <span class="gk-guide-tip__icon">⚽</span>
+        <p>
+          <strong>Consejo:</strong> K-Means es mejor para grupos claros y controlados.
+          DBSCAN es útil para descubrir delanteros menos comunes o fuera del patrón general.
         </p>
       </div>
     </section>
-    <table id="table-clusters">
-      <thead>
-        <tr>
-          <th>Delantero</th>
-          <th>Clúster</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
 
-    <div class="pagination-controls">
-      <button id="prevPage" disabled>« Anterior</button>
-      <span id="pageInfo">Página 1</span>
-      <button id="nextPage" disabled>Siguiente »</button>
-    </div>
+    <section class="gk-table-card">
+      <div class="gk-card-header">
+        <div>
+          <span class="gk-mini-badge">
+            <span class="material-icons">table_chart</span>
+            Resultados
+          </span>
+          <h2>Delanteros del grupo seleccionado</h2>
+        </div>
+      </div>
+
+      <div class="gk-table-wrapper">
+        <table id="table-clusters">
+          <thead>
+            <tr>
+              <th>Delantero</th>
+              <th>Clúster</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="pagination-controls">
+        <button id="prevPage" disabled>« Anterior</button>
+        <span id="pageInfo">Página 1</span>
+        <button id="nextPage" disabled>Siguiente »</button>
+      </div>
+    </section>
   </main>
 
   <script>
     Chart.register(ChartZoom);
+
+    let suggestionIndex = -1;
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, function (m) {
+        return ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;'
+        })[m];
+      });
+    }
+
+    function highlightMatch(text, query) {
+      if (!query) return escapeHtml(text);
+
+      const index = text.toLowerCase().indexOf(query.toLowerCase());
+
+      if (index === -1) return escapeHtml(text);
+
+      const before = escapeHtml(text.slice(0, index));
+      const match = escapeHtml(text.slice(index, index + query.length));
+      const after = escapeHtml(text.slice(index + query.length));
+
+      return `${before}<mark>${match}</mark>${after}`;
+    }
+
+    function closeSuggestions() {
+      const autocomplete = document.getElementById("gkAutocomplete");
+      const menu = document.getElementById("suggestionsMenu");
+
+      autocomplete.classList.remove("open");
+      menu.innerHTML = "";
+      suggestionIndex = -1;
+    }
+
+    function selectSuggestion(name) {
+      document.getElementById("inputRef").value = name;
+      closeSuggestions();
+    }
+
+    function renderSuggestions(query = "") {
+      const menu = document.getElementById("suggestionsMenu");
+      const autocomplete = document.getElementById("gkAutocomplete");
+
+      let filtered = delanterosList;
+
+      if (query.trim()) {
+        filtered = delanterosList.filter(nombre =>
+          nombre.toLowerCase().includes(query.toLowerCase())
+        );
+      }
+
+      filtered = filtered.slice(0, 8);
+
+      if (!filtered.length) {
+        menu.innerHTML = `<div class="gk-suggestion-empty">No se han encontrado delanteros.</div>`;
+        autocomplete.classList.add("open");
+        return;
+      }
+
+      menu.innerHTML = filtered.map((nombre, index) => `
+        <button type="button" class="gk-suggestion ${index === suggestionIndex ? "active" : ""}" data-name="${escapeHtml(nombre)}">
+          <span class="gk-suggestion__icon">
+            <span class="material-icons">sports_soccer</span>
+          </span>
+          <span class="gk-suggestion__text">
+            <span class="gk-suggestion__name">${highlightMatch(nombre, query)}</span>
+            <span class="gk-suggestion__meta">Seleccionar delantero</span>
+          </span>
+        </button>
+      `).join("");
+
+      autocomplete.classList.add("open");
+
+      menu.querySelectorAll(".gk-suggestion").forEach(btn => {
+        btn.addEventListener("click", () => {
+          selectSuggestion(btn.dataset.name);
+        });
+      });
+    }
+
+    function setupForwardAutocomplete() {
+      const input = document.getElementById("inputRef");
+      const toggle = document.getElementById("toggleSuggestions");
+      const autocomplete = document.getElementById("gkAutocomplete");
+
+      if (!input || !toggle || !autocomplete) return;
+
+      input.addEventListener("input", () => {
+        suggestionIndex = -1;
+        renderSuggestions(input.value);
+      });
+
+      input.addEventListener("focus", () => {
+        renderSuggestions(input.value);
+      });
+
+      toggle.addEventListener("click", () => {
+        if (autocomplete.classList.contains("open")) {
+          closeSuggestions();
+        } else {
+          renderSuggestions(input.value);
+        }
+      });
+
+      input.addEventListener("keydown", (e) => {
+        const visibles = [...document.querySelectorAll(".gk-suggestion")];
+
+        if (!visibles.length) return;
+
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          suggestionIndex = (suggestionIndex + 1) % visibles.length;
+          renderSuggestions(input.value);
+        }
+
+        if (e.key === "ArrowUp") {
+          e.preventDefault();
+          suggestionIndex = suggestionIndex <= 0 ? visibles.length - 1 : suggestionIndex - 1;
+          renderSuggestions(input.value);
+        }
+
+        if (e.key === "Enter" && suggestionIndex >= 0 && visibles[suggestionIndex]) {
+          e.preventDefault();
+          selectSuggestion(visibles[suggestionIndex].dataset.name);
+        }
+
+        if (e.key === "Escape") {
+          closeSuggestions();
+        }
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!autocomplete.contains(e.target)) {
+          closeSuggestions();
+        }
+      });
+    }
 
     const form        = document.getElementById('clusterForm');
     const inputK      = document.getElementById('inputK');
@@ -372,19 +1614,49 @@
 
     function applyFilters(data, ref) {
       let d = data;
+
       if(ageFilter.checked && ref){
         const b=ageMap[ref];
         d = filterBy(d,'jugadores','labels','coords2', j=>Math.abs((ageMap[j]||0)-b)<=4);
       }
+
       if(heightFilter.checked && ref){
         const b=heightMap[ref];
         d = filterBy(d,'jugadores','labels','coords2', j=>Math.abs((heightMap[j]||0)-b)<=5);
       }
+
       if(valueFilter.checked && ref){
         const b=valueMap[ref];
         d = filterBy(d,'jugadores','labels','coords2', j=>Math.abs((valueMap[j]||0)-b)<=10);
       }
+
       return d;
+    }
+
+    function getClusterClass(clusterName = "") {
+      const name = clusterName.toLowerCase();
+
+      if (name.includes("goles")) {
+        return "cluster-pill--goles";
+      }
+
+      if (name.includes("xg")) {
+        return "cluster-pill--xg";
+      }
+
+      if (name.includes("disparos")) {
+        return "cluster-pill--disparos";
+      }
+
+      if (name.includes("regates")) {
+        return "cluster-pill--regates";
+      }
+
+      if (name.includes("pase") || name.includes("pases") || name.includes("asist")) {
+        return "cluster-pill--pases";
+      }
+
+      return "cluster-pill--default";
     }
 
     function renderTablePage() {
@@ -402,8 +1674,29 @@
         tbody.appendChild(tr);
       } else {
         sliceJ.forEach((j, i) => {
+          const clusterName = filteredData.clusterNames[sliceL[i]];
+          const clusterClass = getClusterClass(clusterName);
+
           const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${j}</td><td>${filteredData.clusterNames[sliceL[i]]}</td>`;
+          tr.innerHTML = `
+            <td>${j}</td>
+            <td>
+              <span class="cluster-pill ${clusterClass}">
+                ${clusterName}
+              </span>
+            </td>
+          `;
+
+          tr.addEventListener('click', () => {
+            inputRef.value = j;
+
+            try {
+              navigator.clipboard.writeText(j);
+            } catch (error) {
+              console.warn("No se pudo copiar el nombre:", j);
+            }
+          });
+
           tbody.appendChild(tr);
         });
       }
@@ -413,18 +1706,63 @@
       nextBtn.disabled = currentPage === maxP || total === 0;
     }
 
+    const chartAreaBackground = {
+      id: 'chartAreaBackground',
+      beforeDraw(chart) {
+        const { ctx, chartArea } = chart;
+
+        if (!chartArea) return;
+
+        const { left, top, width, height } = chartArea;
+
+        ctx.save();
+
+        const gradient = ctx.createLinearGradient(left, top, left + width, top + height);
+        gradient.addColorStop(0, 'rgba(232, 244, 255, 0.98)');
+        gradient.addColorStop(0.48, 'rgba(246, 250, 255, 0.98)');
+        gradient.addColorStop(1, 'rgba(255, 244, 226, 0.92)');
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(left, top, width, height);
+
+        ctx.restore();
+      }
+    };
+
+    async function seleccionarDelanteroDesdeGrafico(nombre) {
+      if (!nombre) return;
+
+      inputRef.value = nombre;
+      closeSuggestions();
+
+      try {
+        await navigator.clipboard.writeText(nombre);
+        console.log(`Delantero copiado: ${nombre}`);
+      } catch (error) {
+        console.warn("No se pudo copiar al portapapeles, pero se colocó en el buscador:", nombre);
+      }
+    }
+
     function drawChart(data, ref) {
       rawData      = data;
       filteredData = applyFilters(data, ref);
       currentPage  = 1;
 
-      // Scatter
-      const { coords2, labels, clusterNames } = filteredData;
+      const { coords2, labels, clusterNames, jugadores } = filteredData;
       const sets = clusterNames.map((nm,id)=>({
         label: nm,
-        data: coords2.map((c,i)=>({ x:c[0], y:c[1], cid:labels[i]}))
-                    .filter(p=>p.cid===id),
-        pointRadius:6, showLine:false
+        data: coords2
+          .map((c,i)=>({
+            x:c[0],
+            y:c[1],
+            cid:labels[i],
+            nombre: jugadores[i]
+          }))
+          .filter(p=>p.cid===id),
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        pointBorderWidth: 1.3,
+        showLine:false
       }));
 
       if(ref && rawData.jugadores.includes(ref)){
@@ -432,11 +1770,12 @@
         const [x,y]= rawData.coords2[idx];
         sets.push({
           label:`Ref: ${ref}`,
-          data:[{x,y}],
+          data:[{x,y,nombre:ref}],
           pointRadius:12,
+          pointHoverRadius: 14,
           pointBackgroundColor:'#fff',
           pointBorderColor:'#000',
-          pointBorderWidth:2,
+          pointBorderWidth:3,
           showLine:false
         });
       }
@@ -445,34 +1784,179 @@
       chart = new Chart(ctx,{
         type:'scatter',
         data:{datasets:sets},
+        plugins: [chartAreaBackground],
         options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          interaction: {
+            mode: 'nearest',
+            intersect: true
+          },
+
+          onClick: async (event, elements, chartInstance) => {
+            if (!elements.length) return;
+
+            const element = elements[0];
+            const dataset = chartInstance.data.datasets[element.datasetIndex];
+            const point = dataset.data[element.index];
+
+            if (!point || !point.nombre) return;
+
+            await seleccionarDelanteroDesdeGrafico(point.nombre);
+          },
+
+          onHover: (event, elements) => {
+            event.native.target.style.cursor = elements.length ? 'pointer' : 'crosshair';
+          },
+
+          layout: {
+            padding: {
+              top: 8,
+              right: 14,
+              bottom: 8,
+              left: 10
+            }
+          },
+
+          elements: {
+            point: {
+              borderWidth: 1.4,
+              hoverRadius: 8
+            }
+          },
+
           plugins:{
-            legend:{position:'top'},
-            tooltip:{callbacks:{label:pt=>
-              rawData.jugadores[ rawData.coords2.findIndex(c=>c[0]===pt.raw.x&&c[1]===pt.raw.y) ]
-            }},
-            zoom:{pan:{enabled:true,mode:'xy'}, zoom:{wheel:{enabled:true},pinch:{enabled:true},drag:{enabled:true},mode:'xy'}}
+            legend:{
+              position:'top',
+              align:'center',
+              onClick: null,
+              labels:{
+                usePointStyle: true,
+                pointStyle: 'circle',
+                boxWidth: 10,
+                boxHeight: 10,
+                padding: 18,
+                color: '#4b5563',
+                font: {
+                  family: 'Inter',
+                  size: 13,
+                  weight: '650'
+                }
+              }
+            },
+            tooltip:{
+              backgroundColor: 'rgba(8, 20, 36, 0.95)',
+              titleColor: '#ffffff',
+              bodyColor: '#e8eef7',
+              borderColor: 'rgba(255,255,255,0.14)',
+              borderWidth: 1,
+              padding: 12,
+              cornerRadius: 12,
+              displayColors: false,
+              callbacks:{
+                title: context => {
+                  const raw = context[0].raw;
+                  return raw.nombre || 'Delantero';
+                },
+                label: () => 'Haz clic para copiarlo al buscador'
+              }
+            },
+            zoom:{
+              pan:{
+                enabled:true,
+                mode:'xy',
+                modifierKey: 'shift'
+              },
+              zoom:{
+                wheel:{
+                  enabled:true,
+                  speed: 0.06
+                },
+                pinch:{enabled:true},
+                drag:{enabled:false},
+                mode:'xy'
+              },
+              limits: {
+                x: { min: 'original', max: 'original' },
+                y: { min: 'original', max: 'original' }
+              }
+            }
           },
           scales:{
-            x:{title:{display:true,text:'Componente A (PCA)'}},
-            y:{title:{display:true,text:'Componente B (PCA)'}}
-          },
-          responsive:true, maintainAspectRatio:false
+            x:{
+              title:{
+                display:true,
+                text:'Dimensión 1',
+                color: '#243447',
+                font: {
+                  family: 'Inter',
+                  size: 13,
+                  weight: '800'
+                }
+              },
+              ticks: {
+                color: '#6b7280',
+                font: {
+                  family: 'Inter',
+                  size: 12,
+                  weight: '600'
+                }
+              },
+              grid: {
+                color: 'rgba(0, 51, 102, 0.075)',
+                drawBorder: false
+              },
+              border: {
+                color: 'rgba(0, 0, 0, 0.14)'
+              }
+            },
+            y:{
+              title:{
+                display:true,
+                text:'Dimensión 2',
+                color: '#243447',
+                font: {
+                  family: 'Inter',
+                  size: 13,
+                  weight: '800'
+                }
+              },
+              ticks: {
+                color: '#6b7280',
+                font: {
+                  family: 'Inter',
+                  size: 12,
+                  weight: '600'
+                }
+              },
+              grid: {
+                color: 'rgba(0, 51, 102, 0.075)',
+                drawBorder: false
+              },
+              border: {
+                color: 'rgba(0, 0, 0, 0.14)'
+              }
+            }
+          }
         }
       });
 
       renderTablePage();
     }
 
-    function pan(dx,dy){
+    function panChart(direction){
       if(!chart) return;
-      const xs=chart.scales.x, ys=chart.scales.y;
-      const xr=xs.max-xs.min, yr=ys.max-ys.min;
-      chart.options.scales.x.min = xs.min + dx*xr;
-      chart.options.scales.x.max = xs.max + dx*xr;
-      chart.options.scales.y.min = ys.min + dy*yr;
-      chart.options.scales.y.max = ys.max + dy*yr;
-      chart.update();
+
+      const amount = 80;
+
+      const movements = {
+        up:    { x: 0,       y: amount },
+        down:  { x: 0,       y: -amount },
+        left:  { x: amount,  y: 0 },
+        right: { x: -amount, y: 0 }
+      };
+
+      chart.pan(movements[direction], undefined, 'default');
     }
 
     prevBtn.addEventListener('click', ()=>{ if(currentPage>1){ currentPage--; renderTablePage(); }});
@@ -484,10 +1968,17 @@
       }
     });
 
-    panUp.addEventListener('click',   ()=>pan(0,  0.1));
-    panDown.addEventListener('click', ()=>pan(0, -0.1));
-    panLeft.addEventListener('click', ()=>pan(-0.1,0));
-    panRight.addEventListener('click',()=>pan( 0.1,0));
+    panUp.addEventListener('click',   ()=>panChart('up'));
+    panDown.addEventListener('click', ()=>panChart('down'));
+    panLeft.addEventListener('click', ()=>panChart('left'));
+    panRight.addEventListener('click',()=>panChart('right'));
+
+    const resetZoomBtn = document.getElementById('resetZoom');
+
+    resetZoomBtn.addEventListener('click', () => {
+      if (!chart) return;
+      chart.resetZoom();
+    });
 
     form.addEventListener('submit', async e => {
       e.preventDefault();
@@ -544,17 +2035,7 @@
 
         if (data.error) throw new Error(data.error);
 
-        const dl = document.getElementById('delanterosList');
-        dl.innerHTML = '';
-
-        // IMPORTANTE: actualizamos también el array usado por la validación
         delanterosList = data.jugadores || [];
-
-        delanterosList.forEach(nombre => {
-          const opt = document.createElement('option');
-          opt.value = nombre;
-          dl.appendChild(opt);
-        });
 
         console.log("Delanteros cargados:", delanterosList);
 
@@ -563,9 +2044,7 @@
       }
     }
 
-  document
-    .getElementById('inputRef')
-    .addEventListener('focus', actualizarDelanterosList);
+    inputRef.addEventListener('focus', actualizarDelanterosList);
 
     inputAlgoritmo.addEventListener('change', () => {
       const esDBSCAN = inputAlgoritmo.value === "dbscan";
@@ -576,6 +2055,7 @@
 
       form.dispatchEvent(new Event('submit'));
     });
+
     [inputEps, inputMinSamples].forEach(input => {
       input.addEventListener('change', () => {
         if (inputAlgoritmo.value === "dbscan") {
@@ -590,7 +2070,50 @@
       }
     });
 
+    function setupAlgorithmCustomSelect() {
+      const nativeSelect = document.getElementById("inputAlgoritmo");
+      const customSelect = document.getElementById("algorithmSelect");
+      const button = document.getElementById("algorithmSelectButton");
+      const buttonText = document.getElementById("algorithmSelectText");
+      const buttonIcon = button.querySelector(".gk-algorithm-icon");
+      const menu = document.getElementById("algorithmSelectMenu");
+      const options = document.querySelectorAll(".gk-algorithm-select__option");
+
+      if (!nativeSelect || !customSelect || !button || !menu) return;
+
+      button.addEventListener("click", () => {
+        customSelect.classList.toggle("open");
+      });
+
+      options.forEach(option => {
+        option.addEventListener("click", () => {
+          const value = option.dataset.value;
+          const icon = option.dataset.icon;
+          const label = option.querySelector("strong").textContent;
+
+          nativeSelect.value = value;
+          buttonText.textContent = label;
+          buttonIcon.textContent = icon;
+
+          options.forEach(opt => opt.classList.remove("active"));
+          option.classList.add("active");
+
+          customSelect.classList.remove("open");
+
+          nativeSelect.dispatchEvent(new Event("change"));
+        });
+      });
+
+      document.addEventListener("click", event => {
+        if (!customSelect.contains(event.target)) {
+          customSelect.classList.remove("open");
+        }
+      });
+    }
+
     window.addEventListener('DOMContentLoaded', async () => {
+      setupForwardAutocomplete();
+      setupAlgorithmCustomSelect();
       await actualizarDelanterosList();
       form.dispatchEvent(new Event('submit'));
     });

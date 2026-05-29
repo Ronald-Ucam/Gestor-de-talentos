@@ -796,6 +796,7 @@ def aplicar_dbscan(df_posicion, cols, eps=1.8, min_samples=5):
     DBSCAN:
     - Detecta grupos por densidad.
     - Marca como ruido/outlier los jugadores con etiqueta -1.
+    - Genera nombres más interpretables para los grupos según las métricas dominantes.
     """
 
     df_posicion = df_posicion.copy()
@@ -805,6 +806,38 @@ def aplicar_dbscan(df_posicion, cols, eps=1.8, min_samples=5):
 
     if len(cols) < 2:
         raise ValueError(f"No hay suficientes columnas para DBSCAN: {cols}")
+
+    nombres_metricas = {
+        # Porteros
+        "CS/90": "Porterías imbatidas / 90′",
+        "Enc/90": "Goles encajados / 90′",
+        "Rp %": "Porcentaje de paradas",
+        "Pen. parados": "Penaltis parados",
+        "BDs": "Despejes totales",
+        "Distancia": "Kilómetros recorridos",
+
+        # Defensas
+        "Entr/90": "Entradas ganadas / 90′",
+        "Bal aér/90": "Duelos aéreos ganados / 90′",
+        "Int/90": "Intercepciones / 90′",
+        "Desp": "Despejes totales",
+        "Pos Gan/90": "Recuperaciones de posición / 90′",
+        "% Pase": "Precisión de pase",
+        "Ent Cl": "Entradas limpiadoras",
+        "Rob/90": "Recuperaciones / 90′",
+
+        # Centrocampistas
+        "Reg/90": "Regates completados / 90′",
+        "Pas Clv/90": "Pases clave / 90′",
+        "Asis/90": "Asistencias / 90′",
+        "Pas Prog/90": "Pases progresivos / 90′",
+
+        # Delanteros
+        "Gol/90": "Goles / 90′",
+        "Disparos": "Disparos totales",
+        "Min/Par": "Minutos por partido",
+        "OC/90": "Ocasiones creadas / 90′"
+    }
 
     # Limpiar columnas numéricas
     for c in cols:
@@ -827,14 +860,15 @@ def aplicar_dbscan(df_posicion, cols, eps=1.8, min_samples=5):
     df_posicion[cols] = df_posicion[cols].fillna(medianas)
     df_posicion[cols] = df_posicion[cols].fillna(0)
 
-    # Si aún queda algún NaN, lo ponemos a 0
-    df_posicion.loc[:, cols] = df_posicion[cols].fillna(0)
-
-    # Escalado
-    X = StandardScaler().fit_transform(df_posicion[cols].values)
-
     if len(df_posicion) < 2:
         raise ValueError("No hay suficientes jugadores para representar DBSCAN.")
+
+    # Escalado
+    scaler = StandardScaler()
+    X = scaler.fit_transform(df_posicion[cols].values)
+
+    # DataFrame escalado para interpretar los grupos
+    X_escalado = pd.DataFrame(X, columns=cols)
 
     # DBSCAN
     dbscan = DBSCAN(eps=eps, min_samples=min_samples)
@@ -851,14 +885,42 @@ def aplicar_dbscan(df_posicion, cols, eps=1.8, min_samples=5):
 
     cluster_names = []
     label_map = {}
+    metricas_usadas = set()
 
     for nueva_etiqueta, etiqueta_original in enumerate(etiquetas_unicas):
         label_map[int(etiqueta_original)] = nueva_etiqueta
 
         if etiqueta_original == -1:
             cluster_names.append("Ruido / perfil atípico")
+            continue
+
+        mascara = labels_originales == etiqueta_original
+        perfil_medio = X_escalado.loc[mascara].mean()
+
+        # Buscamos la métrica donde más destaca el grupo
+        perfil_ordenado = perfil_medio.abs().sort_values(ascending=False)
+
+        metrica_elegida = None
+        for metrica in perfil_ordenado.index:
+            if metrica not in metricas_usadas:
+                metrica_elegida = metrica
+                metricas_usadas.add(metrica)
+                break
+
+        if metrica_elegida is None:
+            metrica_elegida = perfil_medio.abs().idxmax()
+
+        valor = perfil_medio[metrica_elegida]
+        nombre_legible = nombres_metricas.get(metrica_elegida, metrica_elegida)
+
+        if valor >= 0:
+            cluster_names.append(
+                f"Grupo DBSCAN {int(etiqueta_original) + 1} - Alto en {nombre_legible}"
+            )
         else:
-            cluster_names.append(f"Grupo DBSCAN {int(etiqueta_original) + 1}")
+            cluster_names.append(
+                f"Grupo DBSCAN {int(etiqueta_original) + 1} - Bajo en {nombre_legible}"
+            )
 
     labels_convertidas = [label_map[int(label)] for label in labels_originales]
 
@@ -867,7 +929,6 @@ def aplicar_dbscan(df_posicion, cols, eps=1.8, min_samples=5):
     df_out["y_pca"] = coords[:, 1]
 
     return df_out, cols, cluster_names
-
 
 @clustering_bp.route("/api/dbscan_fw")
 def api_dbscan_fw():

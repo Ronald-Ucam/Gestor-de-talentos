@@ -124,50 +124,256 @@
     </div>
   </header>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-background"></div>
-    <div class="hero-content container">
-      <h1 class="hero-title">Preguntas Frecuentes</h1>
-      <p class="hero-subtitle">Aquí encontrarás respuestas a las dudas más comunes.</p>
+  <!-- HERO FAQ -->
+  <section class="faq-hero">
+    <div class="faq-hero__background"></div>
+    <div class="faq-hero__overlay"></div>
+
+    <div class="faq-hero__content container">
+      <div class="faq-hero__text">
+        <span class="faq-hero__badge">
+          <span class="material-icons">help_outline</span>
+          Centro de ayuda
+        </span>
+
+        <h1>Preguntas frecuentes sobre el Gestor de Talentos</h1>
+
+        <p>
+          Resuelve dudas sobre la importación de jugadores, la comparación de perfiles,
+          los algoritmos de clustering y el uso de métricas deportivas dentro de la aplicación.
+        </p>
+      </div>
     </div>
   </section>
 
   <!-- SECCIÓN FAQ -->
-  <main class="container main-content">
-    <div class="faq-section">
-      <div class="faq-item">
-        <div class="faq-question">¿Cómo importo mi lista de jugadores desde Football Manager?</div>
-        <div class="faq-answer">
-          Sube tu archivo HTML desde la sección de “Importar” en la página principal. Asegúrate de seguir el formato de columnas que encontrarás en nuestra <a href="#leyenda">leyenda de columnas</a>.
+    <main class="container main-content faq-main">
+      <section class="faq-section-modern">
+        <div class="faq-section-header">
+          <span class="faq-section-badge">
+            <span class="material-icons">quiz</span>
+            Ayuda rápida
+          </span>
+
+          <h2>Dudas principales de la aplicación</h2>
+          <p>
+            Esta sección explica las funciones más importantes del sistema y cómo interpretar
+            los resultados generados a partir de los datos de Football Manager.
+          </p>
         </div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">¿Puedo comparar más de dos jugadores a la vez?</div>
-        <div class="faq-answer">
-          Actualmente el sistema permite comparar **dos** jugadores simultáneamente. Si seleccionas un tercer jugador, la selección más antigua se desmarcará automáticamente.
+
+        <div class="faq-grid">
+          <div class="faq-item-modern">
+            <button class="faq-question-modern" type="button">
+              <span class="faq-icon">
+                <span class="material-icons">upload_file</span>
+              </span>
+              <span>¿Cómo importo mi lista de jugadores desde Football Manager?</span>
+              <span class="material-icons faq-arrow">expand_more</span>
+            </button>
+            <div class="faq-answer-modern">
+              <p>
+                Para importar jugadores, debes subir un archivo HTML exportado desde Football Manager.
+                Si has iniciado sesión, la página principal muestra una sección de importación donde puedes
+                seleccionar el archivo y cargarlo en el sistema. Después, la aplicación procesa los datos y
+                actualiza la base de jugadores disponible.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item-modern">
+            <button class="faq-question-modern" type="button">
+              <span class="faq-icon">
+                <span class="material-icons">storage</span>
+              </span>
+              <span>¿Dónde se guardan los datos de los jugadores?</span>
+              <span class="material-icons faq-arrow">expand_more</span>
+            </button>
+            <div class="faq-answer-modern">
+              <p>
+                La aplicación trabaja con una base de datos para almacenar la información procesada de los
+                jugadores. El archivo HTML sirve como fuente de entrada, pero el sistema estructura esos datos
+                para poder filtrarlos, mostrarlos en tablas, compararlos y utilizarlos en los módulos de análisis.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item-modern">
+            <button class="faq-question-modern" type="button">
+              <span class="faq-icon">
+                <span class="material-icons">manage_search</span>
+              </span>
+              <span>¿Qué filtros puedo aplicar en la página principal?</span>
+              <span class="material-icons faq-arrow">expand_more</span>
+            </button>
+            <div class="faq-answer-modern">
+              <p>
+                Puedes buscar jugadores por nombre, edad, posición, titularidad y métricas como goles,
+                asistencias o disparos. Estos filtros ayudan a localizar perfiles concretos dentro de la base
+                de datos sin tener que revisar toda la tabla manualmente.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item-modern">
+            <button class="faq-question-modern" type="button">
+              <span class="faq-icon">
+                <span class="material-icons">compare_arrows</span>
+              </span>
+              <span>¿Cómo funciona la comparación de jugadores?</span>
+              <span class="material-icons faq-arrow">expand_more</span>
+            </button>
+            <div class="faq-answer-modern">
+              <p>
+                La comparación permite seleccionar dos futbolistas y analizar sus datos lado a lado.
+                El sistema muestra una tabla comparativa, un gráfico radar con métricas normalizadas y un mapa
+                de posiciones para visualizar la zona habitual de cada jugador.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item-modern">
+            <button class="faq-question-modern" type="button">
+              <span class="faq-icon">
+                <span class="material-icons">block</span>
+              </span>
+              <span>¿Por qué a veces no puedo comparar dos jugadores?</span>
+              <span class="material-icons faq-arrow">expand_more</span>
+            </button>
+            <div class="faq-answer-modern">
+              <p>
+                La aplicación evita comparaciones poco útiles entre jugadores con roles incompatibles.
+                Por ejemplo, no tendría sentido comparar directamente un portero con un delantero usando las
+                mismas métricas. En cambio, sí permite comparar jugadores que comparten una posición o una zona
+                de juego similar.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item-modern">
+            <button class="faq-question-modern" type="button">
+              <span class="faq-icon">
+                <span class="material-icons">radar</span>
+              </span>
+              <span>¿Qué representa el gráfico radar?</span>
+              <span class="material-icons faq-arrow">expand_more</span>
+            </button>
+            <div class="faq-answer-modern">
+              <p>
+                El gráfico radar representa varias métricas del jugador en una escala normalizada. Esto facilita
+                ver rápidamente qué jugador destaca más en aspectos como rendimiento, goles, asistencias, pase,
+                recuperación o estadísticas específicas según su rol.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item-modern">
+            <button class="faq-question-modern" type="button">
+              <span class="faq-icon">
+                <span class="material-icons">scatter_plot</span>
+              </span>
+              <span>¿Qué es el clustering dentro de la aplicación?</span>
+              <span class="material-icons faq-arrow">expand_more</span>
+            </button>
+            <div class="faq-answer-modern">
+              <p>
+                El clustering agrupa jugadores con características similares a partir de sus métricas.
+                Sirve para detectar perfiles parecidos, encontrar alternativas a un jugador concreto o descubrir
+                futbolistas que tienen un rendimiento similar dentro de una misma posición.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item-modern">
+            <button class="faq-question-modern" type="button">
+              <span class="faq-icon">
+                <span class="material-icons">bubble_chart</span>
+              </span>
+              <span>¿Qué diferencia hay entre K-Means y DBSCAN?</span>
+              <span class="material-icons faq-arrow">expand_more</span>
+            </button>
+            <div class="faq-answer-modern">
+              <p>
+                K-Means divide los jugadores en un número concreto de grupos, por lo que es útil cuando se quiere
+                clasificar los perfiles en varios conjuntos definidos. DBSCAN, en cambio, agrupa jugadores según
+                la densidad de los datos y puede detectar perfiles atípicos o jugadores que no encajan claramente
+                en ningún grupo principal.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item-modern">
+            <button class="faq-question-modern" type="button">
+              <span class="faq-icon">
+                <span class="material-icons">groups</span>
+              </span>
+              <span>¿Por qué hay páginas de clustering por posición?</span>
+              <span class="material-icons faq-arrow">expand_more</span>
+            </button>
+            <div class="faq-answer-modern">
+              <p>
+                Las métricas importantes no son las mismas para todos los roles. Un portero, un defensa,
+                un centrocampista y un delantero se evalúan de forma distinta. Por eso la aplicación separa los
+                análisis por posición y usa variables más representativas para cada perfil.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item-modern">
+            <button class="faq-question-modern" type="button">
+              <span class="faq-icon">
+                <span class="material-icons">account_circle</span>
+              </span>
+              <span>¿Necesito iniciar sesión para usar la aplicación?</span>
+              <span class="material-icons faq-arrow">expand_more</span>
+            </button>
+            <div class="faq-answer-modern">
+              <p>
+                Puedes consultar algunas funciones generales sin iniciar sesión. Sin embargo, para importar tus
+                propios archivos HTML y gestionar tus datos personalizados, necesitas tener una cuenta e iniciar
+                sesión en la aplicación.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item-modern">
+            <button class="faq-question-modern" type="button">
+              <span class="faq-icon">
+                <span class="material-icons">insights</span>
+              </span>
+              <span>¿Qué significan métricas como xG, xA o goles por 90 minutos?</span>
+              <span class="material-icons faq-arrow">expand_more</span>
+            </button>
+            <div class="faq-answer-modern">
+              <p>
+                xG significa goles esperados y estima la calidad de las ocasiones de gol. xA significa asistencias
+                esperadas y mide la probabilidad de que un pase termine en gol. Las métricas por 90 minutos permiten
+                comparar jugadores aunque hayan disputado diferente cantidad de minutos.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item-modern">
+            <button class="faq-question-modern" type="button">
+              <span class="faq-icon">
+                <span class="material-icons">psychology</span>
+              </span>
+              <span>¿La aplicación utiliza inteligencia artificial?</span>
+              <span class="material-icons faq-arrow">expand_more</span>
+            </button>
+            <div class="faq-answer-modern">
+              <p>
+                La aplicación incorpora técnicas de análisis de datos y aprendizaje automático no supervisado,
+                como K-Means y DBSCAN, para agrupar jugadores según patrones de rendimiento. No sustituye el criterio
+                deportivo, pero ayuda a detectar relaciones y perfiles que serían más difíciles de identificar
+                manualmente.
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">¿Por qué no veo la columna “Inf” en la tabla?</div>
-        <div class="faq-answer">
-          Hemos reemplazado la columna “Inf” por una columna de selección para que puedas marcar los jugadores que quieres comparar sin confusiones.
-        </div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">¿Cómo funciona la paginación?</div>
-        <div class="faq-answer">
-          La tabla carga 20 jugadores por página. Usa las flechas «Anterior» y «Siguiente» o haz clic en el número de página para navegar.
-        </div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">¿Qué significan las siglas xG, xA y otros indicadores avanzados?</div>
-        <div class="faq-answer">
-          Visita la <a href="#leyenda">leyenda de columnas</a> para ver la descripción de cada estadística avanzada como xG (Goles Esperados), xA (Asistencias Esperadas) y más.
-        </div>
-      </div>
-    </div>
-  </main>
+      </section>
+    </main>
+
 
   <!-- FOOTER -->
 <footer class="site-footer">
@@ -209,17 +415,23 @@
     </div>
 
     <div class="footer-bottom">
-      <p>© 2025 Gestordetalentos. Todos los derechos reservados.</p>
+      <p>© 2026 Gestordetalentos. Todos los derechos reservados.</p>
     </div>
   </footer>
 
   <script>
-    // Lógica acordeón FAQ
-    document.querySelectorAll('.faq-question').forEach(q => {
-      q.addEventListener('click', () => {
-        const answer = q.nextElementSibling;
-        q.classList.toggle('active');
-        answer.classList.toggle('open');
+    document.querySelectorAll(".faq-question-modern").forEach(button => {
+      button.addEventListener("click", () => {
+        const item = button.closest(".faq-item-modern");
+        const answer = item.querySelector(".faq-answer-modern");
+
+        item.classList.toggle("open");
+
+        if (item.classList.contains("open")) {
+          answer.style.maxHeight = answer.scrollHeight + "px";
+        } else {
+          answer.style.maxHeight = null;
+        }
       });
     });
   </script>

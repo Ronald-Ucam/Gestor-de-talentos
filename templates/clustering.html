@@ -157,60 +157,173 @@
     </div>
   </header>
 
-  <!-- HERO -->
-  <section class="hero">
-  <div class="hero-background"></div>
-    <div class="hero-content container">
-      <h1 class="hero-title">Clustering</h1>
-      <p class="hero-subtitle">
-        ¡Encuentra y compara talentos de Football Manager!
-      </p>
+  <!-- HERO CLUSTERING -->
+  <section class="clustering-hero">
+    <div class="clustering-hero__background"></div>
+    <div class="clustering-hero__overlay"></div>
+
+    <div class="clustering-hero__content container">
+      <div class="clustering-hero__text">
+        <span class="clustering-hero__badge">
+          <span class="material-icons">scatter_plot</span>
+          Análisis de perfiles
+        </span>
+
+        <h1>Agrupa jugadores y descubre perfiles similares</h1>
+
+        <p>
+          Utiliza K-Means y DBSCAN para analizar jugadores por posición,
+          detectar patrones de rendimiento y encontrar futbolistas con características parecidas.
+        </p>
+      </div>
     </div>
   </section>
 
-<!-- SECCIÓN PRINCIPAL “CRISTAL” -->
-<main class="container main-content">
-  <h2 class="page-title">Análisis por Posición</h2>
-  <p class="intro-italic">
-    Descubre grupos de jugadores con perfiles estadísticos parecidos dentro de cada posición.
-  </p>
-  <p class="intro-text">
-    Empleamos técnicas de <strong>K-Means clustering</strong> junto con 
-    <strong>PCA</strong> (Análisis de Componentes Principales) para reducir la 
-    dimensionalidad y luego agrupar a los futbolistas según métricas clave: 
-    goles, asistencias, precisión de pase, regates y aportes defensivos. Así 
-    podrás identificar patrones de rendimiento y comparar estilos de juego dentro 
-    de cada rol.
-  </p>
+  <!-- SECCIÓN PRINCIPAL -->
+  <main class="container main-content clustering-main">
+    <section class="clustering-intro-section">
+      <div class="clustering-intro-header">
+        <span class="clustering-intro-badge">
+          <span class="material-icons">psychology</span>
+          Machine Learning
+        </span>
 
-  
+        <h2>Análisis por posición</h2>
 
-  <div class="button-row">
-    <button class="btn-hero"
-            onclick="window.open(`{{ url_for('clustering.clustering_porteros') }}`, '_blank', 'width=1000,height=700,scrollbars=yes')">
-      <span class="material-icons">sports_soccer</span>Porteros
-    </button>
-    <button class="btn-hero"
-            onclick="window.open(`{{ url_for('clustering.clustering_defensas') }}`, '_blank', 'width=1000,height=700,scrollbars=yes')">
-      <span class="material-icons">security</span>Defensas
-    </button>
-    <button class="btn-hero"
-            onclick="window.open(`{{ url_for('clustering.clustering_centrocampistas') }}`, '_blank', 'width=1000,height=700,scrollbars=yes')">
-      <span class="material-icons">sports_kabaddi</span>Centrocampistas
-    </button>
-    <button class="btn-hero"
-            onclick="window.open(`{{ url_for('clustering.clustering_delanteros') }}`, '_blank', 'width=1000,height=700,scrollbars=yes')">
-      <span class="material-icons">flag</span>Delanteros
-    </button>
-  </div>
+        <p>
+          El sistema agrupa futbolistas según sus métricas principales para ayudar a identificar
+          perfiles parecidos dentro de cada rol. Puedes analizar porteros, defensas,
+          centrocampistas y delanteros de forma independiente.
+        </p>
+      </div>
 
+      <div class="clustering-method-grid">
+        <div class="clustering-method-card">
+          <div class="clustering-method-icon">
+            <span class="material-icons">grain</span>
+          </div>
 
-  <!-- Ilustración Clustering -->
-  <div class="clustering-image">
-    <img src="/static/images/cluster1.png"
-         alt="Ilustración de clustering de jugadores en estadio" />
-  </div>
-</main>
+          <div>
+            <h3>K-Means</h3>
+            <p>
+              Divide los jugadores en grupos definidos según sus estadísticas. Es útil para
+              clasificar perfiles similares cuando se quiere obtener una agrupación clara.
+            </p>
+          </div>
+        </div>
+
+        <div class="clustering-method-card">
+          <div class="clustering-method-icon">
+            <span class="material-icons">bubble_chart</span>
+          </div>
+
+          <div>
+            <h3>DBSCAN</h3>
+            <p>
+              Agrupa jugadores según la densidad de los datos y permite detectar perfiles
+              atípicos que no encajan claramente en ningún grupo principal.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="clustering-position-section">
+      <div class="clustering-position-header">
+        <span class="clustering-position-badge">
+          <span class="material-icons">sports_soccer</span>
+          Selecciona una posición
+        </span>
+
+        <h2>Elige el tipo de jugador que quieres analizar</h2>
+        <p>
+          Cada grupo de posición utiliza métricas adaptadas a su rol para que el análisis sea
+          más coherente y útil.
+        </p>
+      </div>
+
+      <div class="clustering-position-grid">
+        <button class="clustering-position-card"
+                onclick="window.open(`{{ url_for('clustering.clustering_porteros') }}`, '_blank', 'width=1000,height=700,scrollbars=yes')">
+          <span class="clustering-position-icon">
+            <span class="material-icons">sports_soccer</span>
+          </span>
+
+          <span class="clustering-position-content">
+            <strong>Porteros</strong>
+            <small>Paradas, portería imbatida, rendimiento defensivo y acciones específicas.</small>
+          </span>
+
+          <span class="material-icons clustering-position-arrow">arrow_forward</span>
+        </button>
+
+        <button class="clustering-position-card"
+                onclick="window.open(`{{ url_for('clustering.clustering_defensas') }}`, '_blank', 'width=1000,height=700,scrollbars=yes')">
+          <span class="clustering-position-icon">
+            <span class="material-icons">security</span>
+          </span>
+
+          <span class="clustering-position-content">
+            <strong>Defensas</strong>
+            <small>Entradas, despejes, duelos, recuperaciones y seguridad defensiva.</small>
+          </span>
+
+          <span class="material-icons clustering-position-arrow">arrow_forward</span>
+        </button>
+
+        <button class="clustering-position-card"
+                onclick="window.open(`{{ url_for('clustering.clustering_centrocampistas') }}`, '_blank', 'width=1000,height=700,scrollbars=yes')">
+          <span class="clustering-position-icon">
+            <span class="material-icons">sports_kabaddi</span>
+          </span>
+
+          <span class="clustering-position-content">
+            <strong>Centrocampistas</strong>
+            <small>Pase, creación, recuperación, progresión y participación en el juego.</small>
+          </span>
+
+          <span class="material-icons clustering-position-arrow">arrow_forward</span>
+        </button>
+
+        <button class="clustering-position-card"
+                onclick="window.open(`{{ url_for('clustering.clustering_delanteros') }}`, '_blank', 'width=1000,height=700,scrollbars=yes')">
+          <span class="clustering-position-icon">
+            <span class="material-icons">flag</span>
+          </span>
+
+          <span class="clustering-position-content">
+            <strong>Delanteros</strong>
+            <small>Goles, disparos, asistencias, regate y aportación ofensiva.</small>
+          </span>
+
+          <span class="material-icons clustering-position-arrow">arrow_forward</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="clustering-visual-section">
+      <div class="clustering-visual-text">
+        <span class="clustering-visual-badge">
+          <span class="material-icons">auto_graph</span>
+          Interpretación visual
+        </span>
+
+        <h2>Comprende los grupos de jugadores de forma rápida</h2>
+
+        <p>
+          Los gráficos de clustering permiten observar qué jugadores se comportan de forma
+          parecida según sus estadísticas. Los puntos cercanos representan perfiles similares,
+          mientras que los puntos alejados pueden indicar jugadores con características más
+          particulares.
+        </p>
+      </div>
+
+      <div class="clustering-visual-image">
+        <img src="/static/images/cluster1.png"
+            alt="Ilustración de clustering de jugadores en estadio" />
+      </div>
+    </section>
+  </main>
 
   <!-- FOOTER -->
     <footer class="site-footer">
@@ -252,7 +365,7 @@
       </div>
 
       <div class="footer-bottom">
-        <p>© 2025 Gestordetalentos. Todos los derechos reservados.</p>
+        <p>© 2026 Gestordetalentos. Todos los derechos reservados.</p>
       </div>
     </footer>
 
