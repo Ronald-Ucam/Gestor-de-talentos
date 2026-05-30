@@ -42,7 +42,7 @@
 
     .auth-wrapper {
       width: 100%;
-      max-width: 520px;
+      max-width: 460px;
       margin: 0 auto;
     }
 
@@ -50,14 +50,14 @@
       background: rgba(5, 25, 45, 0.68);
       border: 1px solid rgba(255, 255, 255, 0.22);
       border-radius: 18px;
-      padding: 2.2rem;
+      padding: 1.7rem 1.9rem;
       box-shadow: 0 0 35px rgba(0,0,0,0.45);
       backdrop-filter: blur(10px);
     }
 
     .auth-icon {
-      width: 72px;
-      height: 72px;
+      width: 60px;
+      height: 60px;
       margin: 0 auto 1rem;
       border-radius: 50%;
       background: var(--clr-accent);
@@ -76,15 +76,16 @@
       text-align: center;
       color: #fff;
       margin-bottom: 0.5rem;
-      font-size: 1.8rem;
+      font-size: 1.55rem;
     }
 
     .auth-subtitle {
       text-align: center;
       color: #fff;
       opacity: 0.9;
-      line-height: 1.6;
-      margin-bottom: 1.8rem;
+      line-height: 1.45;
+      margin-bottom: 1.3rem;
+      font-size: 0.95rem;
     }
 
     .auth-form {
@@ -113,13 +114,13 @@
     }
 
     .form-group input {
-      padding: 0.85rem 1rem;
+      padding: 0.72rem 0.9rem;
       border-radius: var(--radius);
       border: 1px solid rgba(255,255,255,0.35);
       background: rgba(255,255,255,0.16);
       color: #fff;
       outline: none;
-      font-size: 1rem;
+      font-size: 0.95rem;
       transition: border var(--transition), box-shadow var(--transition), background var(--transition);
     }
 
@@ -136,11 +137,11 @@
     .btn-auth {
       background: var(--clr-accent);
       color: var(--clr-primary);
-      padding: 0.9rem 1.6rem;
+      padding: 0.75rem 1.4rem;
       border-radius: var(--radius);
       border: none;
       font-weight: 700;
-      font-size: 1rem;
+      font-size: 0.95rem;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -148,7 +149,7 @@
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(0,0,0,0.25);
       transition: transform var(--transition), box-shadow var(--transition);
-      margin-top: 0.5rem;
+      margin-top: 0.3rem;
     }
 
     .btn-auth:hover {
@@ -240,11 +241,30 @@
         </span>
       </a>
       <nav class="main-nav">
-        <a href="/"><span class="material-icons">home</span>Inicio</a>
-        <a href="/faqs"><span class="material-icons">help_outline</span>Preguntas Frecuentes</a>
-        <a href="/comparacion"><span class="material-icons">compare_arrows</span>Comparación</a>
-        <a href="/clustering"><span class="material-icons">scatter_plot</span>Clustering</a>
-        <a href="{{ url_for('auth.login') }}"><span class="material-icons">login</span>Login</a>
+        <a href="/" class="{% if request.path == '/' %}active{% endif %}">
+          <span class="material-icons">home</span>
+          Inicio
+        </a>
+
+        <a href="/faqs" class="{% if request.path == '/faqs' %}active{% endif %}">
+          <span class="material-icons">help_outline</span>
+          Preguntas Frecuentes
+        </a>
+
+        <a href="/comparacion" class="{% if request.path == '/comparacion' %}active{% endif %}">
+          <span class="material-icons">compare_arrows</span>
+          Comparación
+        </a>
+
+        <a href="/clustering" class="{% if request.path.startswith('/clustering') %}active{% endif %}">
+          <span class="material-icons">scatter_plot</span>
+          Clustering
+        </a>
+                  <a href="{{ url_for('auth.registro') }}" class="register-nav {% if request.path == '/registro' %}active{% endif %}">
+            <span class="material-icons">person_add</span>
+            Registro
+          </a>
+
       </nav>
     </div>
   </header>
@@ -347,7 +367,7 @@
     </div>
 
     <div class="footer-bottom">
-      <p>© 2025 Gestordetalentos. Todos los derechos reservados.</p>
+      <p>© 2026 Gestordetalentos. Todos los derechos reservados.</p>
     </div>
   </footer>
 

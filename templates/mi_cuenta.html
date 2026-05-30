@@ -6,7 +6,514 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body>
+
+<style>
+  /* ===================================== */
+/* MI CUENTA - PÁGINA DE USUARIO         */
+/* ===================================== */
+
+.account-hero {
+  position: relative;
+  min-height: 360px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: #061b33;
+}
+
+.account-hero__background {
+  position: absolute;
+  inset: 0;
+  background: url('/static/images/football-stadium.jpg') center top / cover no-repeat;
+  transform: scale(1.03);
+  z-index: 0;
+}
+
+.account-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 78% 45%, rgba(255, 179, 71, 0.20), transparent 32%),
+    linear-gradient(90deg, rgba(2, 18, 38, 0.94) 0%, rgba(4, 30, 58, 0.82) 48%, rgba(4, 32, 62, 0.62) 100%),
+    linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.35));
+  z-index: 1;
+}
+
+.account-hero::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 85px;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    rgba(148, 167, 139, 0) 0%,
+    rgba(148, 167, 139, 0.38) 65%,
+    rgba(148, 167, 139, 0.72) 100%
+  );
+}
+
+.account-hero__content {
+  position: relative;
+  z-index: 2;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.account-hero__text {
+  color: #ffffff;
+  max-width: 720px;
+}
+
+.account-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.78rem;
+  border-radius: 999px;
+  background: rgba(255, 179, 71, 0.14);
+  border: 1px solid rgba(255, 179, 71, 0.32);
+  color: #ffca78;
+  font-size: 0.74rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  backdrop-filter: blur(10px);
+}
+
+.account-hero__badge .material-icons {
+  font-size: 1.05rem;
+}
+
+.account-hero h1 {
+  max-width: 650px;
+  margin: 0.85rem 0 0.75rem;
+  font-size: clamp(2.1rem, 4vw, 3.4rem);
+  line-height: 1.05;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  text-shadow: 0 12px 32px rgba(0,0,0,0.45);
+}
+
+.account-hero p {
+  max-width: 610px;
+  margin: 0;
+  color: rgba(236, 244, 255, 0.86);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.account-main {
+  margin: 2rem auto 3rem;
+}
+
+.account-summary-section,
+.account-info-card {
+  border-radius: 28px;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.88), rgba(255,255,255,0.70));
+  border: 1px solid rgba(255,255,255,0.58);
+  box-shadow: 0 18px 42px rgba(0,0,0,0.14);
+  backdrop-filter: blur(12px);
+}
+
+.account-summary-section {
+  padding: 1.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.account-section-header {
+  text-align: center;
+  margin-bottom: 1.4rem;
+}
+
+.account-section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.82rem;
+  border-radius: 999px;
+  background: rgba(0, 51, 102, 0.09);
+  color: var(--clr-primary);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.account-section-badge .material-icons {
+  font-size: 1rem;
+}
+
+.account-section-header h2 {
+  margin: 0.8rem 0 0.35rem;
+  color: #003366;
+  font-size: 1.75rem;
+  font-weight: 900;
+}
+
+.account-section-header p {
+  margin: 0;
+  color: #5b6b7a;
+  font-size: 0.95rem;
+}
+
+.account-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.account-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 0.95rem;
+  padding: 1.1rem;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.82);
+  border: 1px solid rgba(220, 230, 242, 0.9);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.07);
+}
+
+.account-stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #003366, #0059b3);
+  color: #ffffff;
+  box-shadow: 0 10px 20px rgba(0,51,102,0.22);
+}
+
+.account-stat-icon .material-icons {
+  font-size: 1.35rem;
+}
+
+.account-stat-card span {
+  display: block;
+  color: #5b6b7a;
+  font-size: 0.85rem;
+  font-weight: 750;
+  margin-bottom: 0.15rem;
+}
+
+.account-stat-card strong {
+  display: block;
+  color: #1f2c3d;
+  font-size: 1.15rem;
+  font-weight: 900;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.account-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.2rem;
+}
+
+.account-info-card {
+  padding: 1.4rem;
+}
+
+.account-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  margin-bottom: 1.2rem;
+}
+
+.account-card-header > .material-icons {
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 51, 102, 0.09);
+  color: #003366;
+  flex-shrink: 0;
+}
+
+.account-card-header h3 {
+  margin: 0;
+  color: #003366;
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+
+.account-card-header p {
+  margin: 0.25rem 0 0;
+  color: #5b6b7a;
+  font-size: 0.9rem;
+}
+
+.account-info-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.account-info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.70);
+  border: 1px solid rgba(220,230,242,0.8);
+}
+
+.account-info-row span {
+  color: #5b6b7a;
+  font-weight: 750;
+}
+
+.account-info-row strong {
+  color: #1f2c3d;
+  font-weight: 900;
+  text-align: right;
+  word-break: break-word;
+}
+
+.account-empty-state {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 1rem;
+  border-radius: 16px;
+  background: rgba(255, 179, 71, 0.12);
+  color: #6c4700;
+}
+
+.account-empty-state p {
+  margin: 0;
+  font-weight: 750;
+}
+
+.account-actions {
+  margin-top: 1.6rem;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+
+.account-action-button {
+  min-height: 46px;
+  padding: 0.8rem 1.1rem;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  font-weight: 850;
+  text-decoration: none;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+}
+
+.account-action-button--primary {
+  background: linear-gradient(135deg, #003366, #0059b3);
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(0,51,102,0.22);
+}
+
+.account-action-button--secondary {
+  background: rgba(255,255,255,0.72);
+  color: #003366;
+  border: 1px solid rgba(0,51,102,0.12);
+}
+
+.account-action-button:hover {
+  transform: translateY(-2px);
+}
+
+@media (max-width: 900px) {
+  .account-stats-grid,
+  .account-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-info-row {
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .account-info-row strong {
+    text-align: left;
+  }
+}
+
+@media (max-width: 640px) {
+  .account-hero {
+    min-height: auto;
+  }
+
+  .account-hero__content {
+    padding-top: 2.4rem;
+    padding-bottom: 2.5rem;
+  }
+
+  .account-hero h1 {
+    font-size: 2.25rem;
+  }
+
+  .account-summary-section,
+  .account-info-card {
+    padding: 1.1rem;
+  }
+
+  .account-actions {
+    flex-direction: column;
+  }
+
+  .account-action-button {
+    width: 100%;
+  }
+}
+
+/* ===================================== */
+/* CAMBIO DE CONTRASEÑA - MI CUENTA      */
+/* ===================================== */
+
+.password-card {
+  margin-top: 1.2rem;
+}
+
+.password-form {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.password-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.password-field label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #263849;
+  font-weight: 850;
+  font-size: 0.9rem;
+}
+
+.password-field label .material-icons {
+  color: #003366;
+  font-size: 1.1rem;
+}
+
+.password-field input {
+  height: 46px;
+  width: 100%;
+  border: 1px solid rgba(16, 42, 67, 0.16);
+  border-radius: 14px;
+  padding: 0 0.95rem;
+  background: rgba(255,255,255,0.94);
+  color: #1f2c3d;
+  font-size: 0.92rem;
+  font-weight: 650;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.password-field input:focus {
+  border-color: rgba(0, 77, 153, 0.55);
+  box-shadow: 0 0 0 4px rgba(0, 77, 153, 0.10);
+}
+
+.password-submit-btn {
+  height: 46px;
+  margin-top: 0.3rem;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #003366, #0059b3);
+  color: #ffffff;
+  font-weight: 850;
+  font-size: 0.92rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 12px 24px rgba(0,51,102,0.22);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.password-submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px rgba(0,51,102,0.28);
+}
+
+.password-submit-btn .material-icons {
+  font-size: 1.1rem;
+}
+.password-help-account {
+  color: #5b6b7a;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+/* ===================================== */
+/* ELIMINAR CUENTA - MI CUENTA           */
+/* ===================================== */
+
+.danger-card {
+  margin-top: 1.2rem;
+  border: 1px solid rgba(192, 57, 43, 0.28);
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.90), rgba(255,245,245,0.78));
+}
+
+.danger-card .account-card-header > .material-icons {
+  background: rgba(192, 57, 43, 0.12);
+  color: #c0392b;
+}
+
+.danger-card h3 {
+  color: #9f2d22;
+}
+
+.delete-account-form {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.delete-account-btn {
+  height: 46px;
+  margin-top: 0.3rem;
+  border: none;
+  border-radius: 14px;
+  background: rgba(192, 57, 43, 0.12);
+  color: #c0392b;
+  font-weight: 850;
+  font-size: 0.92rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.delete-account-btn:hover {
+  background: #c0392b;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.delete-account-btn .material-icons {
+  font-size: 1.15rem;
+}
+</style>
 
 <header class="site-header">
   <div class="container">
@@ -70,37 +577,259 @@
   </div>
 </header>
 
-<section class="hero">
-  <div class="hero-background"></div>
-  <div class="hero-content container">
-    <h1 class="hero-title">Mi cuenta</h1>
-    <p class="hero-subtitle">Información personal y resumen de actividad.</p>
+<section class="account-hero">
+  <div class="account-hero__background"></div>
+  <div class="account-hero__overlay"></div>
+
+  <div class="account-hero__content container">
+    <div class="account-hero__text">
+      <span class="account-hero__badge">
+        <span class="material-icons">account_circle</span>
+        Área personal
+      </span>
+
+      <h1>Mi cuenta</h1>
+
+      <p>
+        Consulta tu información personal, revisa tus archivos importados y controla
+        la actividad asociada a tu cuenta.
+      </p>
+    </div>
   </div>
 </section>
 
-<main class="container main-content">
-  <h2 class="page-title">Información personal</h2>
+<main class="container account-main">
 
-  <div style="background: rgba(255,255,255,0.9); padding: 1.5rem; border-radius: 12px;">
-    <p><strong>Nombre:</strong> {{ current_user.nombre }}</p>
-    <p><strong>Email:</strong> {{ current_user.email }}</p>
-    <p><strong>Archivos subidos:</strong> {{ total_archivos }}</p>
-    <p><strong>Jugadores importados:</strong> {{ total_jugadores }}</p>
+  <section class="account-summary-section">
+    <div class="account-section-header">
+      <span class="account-section-badge">
+        <span class="material-icons">dashboard</span>
+        Resumen de actividad
+      </span>
 
-    {% if ultimo_archivo %}
-      <p><strong>Último archivo:</strong> {{ ultimo_archivo.nombre_archivo }}</p>
-      <p><strong>Fecha:</strong> {{ ultimo_archivo.fecha_subida.strftime('%d/%m/%Y %H:%M') }}</p>
-    {% else %}
-      <p><strong>Último archivo:</strong> No has subido archivos todavía.</p>
-    {% endif %}
-  </div>
+      <h2>Panel de usuario</h2>
+      <p>
+        Datos generales de tu cuenta y actividad registrada en Gestor de Talentos FM.
+      </p>
+    </div>
 
-  <div style="text-align: center; margin-top: 2rem;">
-    <a href="{{ url_for('user.mis_archivos') }}" class="btn-hero">
+    <div class="account-stats-grid">
+
+      <article class="account-stat-card">
+        <div class="account-stat-icon">
+          <span class="material-icons">folder</span>
+        </div>
+        <div>
+          <span>Archivos subidos</span>
+          <strong>{{ total_archivos }}</strong>
+        </div>
+      </article>
+
+      <article class="account-stat-card">
+        <div class="account-stat-icon">
+          <span class="material-icons">groups</span>
+        </div>
+        <div>
+          <span>Jugadores importados</span>
+          <strong>{{ total_jugadores }}</strong>
+        </div>
+      </article>
+
+      <article class="account-stat-card">
+        <div class="account-stat-icon">
+          <span class="material-icons">schedule</span>
+        </div>
+        <div>
+          <span>Último archivo</span>
+          {% if ultimo_archivo %}
+            <strong>{{ ultimo_archivo.nombre_archivo }}</strong>
+          {% else %}
+            <strong>Sin archivos</strong>
+          {% endif %}
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="account-details-grid">
+
+    <article class="account-info-card">
+      <div class="account-card-header">
+        <span class="material-icons">person</span>
+        <div>
+          <h3>Información personal</h3>
+          <p>Datos principales de tu cuenta.</p>
+        </div>
+      </div>
+
+      <div class="account-info-list">
+        <div class="account-info-row">
+          <span>Nombre</span>
+          <strong>{{ current_user.nombre }}</strong>
+        </div>
+
+        <div class="account-info-row">
+          <span>Email</span>
+          <strong>{{ current_user.email }}</strong>
+        </div>
+
+
+        <article class="account-info-card password-card">
+          <div class="account-card-header">
+            <span class="material-icons">lock_reset</span>
+            <div>
+              <h3>Cambiar contraseña</h3>
+              <p>Actualiza tu contraseña de acceso de forma segura.</p>
+            </div>
+          </div>
+
+          <form method="POST" action="{{ url_for('user.cambiar_password') }}" class="password-form">
+            <div class="password-field">
+              <label for="password_actual">
+                <span class="material-icons">lock</span>
+                Contraseña actual
+              </label>
+              <input 
+                type="password" 
+                id="password_actual" 
+                name="password_actual" 
+                placeholder="Introduce tu contraseña actual"
+                required
+              >
+            </div>
+
+            <div class="password-field">
+              <label for="password_nueva">
+                <span class="material-icons">vpn_key</span>
+                Nueva contraseña
+              </label>
+              <input 
+                type="password" 
+                id="password_nueva" 
+                name="password_nueva" 
+                placeholder="Introduce la nueva contraseña"
+                minlength="6"
+                required
+              >
+            </div>
+
+            <small class="password-help-account">
+              Mínimo 6 caracteres, una mayúscula, un número y un signo.
+            </small>
+
+            <div class="password-field">
+              <label for="password_confirmar">
+                <span class="material-icons">lock_reset</span>
+                Confirmar nueva contraseña
+              </label>
+              <input 
+                type="password" 
+                id="password_confirmar" 
+                name="password_confirmar" 
+                placeholder="Repite la nueva contraseña"
+                minlength="6"
+                required
+              >
+            </div>
+
+            <button type="submit" class="password-submit-btn">
+              <span class="material-icons">save</span>
+              Guardar nueva contraseña
+            </button>
+          </form>
+        </article>
+
+
+      <article class="account-info-card danger-card">
+        <div class="account-card-header">
+          <span class="material-icons">warning</span>
+          <div>
+            <h3>Eliminar cuenta</h3>
+            <p>
+              Esta acción eliminará tu cuenta, tus archivos HTML importados y los jugadores asociados.
+            </p>
+          </div>
+        </div>
+
+        <form 
+          method="POST" 
+          action="{{ url_for('user.eliminar_cuenta') }}" 
+          class="delete-account-form"
+          onsubmit="return confirm('¿Seguro que quieres eliminar tu cuenta? Esta acción no se puede deshacer.');"
+        >
+          <div class="password-field">
+            <label for="password_confirmacion">
+              <span class="material-icons">lock</span>
+              Confirma tu contraseña
+            </label>
+
+            <input 
+              type="password" 
+              id="password_confirmacion" 
+              name="password_confirmacion" 
+              placeholder="Introduce tu contraseña actual"
+              required
+            >
+          </div>
+
+          <button type="submit" class="delete-account-btn">
+            <span class="material-icons">delete_forever</span>
+            Eliminar mi cuenta
+          </button>
+        </form>
+      </article>
+
+        <div class="account-info-row">
+          <span>Estado</span>
+          <strong>Cuenta activa</strong>
+        </div>
+      </div>
+    </article>
+
+    <article class="account-info-card">
+      <div class="account-card-header">
+        <span class="material-icons">upload_file</span>
+        <div>
+          <h3>Última importación</h3>
+          <p>Información del último archivo subido.</p>
+        </div>
+      </div>
+
+      <div class="account-info-list">
+        {% if ultimo_archivo %}
+          <div class="account-info-row">
+            <span>Archivo</span>
+            <strong>{{ ultimo_archivo.nombre_archivo }}</strong>
+          </div>
+
+          <div class="account-info-row">
+            <span>Fecha</span>
+            <strong>{{ ultimo_archivo.fecha_subida.strftime('%d/%m/%Y %H:%M') }}</strong>
+          </div>
+        {% else %}
+          <div class="account-empty-state">
+            <span class="material-icons">info</span>
+            <p>Todavía no has subido ningún archivo HTML.</p>
+          </div>
+        {% endif %}
+      </div>
+    </article>
+
+  </section>
+
+  <section class="account-actions">
+    <a href="{{ url_for('user.mis_archivos') }}" class="account-action-button account-action-button--primary">
       <span class="material-icons">folder</span>
       Ver mis archivos
     </a>
-  </div>
+
+    <a href="{{ url_for('index') }}" class="account-action-button account-action-button--secondary">
+      <span class="material-icons">home</span>
+      Volver al inicio
+    </a>
+  </section>
+
 </main>
 
 <footer class="site-footer">

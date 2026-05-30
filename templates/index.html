@@ -36,6 +36,8 @@
       new Date().getTime();
   }
 
+  let jugadorBuscadoParaResaltar = "";
+
   function aplicarFiltros() {
     let nombre   = document.getElementById("filtroNombre").value.trim();
     let edad     = document.getElementById("filtroEdad").value;
@@ -48,11 +50,17 @@
     let dispMin  = document.getElementById("filtroDisparosMin").value;
     let dispMax  = document.getElementById("filtroDisparosMax").value;
 
-    // definimos la base con la paginación fija a página 1
     const base = "/mostrar_bd";
     let params = [`page=1`];
 
-    if (nombre)    params.push(`nombre=${encodeURIComponent(nombre)}`);
+    // El nombre se envía para resaltar, pero app.py ya no lo usará para aislar la tabla
+    if (nombre) {
+      params.push(`nombre=${encodeURIComponent(nombre)}`);
+      jugadorBuscadoParaResaltar = nombre;
+    } else {
+      jugadorBuscadoParaResaltar = "";
+    }
+
     if (edad)      params.push(`edad=${encodeURIComponent(edad)}`);
     if (posicion)  params.push(`posicion=${encodeURIComponent(posicion)}`);
     if (partidos)  params.push(`partidos=${encodeURIComponent(partidos)}`);
@@ -65,12 +73,62 @@
 
     params.push(`_=${new Date().getTime()}`);
 
-    document.getElementById("tablaJugadores").src = `${base}?${params.join("&")}`;
+    const urlFinal = `${base}?${params.join("&")}`;
+
+    fetch(urlFinal)
+      .then(response => {
+        if (response.status === 204) {
+          mostrarAvisoFiltros("No se encontraron jugadores con los filtros seleccionados.");
+          renderActiveFilters();
+          return;
+        }
+
+        document.getElementById("tablaJugadores").src = urlFinal;
+        renderActiveFilters();
+      })
+      .catch(() => {
+        mostrarAvisoFiltros("Ocurrió un error al aplicar los filtros.");
+      });
+
+    renderActiveFilters();
+    
   }
 </script>
 
 
   <style>
+.filter-toast {
+  position: fixed;
+  top: 105px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-12px);
+  z-index: 99999;
+  min-width: min(90%, 420px);
+  padding: 0.95rem 1.15rem;
+  border-radius: 16px;
+  background: rgba(5, 25, 45, 0.96);
+  color: #ffffff;
+  border: 1px solid rgba(255, 179, 71, 0.38);
+  box-shadow: 0 14px 34px rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  font-weight: 800;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.filter-toast.active {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.filter-toast .material-icons {
+  color: #ffb347;
+  font-size: 1.35rem;
+}
 /* ===================================== */
 /* LEYENDA COMPACTA Y VISUAL             */
 /* ===================================== */
@@ -596,7 +654,77 @@ details.advanced-filters .adv-grid label dr {
   font-size: 0.88rem;
 }
 
+/* ===================================== */
+/* CHIPS DE FILTROS ACTIVOS              */
+/* ===================================== */
 
+.active-filters-chips {
+  display: none;
+  margin-top: 1.1rem;
+  padding: 1rem;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.72);
+  border: 1px solid rgba(220,230,242,0.9);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+}
+
+.active-filters-chips.active {
+  display: block;
+}
+
+.active-filters-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #003366;
+  font-size: 0.86rem;
+  font-weight: 900;
+  margin-bottom: 0.75rem;
+}
+
+.active-filters-header .material-icons {
+  font-size: 1.05rem;
+}
+
+.active-filters-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.filter-chip {
+  border: none;
+  border-radius: 999px;
+  padding: 0.5rem 0.75rem;
+  background: rgba(0, 51, 102, 0.09);
+  color: #003366;
+  font-size: 0.82rem;
+  font-weight: 850;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.filter-chip:hover {
+  background: rgba(255, 179, 71, 0.22);
+  transform: translateY(-1px);
+}
+
+.filter-chip .material-icons {
+  font-size: 0.95rem;
+}
+
+.filter-chip-clear {
+  background: rgba(192, 57, 43, 0.10);
+  color: #c0392b;
+}
+
+.filter-chip-clear:hover {
+  background: #c0392b;
+  color: #ffffff;
+}
   </style>
 </head>
 <body>
@@ -614,53 +742,68 @@ details.advanced-filters .adv-grid label dr {
         </span>
       </a>
 
-      <nav class="main-nav">
-        <a href="/"><span class="material-icons">home</span>Inicio</a>
-        <a href="/faqs"><span class="material-icons">help_outline</span>Preguntas Frecuentes</a>
-        <a href="/comparacion"><span class="material-icons">compare_arrows</span>Comparación</a>
-        <a href="/clustering"><span class="material-icons">scatter_plot</span>Clustering</a>
+     <nav class="main-nav">
+      <a href="/" class="{% if request.path == '/' %}active{% endif %}">
+        <span class="material-icons">home</span>
+        Inicio
+      </a>
 
-        {% if current_user.is_authenticated %}
+      <a href="/faqs" class="{% if request.path == '/faqs' %}active{% endif %}">
+        <span class="material-icons">help_outline</span>
+        Preguntas Frecuentes
+      </a>
 
-          <div class="user-menu">
-            <button class="user-menu-button" type="button">
-              <span class="material-icons">account_circle</span>
-              {{ current_user.nombre }}
-              <span class="material-icons user-menu-arrow">expand_more</span>
-            </button>
+      <a href="/comparacion" class="{% if request.path == '/comparacion' %}active{% endif %}">
+        <span class="material-icons">compare_arrows</span>
+        Comparación
+      </a>
 
-            <div class="user-dropdown">
-              <a href="{{ url_for('user.mi_cuenta') }}">
-                <span class="material-icons">person</span>
-                Información personal
-              </a>
-              
-              <a href="{{ url_for('user.mis_archivos') }}">
-                <span class="material-icons">folder</span>
-                Mis archivos
-              </a>
+      <a href="/clustering" class="{% if request.path.startswith('/clustering') %}active{% endif %}">
+        <span class="material-icons">scatter_plot</span>
+        Clustering
+      </a>
 
-              <a href="{{ url_for('auth.logout') }}" class="logout-option">
-                <span class="material-icons">logout</span>
-                Cerrar sesión
-              </a>
-            </div>
+      {% if current_user.is_authenticated %}
+
+        <div class="user-menu">
+          <button class="user-menu-button" type="button">
+            <span class="material-icons">account_circle</span>
+            {{ current_user.nombre }}
+            <span class="material-icons user-menu-arrow">expand_more</span>
+          </button>
+
+          <div class="user-dropdown">
+            <a href="{{ url_for('user.mi_cuenta') }}">
+              <span class="material-icons">person</span>
+              Información personal
+            </a>
+            
+            <a href="{{ url_for('user.mis_archivos') }}">
+              <span class="material-icons">folder</span>
+              Mis archivos
+            </a>
+
+            <a href="{{ url_for('auth.logout') }}" class="logout-option">
+              <span class="material-icons">logout</span>
+              Cerrar sesión
+            </a>
           </div>
+        </div>
 
-        {% else %}
+      {% else %}
 
-          <a href="{{ url_for('auth.login') }}" class="login-nav">
-            <span class="material-icons">login</span>
-            Login
-          </a>
+        <a href="{{ url_for('auth.login') }}" class="login-nav {% if request.path == '/login' %}active{% endif %}">
+          <span class="material-icons">login</span>
+          Login
+        </a>
 
-          <a href="{{ url_for('auth.registro') }}" class="register-nav">
-            <span class="material-icons">person_add</span>
-            Registro
-          </a>
+        <a href="{{ url_for('auth.registro') }}" class="register-nav {% if request.path == '/registro' %}active{% endif %}">
+          <span class="material-icons">person_add</span>
+          Registro
+        </a>
 
-        {% endif %}
-      </nav>
+      {% endif %}
+    </nav>
     </div>
   </header>
 
@@ -957,11 +1100,12 @@ details.advanced-filters .adv-grid label dr {
             </div>
           </div>
         </details>
+        <div id="activeFiltersChips" class="active-filters-chips"></div>
       </section>
 
     <section class="results">
       <div class="pitch-frame">
-        <iframe id="tablaJugadores" src="/mostrar_bd?_=${new Date().getTime()}" frameborder="0"></iframe>
+        <iframe id="tablaJugadores" src="/mostrar_bd" frameborder="0"></iframe>
       </div>
     </section>
 
@@ -1160,11 +1304,6 @@ details.advanced-filters .adv-grid label dr {
     });
   });
 
-  function recargarTabla() {
-    const iframe = document.getElementById("tablaJugadores");
-    let srcBase = iframe.getAttribute("src").split("?")[0];
-    iframe.src = `${srcBase}?_=${new Date().getTime()}`;
-  }
 
   let nombresJugadoresCache = [];
 
@@ -1327,25 +1466,30 @@ details.advanced-filters .adv-grid label dr {
 
 
 
-  const filtroEdad = document.getElementById("filtroEdad");
+const filtroEdad = document.getElementById("filtroEdad");
 
 if (filtroEdad) {
-  filtroEdad.addEventListener("input", () => {
-    let value = Number(filtroEdad.value);
-
+  filtroEdad.addEventListener("blur", () => {
     if (filtroEdad.value === "") return;
 
+    let value = Number(filtroEdad.value);
+
+    if (isNaN(value)) {
+      filtroEdad.value = "";
+      return;
+    }
+
+    value = Math.round(value);
+
     if (value < 15) {
-      filtroEdad.value = 15;
+      value = 15;
     }
 
     if (value > 50) {
-      filtroEdad.value = 50;
+      value = 50;
     }
 
-    if (!Number.isInteger(value)) {
-      filtroEdad.value = Math.round(value);
-    }
+    filtroEdad.value = value;
   });
 }
 
@@ -1434,6 +1578,233 @@ window.addEventListener("DOMContentLoaded", initCustomSelects);
       iframe.style.height = nuevaAltura + "px";
     }
   });
+
+
+
+  function getCustomSelectLabel(selectId) {
+  const customSelect = document.querySelector(`.custom-select[data-select-id="${selectId}"]`);
+  const text = customSelect ? customSelect.querySelector(".custom-select__text") : null;
+  return text ? text.textContent.trim() : "";
+}
+
+function resetCustomSelect(selectId) {
+  const nativeSelect = document.getElementById(selectId);
+  const customSelect = document.querySelector(`.custom-select[data-select-id="${selectId}"]`);
+
+  if (!nativeSelect || !customSelect) return;
+
+  nativeSelect.value = "";
+
+  const text = customSelect.querySelector(".custom-select__text");
+  const options = customSelect.querySelectorAll(".custom-select__option");
+
+  options.forEach(option => option.classList.remove("active"));
+
+  const defaultOption = customSelect.querySelector('.custom-select__option[data-value=""]');
+
+  if (defaultOption) {
+    defaultOption.classList.add("active");
+    if (text) text.textContent = defaultOption.textContent.trim();
+  }
+}
+
+function clearFilter(filterId) {
+  const input = document.getElementById(filterId);
+
+  if (input) {
+    input.value = "";
+  }
+
+  if (filterId === "filtroPosicion" || filterId === "filtroPartidos") {
+    resetCustomSelect(filterId);
+  }
+
+  aplicarFiltros();
+}
+
+function clearAllFilters() {
+  const ids = [
+    "filtroNombre",
+    "filtroEdad",
+    "filtroPosicion",
+    "filtroPartidos",
+    "filtroGolesMin",
+    "filtroGolesMax",
+    "filtroAsistMin",
+    "filtroAsistMax",
+    "filtroDisparosMin",
+    "filtroDisparosMax"
+  ];
+
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+
+  resetCustomSelect("filtroPosicion");
+  resetCustomSelect("filtroPartidos");
+
+  jugadorBuscadoParaResaltar = "";
+
+  aplicarFiltros();
+    }
+
+    function renderActiveFilters() {
+      const container = document.getElementById("activeFiltersChips");
+      if (!container) return;
+
+      const filtros = [];
+
+      const nombre = document.getElementById("filtroNombre").value.trim();
+      const edad = document.getElementById("filtroEdad").value;
+      const posicion = document.getElementById("filtroPosicion").value;
+      const partidos = document.getElementById("filtroPartidos").value;
+      const golesMin = document.getElementById("filtroGolesMin").value;
+      const golesMax = document.getElementById("filtroGolesMax").value;
+      const asisMin = document.getElementById("filtroAsistMin").value;
+      const asisMax = document.getElementById("filtroAsistMax").value;
+      const dispMin = document.getElementById("filtroDisparosMin").value;
+      const dispMax = document.getElementById("filtroDisparosMax").value;
+
+      if (nombre) filtros.push({ id: "filtroNombre", label: `Jugador destacado: ${nombre}` });
+      if (edad) filtros.push({ id: "filtroEdad", label: `Edad: ${edad}` });
+
+      if (posicion) {
+        filtros.push({
+          id: "filtroPosicion",
+          label: `Posición: ${getCustomSelectLabel("filtroPosicion") || posicion}`
+        });
+      }
+
+      if (partidos) {
+        filtros.push({
+          id: "filtroPartidos",
+          label: `Titularidad: ${getCustomSelectLabel("filtroPartidos") || partidos}`
+        });
+      }
+
+      if (golesMin) filtros.push({ id: "filtroGolesMin", label: `Goles mín.: ${golesMin}` });
+      if (golesMax) filtros.push({ id: "filtroGolesMax", label: `Goles máx.: ${golesMax}` });
+
+      if (asisMin) filtros.push({ id: "filtroAsistMin", label: `Asistencias mín.: ${asisMin}` });
+      if (asisMax) filtros.push({ id: "filtroAsistMax", label: `Asistencias máx.: ${asisMax}` });
+
+      if (dispMin) filtros.push({ id: "filtroDisparosMin", label: `Disparos mín.: ${dispMin}` });
+      if (dispMax) filtros.push({ id: "filtroDisparosMax", label: `Disparos máx.: ${dispMax}` });
+
+      if (!filtros.length) {
+        container.innerHTML = "";
+        container.classList.remove("active");
+        return;
+      }
+
+      container.classList.add("active");
+
+      container.innerHTML = `
+        <div class="active-filters-header">
+          <span class="material-icons">filter_alt</span>
+          Filtros aplicados
+        </div>
+
+        <div class="active-filters-list">
+          ${filtros.map(filtro => `
+            <button type="button" class="filter-chip" onclick="clearFilter('${filtro.id}')">
+              ${filtro.label}
+              <span class="material-icons">close</span>
+            </button>
+          `).join("")}
+
+          <button type="button" class="filter-chip filter-chip-clear" onclick="clearAllFilters()">
+            Limpiar todo
+            <span class="material-icons">delete_sweep</span>
+          </button>
+        </div>
+      `;
+    }
+
+    function mostrarAvisoFiltros(mensaje) {
+      let aviso = document.getElementById("filterToast");
+
+      if (!aviso) {
+        aviso = document.createElement("div");
+        aviso.id = "filterToast";
+        aviso.className = "filter-toast";
+        document.body.appendChild(aviso);
+      }
+
+      aviso.innerHTML = `
+        <span class="material-icons">info</span>
+        <span>${mensaje}</span>
+      `;
+
+      aviso.classList.add("active");
+
+      setTimeout(() => {
+        aviso.classList.remove("active");
+      }, 3000);
+    }
+
+    function resaltarJugadorEnIframe(nombre) {
+      if (!nombre) return;
+
+      const iframe = document.getElementById("tablaJugadores");
+      if (!iframe) return;
+
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      if (!doc) return;
+
+      const filas = doc.querySelectorAll("tbody tr");
+      const nombreNormalizado = normalizarTexto(nombre);
+
+      let filaEncontrada = null;
+
+      filas.forEach(fila => {
+        const textoFila = normalizarTexto(fila.textContent);
+
+        if (!filaEncontrada && textoFila.includes(nombreNormalizado)) {
+          filaEncontrada = fila;
+        }
+      });
+
+      if (!filaEncontrada) return;
+
+      filaEncontrada.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+
+      const celdas = filaEncontrada.querySelectorAll("td");
+
+      celdas.forEach(td => {
+        td.dataset.originalBackground = td.style.backgroundColor || "";
+        td.style.transition = "background 0.35s ease, box-shadow 0.35s ease";
+        td.style.background = "#fff1b8";
+        td.style.boxShadow = "inset 0 0 0 2px rgba(255, 179, 71, 0.75)";
+      });
+
+      setTimeout(() => {
+        celdas.forEach(td => {
+          td.style.background = td.dataset.originalBackground;
+          td.style.boxShadow = "";
+        });
+      }, 3000);
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const iframe = document.getElementById("tablaJugadores");
+
+      if (iframe) {
+        iframe.addEventListener("load", () => {
+          if (jugadorBuscadoParaResaltar) {
+            setTimeout(() => {
+              resaltarJugadorEnIframe(jugadorBuscadoParaResaltar);
+            }, 250);
+          }
+        });
+      }
+
+      renderActiveFilters();
+    });
 </script>
 </body>
 </html>

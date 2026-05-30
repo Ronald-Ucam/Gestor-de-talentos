@@ -158,6 +158,10 @@ df_jugadores = pd.read_pickle(pickle_path)
 def index():
     return render_template("index.html")
 
+@app.route("/terminos")
+def terminos():
+    return render_template("terminos.html")
+
 @app.route('/faqs')
 def faqs():
     return render_template("faqs.html")
@@ -236,10 +240,23 @@ def mostrar_bd():
         )
 
 
-        if nombre:
-            df_filtrado = df_filtrado[
-                df_filtrado["Nombre"].str.contains(nombre, case=False, na=False)
-            ]
+        # El nombre ya no filtra la tabla.
+# Solo se usa para destacar al jugador buscado y colocarlo arriba.
+        if nombre and "Nombre" in df_filtrado.columns:
+            mascara_nombre = df_filtrado["Nombre"].astype(str).str.contains(
+                nombre,
+                case=False,
+                na=False
+            )
+
+            df_filtrado = pd.concat(
+                [
+                    df_filtrado[mascara_nombre],
+                    df_filtrado[~mascara_nombre]
+                ],
+                ignore_index=True
+            )
+
         if edad is not None:
             df_filtrado = df_filtrado[df_filtrado["Edad"] == edad]
         if posicion:
@@ -291,7 +308,7 @@ def mostrar_bd():
 
 
         if df_filtrado.empty:
-            return "<h2>No se encontraron jugadores con los filtros seleccionados</h2>"
+            return "", 204
 
         total_rows  = len(df_filtrado)
         total_pages = (total_rows + PAGE_SIZE - 1) // PAGE_SIZE

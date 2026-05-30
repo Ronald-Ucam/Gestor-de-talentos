@@ -35,10 +35,25 @@
       </a>
 
       <nav class="main-nav">
-        <a href="/"><span class="material-icons">home</span>Inicio</a>
-        <a href="/faqs"><span class="material-icons">help_outline</span>Preguntas Frecuentes</a>
-        <a href="/comparacion"><span class="material-icons">compare_arrows</span>Comparación</a>
-        <a href="/clustering"><span class="material-icons">scatter_plot</span>Clustering</a>
+        <a href="/" class="{% if request.path == '/' %}active{% endif %}">
+          <span class="material-icons">home</span>
+          Inicio
+        </a>
+
+        <a href="/faqs" class="{% if request.path == '/faqs' %}active{% endif %}">
+          <span class="material-icons">help_outline</span>
+          Preguntas Frecuentes
+        </a>
+
+        <a href="/comparacion" class="{% if request.path == '/comparacion' %}active{% endif %}">
+          <span class="material-icons">compare_arrows</span>
+          Comparación
+        </a>
+
+        <a href="/clustering" class="{% if request.path.startswith('/clustering') %}active{% endif %}">
+          <span class="material-icons">scatter_plot</span>
+          Clustering
+        </a>
 
         {% if current_user.is_authenticated %}
 
@@ -54,7 +69,7 @@
                 <span class="material-icons">person</span>
                 Información personal
               </a>
-
+              
               <a href="{{ url_for('user.mis_archivos') }}">
                 <span class="material-icons">folder</span>
                 Mis archivos
@@ -69,12 +84,12 @@
 
         {% else %}
 
-          <a href="{{ url_for('auth.login') }}" class="login-nav">
+          <a href="{{ url_for('auth.login') }}" class="login-nav {% if request.path == '/login' %}active{% endif %}">
             <span class="material-icons">login</span>
             Login
           </a>
 
-          <a href="{{ url_for('auth.registro') }}" class="register-nav">
+          <a href="{{ url_for('auth.registro') }}" class="register-nav {% if request.path == '/registro' %}active{% endif %}">
             <span class="material-icons">person_add</span>
             Registro
           </a>

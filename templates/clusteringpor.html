@@ -10,8 +10,9 @@
   <!-- CSS-->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
   <!-- Chart.js y plugin de zoom/pan -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2"></script>
 
   <style>
     body {
@@ -615,6 +616,16 @@
       height: 100% !important;
       border-radius: 18px;
       cursor: crosshair;
+      touch-action: none;
+    }
+
+    .gk-chart-container {
+      touch-action: none;
+      overscroll-behavior: contain;
+    }
+
+    #clusterChart {
+      touch-action: none;
     }
 
     .pan-btn {
@@ -1116,6 +1127,17 @@
         flex-wrap: wrap;
       }
     }
+
+
+    #clusterChart {
+      touch-action: none;
+    }
+
+    .gk-chart-container {
+      touch-action: none;
+      overscroll-behavior: contain;
+    }
+
   </style>
 </head>
 <body>
@@ -1266,8 +1288,8 @@
         </div>
 
         <p>
-            Usa la rueda del ratón para ampliar el gráfico. Para mover la vista,
-             mantén Shift pulsado y arrastra, o utiliza las flechas.
+          En ordenador usa la rueda del ratón para ampliar. En móvil puedes ampliar
+          con dos dedos y mover el gráfico arrastrando sobre la zona del mapa.
         </p>
       </div>
 
@@ -1276,7 +1298,7 @@
           <span class="material-icons">restart_alt</span>
           Restablecer vista
         </button>
-
+        
         <div id="panUp"    class="pan-btn">↑</div>
         <div id="panDown"  class="pan-btn">↓</div>
         <div id="panLeft"  class="pan-btn">←</div>
@@ -1558,6 +1580,7 @@
     const prevBtn      = document.getElementById('prevPage');
     const nextBtn      = document.getElementById('nextPage');
     const pageInfo     = document.getElementById('pageInfo');
+    const resetZoomBtn = document.getElementById('resetZoom');
 
     let porterosList = JSON.parse('{{ porteros_list | tojson | safe }}');
     const ageMap = JSON.parse('{{ age_map | tojson | safe }}');
@@ -1852,11 +1875,11 @@
             }
           },
 
-          zoom: {
+            zoom: {
             pan: {
               enabled: true,
               mode: 'xy',
-              modifierKey: 'shift'
+              threshold: 8
             },
 
             zoom: {
@@ -1869,7 +1892,6 @@
                 enabled: true
               },
 
-              // Esto es lo importante: evita que al arrastrar hagas zoom raro
               drag: {
                 enabled: false
               },
@@ -1884,7 +1906,7 @@
           }
         },
 
-          scales: {
+        scales: {
             x: {
               title: {
                 display: true,
@@ -1978,12 +2000,13 @@
     panLeft.addEventListener('click', () => panChart('left'));
     panRight.addEventListener('click', () => panChart('right'));
 
-    const resetZoomBtn = document.getElementById('resetZoom');
-
+   
     resetZoomBtn.addEventListener('click', () => {
       if (!chart) return;
       chart.resetZoom();
     });
+
+
 
     form.addEventListener('submit', async e => {
       e.preventDefault();

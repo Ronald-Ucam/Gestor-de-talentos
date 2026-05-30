@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Términos de uso – Gestor de Talentos FM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #003b70;
+    }
+
+    .legal-page {
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0, 25, 50, 0.45), rgba(0, 25, 50, 0.55)),
+        url("{{ url_for('static', filename='images/football-stadium.jpg') }}");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1rem;
+    }
+
+    .legal-card {
+      width: 100%;
+      max-width: 900px;
+      background: rgba(5, 25, 45, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 18px;
+      padding: 2.4rem;
+      box-shadow: 0 0 35px rgba(0,0,0,0.45);
+      backdrop-filter: blur(10px);
+      color: #fff;
+    }
+
+    .legal-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 1rem;
+      border-radius: 50%;
+      background: var(--clr-accent);
+      color: var(--clr-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+    }
+
+    .legal-icon .material-icons {
+      font-size: 2.2rem;
+    }
+
+    .legal-card h1 {
+      text-align: center;
+      color: #fff;
+      margin-bottom: 0.6rem;
+      font-size: 2rem;
+    }
+
+    .legal-date {
+      text-align: center;
+      color: rgba(255,255,255,0.75);
+      margin-bottom: 2rem;
+    }
+
+    .legal-card h2 {
+      color: var(--clr-accent);
+      margin-top: 1.6rem;
+      margin-bottom: 0.5rem;
+      font-size: 1.15rem;
+    }
+
+    .legal-card p,
+    .legal-card li {
+      line-height: 1.65;
+      color: rgba(255,255,255,0.9);
+      font-size: 0.96rem;
+    }
+
+    .legal-card ul {
+      padding-left: 1.4rem;
+    }
+
+    .legal-back {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      margin-top: 2rem;
+      background: var(--clr-accent);
+      color: var(--clr-primary);
+      font-weight: 700;
+      text-decoration: none;
+      padding: 0.8rem 1.3rem;
+      border-radius: var(--radius);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+
+    .legal-back:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+    }
+
+    .legal-actions {
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      .legal-page {
+        align-items: flex-start;
+        padding: 2rem 1rem;
+      }
+
+      .legal-card {
+        padding: 1.6rem;
+      }
+
+      .legal-card h1 {
+        font-size: 1.6rem;
+      }
+    }
+    .legal-close-note {
+    margin-top: 2rem;
+    text-align: center;
+    color: rgba(255,255,255,0.75);
+    font-size: 0.9rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="legal-page">
+    <section class="legal-card">
+
+      <div class="legal-icon">
+        <span class="material-icons">gavel</span>
+      </div>
+
+      <h1>Términos de uso y política de privacidad</h1>
+      <p class="legal-date">Última actualización: 2026</p>
+
+      <h2>1. Finalidad de la aplicación</h2>
+      <p>
+        Gestor de Talentos FM es una aplicación web desarrollada con fines académicos como parte de un Trabajo de Fin de Grado.
+        Su objetivo es permitir el análisis, comparación y agrupación de jugadores a partir de archivos exportados desde Football Manager.
+      </p>
+
+      <h2>2. Uso de la cuenta</h2>
+      <p>
+        El registro permite al usuario subir sus propios archivos HTML, asociarlos a su cuenta y consultar los análisis generados por la aplicación.
+      </p>
+
+      <h2>3. Datos almacenados</h2>
+      <p>
+        La aplicación puede almacenar el nombre, correo electrónico, contraseña cifrada y archivos HTML subidos por el usuario.
+        Las contraseñas no se guardan en texto plano, sino mediante un sistema de hash.
+      </p>
+
+      <h2>4. Archivos subidos</h2>
+      <p>
+        Los archivos HTML subidos por el usuario se utilizan únicamente para extraer información de jugadores y generar análisis dentro de la aplicación.
+      </p>
+
+      <h2>5. Responsabilidad del usuario</h2>
+      <ul>
+        <li>El usuario debe subir únicamente archivos relacionados con el funcionamiento de la aplicación.</li>
+        <li>El usuario es responsable del contenido de los archivos que importa.</li>
+        <li>No se debe utilizar la aplicación para subir contenido malicioso, ilegal o ajeno al propósito del proyecto.</li>
+      </ul>
+
+      <h2>6. Limitación de responsabilidad</h2>
+      <p>
+        La aplicación se ofrece como proyecto académico y demostrativo. Los resultados de comparación, clustering y análisis deben interpretarse como apoyo visual y estadístico, no como decisiones deportivas definitivas.
+      </p>
+
+      <h2>7. Privacidad</h2>
+      <p>
+        Los datos del usuario se utilizan únicamente para el funcionamiento interno de la aplicación. No se venden ni se comparten con terceros.
+      </p>
+
+      <h2>8. Aceptación</h2>
+      <p>
+        Al crear una cuenta, el usuario acepta estos términos de uso y autoriza que sus archivos y análisis queden asociados a su cuenta dentro de la aplicación.
+      </p>
+
+        <p class="legal-close-note">
+        Puedes cerrar esta ventana cuando termines de leer los términos.
+        </p>
+    </section>
+  </main>
+
+</body>
+</html>
