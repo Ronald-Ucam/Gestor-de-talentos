@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
   <!-- Chart.js y plugin de zoom/pan -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2"></script>
 
   <style>
@@ -615,6 +616,12 @@
       height: 100% !important;
       border-radius: 18px;
       cursor: crosshair;
+      touch-action: none;
+    }
+
+    .gk-chart-container {
+      touch-action: none;
+      overscroll-behavior: contain;
     }
 
     .pan-btn {
@@ -1275,8 +1282,8 @@
         </div>
 
         <p>
-          Usa la rueda del ratón para ampliar el gráfico. Para mover la vista,
-          mantén Shift pulsado y arrastra, o utiliza las flechas.
+          En ordenador usa la rueda del ratón para ampliar. En móvil puedes ampliar
+          con dos dedos y mover el gráfico arrastrando sobre la zona del mapa.
         </p>
       </div>
 
@@ -1865,7 +1872,7 @@
               pan:{
                 enabled:true,
                 mode:'xy',
-                modifierKey: 'shift'
+                threshold: 8
               },
               zoom:{
                 wheel:{
