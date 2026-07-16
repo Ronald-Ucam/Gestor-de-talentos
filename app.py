@@ -1,19 +1,19 @@
-from flask import Flask, render_template, request, abort, jsonify,redirect, url_for, flash, render_template, make_response
+from flask import Flask, render_template, request, abort, jsonify, redirect, url_for, flash, make_response
 import pandas as pd
 import os
 import re
 import numpy as np
-import requests
 from scipy.stats import percentileofscore
 import subprocess
-from flask import Flask, request, redirect, url_for, flash, render_template
 from preprocesar_tabla import procesar_BBDD_html
-from models import db, Usuario, ArchivoHTML, Jugador, Favorito
+from models import db, Usuario, ArchivoHTML, Jugador
 from flask_login import LoginManager, login_required, current_user
 from auth import auth
 from user import user
 from clustering import clustering_bp
-from data_service import obtener_dataframe_actual, convertir_float, convertir_int, limpiar_json_fila
+from data_service import obtener_dataframe_actual
+from preprocesar_tabla import convertir_float, convertir_int, limpiar_json_fila
+
 
 app = Flask(__name__)
 
@@ -151,7 +151,6 @@ pickle_path = os.path.join(os.getcwd(), "jugadores.pkl")
 if not os.path.exists(pickle_path):
     # Genera el pickle automáticamente si falta
     subprocess.run(["python", "preprocesar_tabla.py"], check=True)
-df_jugadores = pd.read_pickle(pickle_path)
 
 
 @app.route("/")
@@ -166,7 +165,7 @@ def terminos():
 def faqs():
     return render_template("faqs.html")
 
-@app.route("/comparacion")
+
 @app.route("/comparacion")
 def comparacion():
     df_actual = obtener_dataframe_actual()
@@ -231,13 +230,6 @@ def mostrar_bd():
 
         df_filtrado = df_jugadores.copy()
 
-        df_filtrado["Disparos"] = (
-            df_filtrado["Disparos"]
-            .replace("-", np.nan)
-            .astype(float)
-            .fillna(0)
-            .astype(int)      
-        )
 
 
         # El nombre ya no filtra la tabla.
@@ -318,6 +310,21 @@ def mostrar_bd():
         start = (page - 1) * PAGE_SIZE
         end = start + PAGE_SIZE
         df_page = df_filtrado.iloc[start:end].copy()
+
+        # Ocultamos columnas técnicas solo en la tabla visible.
+        # Siguen existiendo en df_filtrado para filtros, comparador y clustering.
+        columnas_ocultas = [
+            "ValorNum",
+            "SueldoNum",
+            "ClausulaNum",
+            "PartidosTotal",
+            "PartidosTitular",
+            "PartidosSuplente"
+        ]
+
+        df_page = df_page.drop(
+            columns=[col for col in columnas_ocultas if col in df_page.columns]
+        )
 
         # Renombrado solo visual para que los atributos se entiendan mejor.
         # No cambia la base de datos ni los filtros, solo los nombres que se muestran en la tabla.
@@ -577,41 +584,12 @@ def api_comparar():
     # Métricas donde un valor menor representa mejor rendimiento
     metricas_menor_mejor = ["Enc/90", "Pos Perd/90", "FC"]
 
-    def to_float(val):
-        """
-        Convierte valores del dataset a float.
-        Soporta:
-        - "-"
-        - ""
-        - porcentajes como "85%"
-        - unidades como "299.3 km"
-        - valores con coma decimal
-        """
-        if pd.isna(val):
-            return 0.0
-
-        texto = str(val).strip()
-
-        if texto in ["-", "", "nan", "None"]:
-            return 0.0
-
-        texto = texto.replace(",", ".")
-        limpio = re.sub(r"[^0-9\.\-]", "", texto)
-
-        if limpio in ["", "-", "."]:
-            return 0.0
-
-        try:
-            return float(limpio)
-        except ValueError:
-            return 0.0
-
     clean = {}
 
     for a in attrs:
         clean[a] = (
             df_actual[a]
-            .apply(to_float)
+            .apply(convertir_float)
             .replace([np.inf, -np.inf], np.nan)
             .fillna(0)
         )
@@ -626,8 +604,8 @@ def api_comparar():
 
         return round(percentil, 1)
 
-    statsA = [calcular_percentil(a, to_float(p1[a])) for a in attrs]
-    statsB = [calcular_percentil(a, to_float(p2[a])) for a in attrs]
+    statsA = [calcular_percentil(a, convertir_float(p1[a])) for a in attrs]
+    statsB = [calcular_percentil(a, convertir_float(p2[a])) for a in attrs]
 
     campos_perfil = [
         "Nombre", "Edad", "Altura", "Peso", "Posición", "Club",

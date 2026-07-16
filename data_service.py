@@ -4,63 +4,6 @@ from flask_login import current_user
 from models import ArchivoHTML, Jugador
 
 
-def convertir_float(valor):
-    try:
-        if valor is None:
-            return None
-
-        valor = str(valor).strip()
-
-        if valor in ["", "-"]:
-            return None
-
-        valor = valor.replace("%", "")
-        valor = valor.replace("€", "")
-        valor = valor.replace("km", "")
-        valor = valor.replace("\xa0", "")
-        valor = valor.replace(",", ".")
-
-        if valor.count(".") > 1:
-            valor = valor.replace(".", "")
-
-        return float(valor)
-
-    except Exception:
-        return None
-
-
-def convertir_int(valor):
-    try:
-        if valor is None:
-            return None
-
-        valor = str(valor).strip()
-
-        if valor in ["", "-"]:
-            return None
-
-        valor = re.sub(r"[^\d]", "", valor)
-
-        if not valor:
-            return None
-
-        return int(valor)
-
-    except Exception:
-        return None
-
-
-def limpiar_json_fila(fila):
-    datos = {}
-
-    for clave, valor in fila.fillna("").to_dict().items():
-        if hasattr(valor, "item"):
-            valor = valor.item()
-
-        datos[str(clave)] = valor
-
-    return datos
-
 
 def obtener_dataframe_actual():
     """

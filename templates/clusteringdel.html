@@ -15,6 +15,77 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2"></script>
 
   <style>
+
+    .gk-recommendations-card {
+      border-radius: 26px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.94), rgba(255,255,255,0.80));
+      border: 1px solid rgba(255,255,255,0.62);
+      box-shadow: 0 18px 42px rgba(0,0,0,0.22);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      padding: 1.35rem;
+    }
+
+    .gk-recommendations-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.85rem;
+      margin-top: 1rem;
+    }
+
+    .gk-recommendation-item {
+      padding: 1rem;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(220, 230, 242, 0.92);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.07);
+    }
+
+    .gk-recommendation-rank {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #003366, #0059b3);
+      color: #ffffff;
+      font-weight: 950;
+      margin-bottom: 0.6rem;
+    }
+
+    .gk-recommendation-name {
+      margin: 0;
+      color: #061b31;
+      font-size: 1rem;
+      font-weight: 950;
+    }
+
+    .gk-recommendation-meta {
+      margin: 0.35rem 0 0;
+      color: #536273;
+      font-size: 0.84rem;
+      line-height: 1.4;
+      font-weight: 650;
+    }
+
+    .gk-recommendation-distance {
+      margin-top: 0.65rem;
+      display: inline-flex;
+      padding: 0.35rem 0.65rem;
+      border-radius: 999px;
+      background: rgba(0, 51, 102, 0.08);
+      color: #003366;
+      font-size: 0.78rem;
+      font-weight: 900;
+    }
+
+    @media (max-width: 760px) {
+      .gk-recommendations-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
@@ -198,11 +269,6 @@
     .gk-field select:focus {
       border-color: rgba(0, 77, 153, 0.55);
       box-shadow: 0 0 0 4px rgba(0, 77, 153, 0.10);
-    }
-
-    #epsControl,
-    #minSamplesControl {
-      display: none;
     }
 
     .gk-filter-group {
@@ -1148,7 +1214,7 @@
         <h1>Análisis de perfiles de delanteros</h1>
 
         <p>
-          Agrupa delanteros con características similares usando K-Means o DBSCAN.
+          Agrupa delanteros con características similares usando K-Means.
           Puedes seleccionar un delantero de referencia y aplicar filtros para encontrar perfiles parecidos.
         </p>
       </div>
@@ -1168,7 +1234,6 @@
 
           <select id="inputAlgoritmo" class="gk-native-select">
             <option value="kmeans" selected>K-Means</option>
-            <option value="dbscan">DBSCAN</option>
           </select>
 
           <div class="gk-algorithm-select" id="algorithmSelect">
@@ -1188,14 +1253,6 @@
                   <small>Grupos definidos</small>
                 </span>
               </button>
-
-              <button class="gk-algorithm-select__option" type="button" data-value="dbscan" data-icon="bubble_chart">
-                <span class="material-icons">bubble_chart</span>
-                <span>
-                  <strong>DBSCAN</strong>
-                  <small>Detecta perfiles atípicos</small>
-                </span>
-              </button>
             </div>
           </div>
         </label>
@@ -1207,23 +1264,6 @@
           </span>
           <input type="number" id="inputK" value="4" min="1" max="7" />
         </label>
-
-        <label id="epsControl" class="gk-field">
-          <span class="gk-field-title">
-            <span class="material-icons">scatter_plot</span>
-            EPS
-          </span>
-          <input type="number" id="inputEps" value="1.5" min="0.1" max="5" step="0.1" />
-        </label>
-
-        <label id="minSamplesControl" class="gk-field">
-          <span class="gk-field-title">
-            <span class="material-icons">groups</span>
-            Mín. muestras
-          </span>
-          <input type="number" id="inputMinSamples" value="5" min="2" max="20" />
-        </label>
-
         <label class="gk-field gk-field--wide">
           <span class="gk-field-title">
             <span class="material-icons">person_search</span>
@@ -1324,8 +1364,7 @@
           <div>
             <h3>Elige el algoritmo</h3>
             <p>
-              Usa <strong>K-Means</strong> para crear grupos definidos o <strong>DBSCAN</strong>
-              para detectar perfiles más atípicos.
+              Usa <strong>K-Means</strong> para crear grupos definidos de delanteros según sus métricas ofensivas.
             </p>
           </div>
         </article>
@@ -1367,10 +1406,27 @@
       <div class="gk-guide-tip">
         <span class="gk-guide-tip__icon">⚽</span>
         <p>
-          <strong>Consejo:</strong> K-Means es mejor para grupos claros y controlados.
-          DBSCAN es útil para descubrir delanteros menos comunes o fuera del patrón general.
+          <strong>Consejo:</strong> K-Means permite crear grupos claros y controlados a partir de métricas ofensivas normalizadas del rol de delantero.
         </p>
       </div>
+    </section>
+
+
+    <section class="gk-recommendations-card" id="recommendationsCard" style="display: none;">
+      <div class="gk-card-header">
+        <div>
+          <span class="gk-mini-badge">
+            <span class="material-icons">recommend</span>
+            Recomendaciones
+          </span>
+          <h2>3 delanteros más parecidos</h2>
+          <p id="recommendationsText">
+            Selecciona un delantero para ver recomendaciones dentro de su mismo grupo.
+          </p>
+        </div>
+      </div>
+
+      <div class="gk-recommendations-grid" id="recommendationsGrid"></div>
     </section>
 
     <section class="gk-table-card">
@@ -1551,13 +1607,6 @@
     const form        = document.getElementById('clusterForm');
     const inputK      = document.getElementById('inputK');
 
-    const inputAlgoritmo = document.getElementById('inputAlgoritmo');
-    const inputEps = document.getElementById('inputEps');
-    const inputMinSamples = document.getElementById('inputMinSamples');
-    const kControl = document.getElementById('kControl');
-    const epsControl = document.getElementById('epsControl');
-    const minSamplesControl = document.getElementById('minSamplesControl');
-
     const inputRef    = document.getElementById('inputRef');
     const ageFilter   = document.getElementById('ageFilter');
     const heightFilter= document.getElementById('heightFilter');
@@ -1571,6 +1620,9 @@
     const prevBtn     = document.getElementById('prevPage');
     const nextBtn     = document.getElementById('nextPage');
     const pageInfo    = document.getElementById('pageInfo');
+    const recommendationsCard = document.getElementById('recommendationsCard');
+    const recommendationsGrid = document.getElementById('recommendationsGrid');
+    const recommendationsText = document.getElementById('recommendationsText');
 
     let delanterosList = JSON.parse('{{ delanteros_list | tojson | safe }}');
     const ageMap = JSON.parse('{{ age_map | tojson | safe }}');
@@ -1581,26 +1633,13 @@
     const perPage = 20;
     let currentPage = 1;
 
-    async function runClustering(algoritmo, K, ref, eps, minSamples) {
-      let url;
-      let qs;
+    async function runClustering(K, ref) {
+      const qs = new URLSearchParams({
+        k: K,
+        jugador: ref
+      });
 
-      if (algoritmo === "dbscan") {
-        qs = new URLSearchParams({
-          eps: eps,
-          min_samples: minSamples,
-          jugador: ref
-        });
-        url = "/api/dbscan_fw?" + qs;
-      } else {
-        qs = new URLSearchParams({
-          k: K,
-          jugador: ref
-        });
-        url = "/api/cluster_fw?" + qs;
-      }
-
-      const res = await fetch(url);
+      const res = await fetch("/api/cluster_fw?" + qs);
       const d = await res.json();
 
       if (d.error) throw new Error(d.error);
@@ -1622,19 +1661,57 @@
     function applyFilters(data, ref) {
       let d = data;
 
-      if(ageFilter.checked && ref){
-        const b=ageMap[ref];
-        d = filterBy(d,'jugadores','labels','coords2', j=>Math.abs((ageMap[j]||0)-b)<=4);
+      if (!ref) {
+        if (ageFilter.checked || heightFilter.checked || valueFilter.checked) {
+          console.warn("Has marcado filtros, pero no hay delantero de referencia seleccionado.");
+        }
+        return d;
       }
 
-      if(heightFilter.checked && ref){
-        const b=heightMap[ref];
-        d = filterBy(d,'jugadores','labels','coords2', j=>Math.abs((heightMap[j]||0)-b)<=5);
+
+      if (ageFilter.checked) {
+        const baseEdad = Number(ageMap[ref]);
+
+        if (Number.isFinite(baseEdad)) {
+          d = filterBy(d, "jugadores", "labels", "coords2", j => {
+            const edadJugador = Number(ageMap[j]);
+            return Number.isFinite(edadJugador) && Math.abs(edadJugador - baseEdad) <= 4;
+          });
+
+          console.log("Después filtro edad:", d.jugadores.length);
+        } else {
+          console.warn("No hay edad válida para:", ref);
+        }
       }
 
-      if(valueFilter.checked && ref){
-        const b=valueMap[ref];
-        d = filterBy(d,'jugadores','labels','coords2', j=>Math.abs((valueMap[j]||0)-b)<=10);
+      if (heightFilter.checked) {
+        const baseAltura = Number(heightMap[ref]);
+
+        if (Number.isFinite(baseAltura)) {
+          d = filterBy(d, "jugadores", "labels", "coords2", j => {
+            const alturaJugador = Number(heightMap[j]);
+            return Number.isFinite(alturaJugador) && Math.abs(alturaJugador - baseAltura) <= 5;
+          });
+
+          console.log("Después filtro altura:", d.jugadores.length);
+        } else {
+          console.warn("No hay altura válida para:", ref);
+        }
+      }
+
+      if (valueFilter.checked) {
+        const baseValor = Number(valueMap[ref]);
+
+        if (Number.isFinite(baseValor)) {
+          d = filterBy(d, "jugadores", "labels", "coords2", j => {
+            const valorJugador = Number(valueMap[j]);
+            return Number.isFinite(valorJugador) && Math.abs(valorJugador - baseValor) <= 10;
+          });
+
+          console.log("Después filtro valor:", d.jugadores.length);
+        } else {
+          console.warn("No hay valor válido para:", ref);
+        }
       }
 
       return d;
@@ -1750,9 +1827,100 @@
       }
     }
 
+
+    function calcularRecomendaciones(data, ref) {
+      if (!ref || !data || !data.jugadores || !data.coords2 || !data.labels) {
+        return [];
+      }
+
+      const refIndex = data.jugadores.indexOf(ref);
+
+      if (refIndex === -1) {
+        return [];
+      }
+
+      const refCluster = data.labels[refIndex];
+      const refCoord = data.coords2[refIndex];
+
+      return data.jugadores
+        .map((jugador, index) => {
+          const coord = data.coords2[index];
+          const cluster = data.labels[index];
+
+          if (!coord || cluster !== refCluster || jugador === ref) {
+            return null;
+          }
+
+          const distancia = Math.sqrt(
+            Math.pow(coord[0] - refCoord[0], 2) +
+            Math.pow(coord[1] - refCoord[1], 2)
+          );
+
+          return {
+            jugador,
+            distancia,
+            cluster,
+            clusterName: data.clusterNames[cluster] || `Clúster ${cluster}`
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.distancia - b.distancia)
+        .slice(0, 3);
+    }
+
+    function renderRecommendations(ref) {
+      if (!ref || !filteredData) {
+        recommendationsCard.style.display = "none";
+        recommendationsGrid.innerHTML = "";
+        return;
+      }
+
+      const recomendaciones = calcularRecomendaciones(filteredData, ref);
+
+      if (!recomendaciones.length) {
+        recommendationsCard.style.display = "block";
+        recommendationsText.textContent =
+          `No se han encontrado delanteros similares para ${ref} con los filtros actuales.`;
+
+        recommendationsGrid.innerHTML = `
+          <div class="gk-recommendation-item">
+            <p class="gk-recommendation-name">Sin recomendaciones disponibles</p>
+            <p class="gk-recommendation-meta">
+              Prueba a quitar algún filtro o seleccionar otro delantero.
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      recommendationsCard.style.display = "block";
+      recommendationsText.textContent =
+        `Recomendaciones calculadas dentro del mismo clúster que ${ref}.`;
+
+      recommendationsGrid.innerHTML = recomendaciones.map((rec, index) => `
+        <article class="gk-recommendation-item">
+          <span class="gk-recommendation-rank">${index + 1}</span>
+          <h3 class="gk-recommendation-name">${escapeHtml(rec.jugador)}</h3>
+          <p class="gk-recommendation-meta">
+            Pertenece al mismo grupo:
+            <strong>${escapeHtml(rec.clusterName)}</strong>
+          </p>
+          <span class="gk-recommendation-distance">
+            Similitud visual: ${rec.distancia.toFixed(2)}
+          </span>
+        </article>
+      `).join("");
+    }
+
     function drawChart(data, ref) {
       rawData      = data;
       filteredData = applyFilters(data, ref);
+      console.log(
+        "Puntos pintados:",
+        filteredData.jugadores.length,
+        "de",
+        data.jugadores.length
+      );
       currentPage  = 1;
 
       const { coords2, labels, clusterNames, jugadores } = filteredData;
@@ -1949,6 +2117,7 @@
       });
 
       renderTablePage();
+      renderRecommendations(ref);
     }
 
     function panChart(direction){
@@ -1990,10 +2159,7 @@
     form.addEventListener('submit', async e => {
       e.preventDefault();
 
-      const algoritmo = inputAlgoritmo.value;
       const k = +inputK.value;
-      const eps = +inputEps.value;
-      const minSamples = +inputMinSamples.value;
       const ref = inputRef.value.trim();
 
       const refNormalizado = ref.toLowerCase();
@@ -2013,7 +2179,7 @@
         : "";
 
       try {
-        const d = await runClustering(algoritmo, k, refFinal, eps, minSamples);
+        const d = await runClustering(k, refFinal);
         drawChart(d, refFinal);
       } catch(err) {
         alert('Error: ' + err.message);
@@ -2053,28 +2219,10 @@
 
     inputRef.addEventListener('focus', actualizarDelanterosList);
 
-    inputAlgoritmo.addEventListener('change', () => {
-      const esDBSCAN = inputAlgoritmo.value === "dbscan";
-
-      kControl.style.display = esDBSCAN ? "none" : "flex";
-      epsControl.style.display = esDBSCAN ? "flex" : "none";
-      minSamplesControl.style.display = esDBSCAN ? "flex" : "none";
-
-      form.dispatchEvent(new Event('submit'));
-    });
-
-    [inputEps, inputMinSamples].forEach(input => {
-      input.addEventListener('change', () => {
-        if (inputAlgoritmo.value === "dbscan") {
-          form.dispatchEvent(new Event('submit'));
-        }
-      });
-    });
+    
 
     inputK.addEventListener('change', () => {
-      if (inputAlgoritmo.value === "kmeans") {
-        form.dispatchEvent(new Event('submit'));
-      }
+      form.dispatchEvent(new Event('submit'));
     });
 
     function setupAlgorithmCustomSelect() {

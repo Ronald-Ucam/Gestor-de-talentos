@@ -1,18 +1,56 @@
 from flask import Blueprint, render_template, request, jsonify
 import pandas as pd
 import numpy as np
-import re
 
 from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans,DBSCAN
+from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 
 from data_service import obtener_dataframe_actual
+from preprocesar_tabla import convertir_float, convertir_int
 
 
 clustering_bp = Blueprint("clustering", __name__)
 
+def crear_age_map(df):
+    return {
+        row.Nombre: convertir_int(row.Edad)
+        for row in df[["Nombre", "Edad"]].itertuples()
+        if pd.notna(row.Edad)
+    }
 
+
+def crear_height_map(df):
+    return {
+        row.Nombre: convertir_float(row.Altura)
+        for row in df[["Nombre", "Altura"]].itertuples()
+        if pd.notna(row.Altura)
+    }
+
+
+def crear_value_map(df):
+    return {
+        row.Nombre: convertir_float(row.ValorNum)
+        for row in df[["Nombre", "ValorNum"]].itertuples()
+        if pd.notna(row.ValorNum)
+    }
+
+
+def limpiar_metricas_clustering(df, cols):
+    """
+    Asegura que las métricas usadas por KMeans sean numéricas.
+    La limpieza real ya viene de preprocesar_tabla.py, pero esta función
+    protege el clustering ante valores vacíos o no válidos.
+    """
+    df = df.copy()
+
+    for c in cols:
+        if c in df.columns:
+            df[c] = df[c].apply(convertir_float)
+
+    df[cols] = df[cols].replace([np.inf, -np.inf], np.nan)
+
+    return df
 
 @clustering_bp.route('/clustering')
 def clustering():
@@ -32,55 +70,18 @@ def clustering_porteros():
         .tolist()
     )
 
-    # Mapa nombre → edad int
-    age_map = {
-        row.Nombre: int(row.Edad)
-        for row in df_actual[["Nombre", "Edad"]].itertuples()
-        if pd.notna(row.Edad)
-    }
-
-    # Construimos un dict nombre → posición primaria
-    """
-    pos_map = {
-        row.Nombre: row.Posición.split(",")[0].strip()
-        for row in df_actual[["Nombre","Posición"]].itertuples()
-    }"""
-
-    # Mapa nombre → altura (float, en cm)
-    height_map = {}
-    for row in df_actual[["Nombre", "Altura"]].itertuples():
-        h = row.Altura
-        if isinstance(h, str):
-            # elimina todo lo que no sea dígito o punto
-            h_clean = re.sub(r"[^\d\.]", "", h)
-            if h_clean:
-                height_map[row.Nombre] = float(h_clean)
-        elif pd.notna(h):
-            height_map[row.Nombre] = float(h)
-
-    # Mapa nombre → valor de mercado (float, en millones o la unidad que uses)
-    value_map = {}
-    for row in df_actual[["Nombre", "ValorNum"]].itertuples():
-        v = row.ValorNum
-        if pd.notna(v):
-            # si ya es numérico, lo guardamos directamente
-            try:
-                value_map[row.Nombre] = float(v)
-            except:
-                # si viene como string con 'M', 'k', etc.
-                v_str = str(v)
-                v_clean = re.sub(r"[^\d\.]", "", v_str)
-                if v_clean:
-                    value_map[row.Nombre] = float(v_clean)
+    age_map = crear_age_map(df_actual)
+    height_map = crear_height_map(df_actual)
+    value_map = crear_value_map(df_actual)
 
     return render_template(
         "clusteringpor.html",
         jugadores_list=jugadores,
+        porteros_list=porteros,
         age_map=age_map,
-        porteros_list=porteros,     
         height_map=height_map,
         value_map=value_map
-    )    
+    )
 
 
 #Para la gráfica
@@ -89,7 +90,6 @@ def clustering_defensas():
     df_actual = obtener_dataframe_actual()
     jugadores = df_actual["Nombre"].unique().tolist()
 
-    # Extrae sólo los defensas para el datalist 
     defensas = (
         df_actual[df_actual['Posición'].str.contains(r'\bDF\b', na=False)]['Nombre']
         .sort_values()
@@ -97,28 +97,9 @@ def clustering_defensas():
         .tolist()
     )
 
-    # Mapa nombre → edad, altura, valor (si tu html lo necesita para filtros)
-    age_map = {
-        row.Nombre: int(row.Edad)
-        for row in df_actual[['Nombre','Edad']].itertuples()
-        if pd.notna(row.Edad)
-    }
-    height_map = {}
-    for row in df_actual[['Nombre','Altura']].itertuples():
-        h = row.Altura
-        if isinstance(h, str):
-            h_clean = re.sub(r'[^\d\.]', '', h)
-            if h_clean: height_map[row.Nombre] = float(h_clean)
-        elif pd.notna(h):
-            height_map[row.Nombre] = float(h)
-    value_map = {}
-    for row in df_actual[['Nombre','ValorNum']].itertuples():
-        v = row.ValorNum
-        if pd.notna(v):
-            try:    value_map[row.Nombre] = float(v)
-            except:
-                v_clean = re.sub(r'[^\d\.]','', str(v))
-                if v_clean: value_map[row.Nombre] = float(v_clean)
+    age_map = crear_age_map(df_actual)
+    height_map = crear_height_map(df_actual)
+    value_map = crear_value_map(df_actual)
 
     return render_template(
         'clusteringdef.html',
@@ -136,7 +117,6 @@ def clustering_centrocampistas():
     df_actual = obtener_dataframe_actual()
     jugadores = df_actual["Nombre"].unique().tolist()
 
-    # Extrae solo los mediocentros para el datalist
     midfielders = (
         df_actual[df_actual['Posición'].str.contains(r'\bMC\b', na=False)]['Nombre']
         .sort_values()
@@ -144,31 +124,9 @@ def clustering_centrocampistas():
         .tolist()
     )
 
-    # Mapas de filtro: edad, altura y valor
-    age_map = {
-        r.Nombre: int(r.Edad)
-        for r in df_actual[['Nombre','Edad']].itertuples()
-        if pd.notna(r.Edad)
-    }
-
-    height_map = {}
-    for r in df_actual[['Nombre','Altura']].itertuples():
-        h = r.Altura
-        if isinstance(h, str):
-            hc = re.sub(r'[^\d\.]', '', h)
-            if hc: height_map[r.Nombre] = float(hc)
-        elif pd.notna(h):
-            height_map[r.Nombre] = float(h)
-
-    value_map = {}
-    for r in df_actual[['Nombre','ValorNum']].itertuples():
-        v = r.ValorNum
-        if pd.notna(v):
-            try:
-                value_map[r.Nombre] = float(v)
-            except:
-                vc = re.sub(r'[^\d\.]', '', str(v))
-                if vc: value_map[r.Nombre] = float(vc)
+    age_map = crear_age_map(df_actual)
+    height_map = crear_height_map(df_actual)
+    value_map = crear_value_map(df_actual)
 
     return render_template(
         'clusteringmed.html',
@@ -181,14 +139,12 @@ def clustering_centrocampistas():
 
 
 
-
 #Para el mapa
 @clustering_bp.route('/clustering/delanteros')
 def clustering_delanteros():
-
     df_actual = obtener_dataframe_actual()
     jugadores = df_actual["Nombre"].unique().tolist()
-    
+
     delanteros = (
         df_actual[df_actual["Posición"].str.contains(r"\bDL\b", na=False)]["Nombre"]
         .sort_values()
@@ -196,33 +152,12 @@ def clustering_delanteros():
         .tolist()
     )
 
-    age_map = {
-        row.Nombre: int(row.Edad)
-        for row in df_actual[["Nombre","Edad"]].itertuples()
-        if pd.notna(row.Edad)
-    }
-
-    height_map = {}
-    for row in df_actual[["Nombre","Altura"]].itertuples():
-        h = row.Altura
-        if isinstance(h, str):
-            h_clean = re.sub(r"[^\d\.]", "", h)
-            if h_clean: height_map[row.Nombre] = float(h_clean)
-        elif pd.notna(h):
-            height_map[row.Nombre] = float(h)
-
-    value_map = {}
-    for row in df_actual[["Nombre","ValorNum"]].itertuples():
-        v = row.ValorNum
-        if pd.notna(v):
-            try:
-                value_map[row.Nombre] = float(v)
-            except:
-                v_clean = re.sub(r"[^\d\.]", "", str(v))
-                if v_clean: value_map[row.Nombre] = float(v_clean)
+    age_map = crear_age_map(df_actual)
+    height_map = crear_height_map(df_actual)
+    value_map = crear_value_map(df_actual)
 
     return render_template(
-        'clusteringdel.html',      
+        'clusteringdel.html',
         jugadores_list=jugadores,
         delanteros_list=delanteros,
         age_map=age_map,
@@ -372,35 +307,33 @@ def cluster_goalkeepers(df, k=4):
     # 1 Filtrar sólo porteros
     df_por = df[df["Posición"] == "POR"].copy()
 
+    # Filtrar porteros con pocos minutos para evitar perfiles poco representativos
+    if "Min" in df_por.columns:
+        df_por["Min"] = df_por["Min"].apply(convertir_float)
+        df_por = df_por[df_por["Min"] >= 450].copy()
+
+    if df_por.empty:
+        raise ValueError("No hay suficientes porteros con minutos mínimos para clustering.")
+
     # 2 Métricas relevantes originales
     base_feats = [
-        "CS/90",         # porterías imbatidas por 90'
-        "Enc/90",        # goles encajados por 90'
-        "Rp %",          # % de paradas
-        "Pen. parados",  # penaltis parados
-        "BDs",           # despejes
-        "Distancia"      # km recorridos
+        "Enc/90",
+        "Portería imbatida",
+        "Rp %",
+        "BDs",
+        "BRe",
+        "Pen. parados",
+        "BAt"
     ]
     cols = [c for c in base_feats if c in df_por.columns]
     if len(cols) < 2:
         raise ValueError(f"No hay suficientes columnas de portero: {cols}")
 
     # 3 Limpiar y convertir todas estas a float
-    for c in cols:
-        s = df_por[c].astype(str)
-        s = s.replace('-', np.nan)                     
-        s = s.str.replace(r'[^0-9\.]', '', regex=True)
-        df_por[c] = s.replace('', np.nan).astype(float)
+    df_por = limpiar_metricas_clustering(df_por, cols)
 
     # 4 Derivar nuevas métricas numéricas si están disponibles
     extras = []
-    if "BAt" in df_por.columns and "BDs" in df_por.columns:
-        # limpiamos BAt y BDs también
-        df_por["BAt"] = pd.to_numeric(df_por["BAt"], errors="coerce").fillna(0)
-        df_por["BDs"] = pd.to_numeric(df_por["BDs"], errors="coerce").fillna(0)
-        # ratio de atrapadas por despeje
-        df_por["Atrap/Despeje"] = df_por["BAt"] / df_por["BDs"].replace(0, 1)
-        extras = ["BAt", "Atrap/Despeje"]
 
     # 5 Recalcular lista de columnas tras derivar
     cols = [c for c in cols + extras if c in df_por.columns]
@@ -425,14 +358,13 @@ def cluster_goalkeepers(df, k=4):
 
     # 10 Mapeo a descripciones legibles asegurando unicidad
     pretty = {
-        'CS/90':         'Porterías imbatidas / 90′',
-        'Enc/90':        'Goles encajados / 90′',
-        'Rp %':          'Porcentaje de paradas',
-        'Pen. parados':  'Penaltis parados',
-        'BDs':           'Despejes totales',
-        'Distancia':     'Kilómetros recorridos',
-        'BAt':           'Balones atrapados',
-        'Atrap/Despeje':'Atrapadas por despeje'
+        "Enc/90": "Goles encajados / 90′",
+        "Portería imbatida": "Porterías imbatidas",
+        "Rp %": "Porcentaje de paradas",
+        "Pen. parados": "Penaltis parados",
+        "BDs": "Despejes totales",
+        "BRe": "Balones rechazados",
+        "BAt": "Balones atrapados"
     }
     centros = km.cluster_centers_
     n_clusters = centros.shape[0]
@@ -483,25 +415,35 @@ def cluster_defenders(df, k=4):
     """
     # 1 Filtrar defensas (etiqueta "DF")
     df_def = df[df["Posición"].str.contains(r"\bDF\b", na=False)].copy()
+    # Filtrar jugadores con pocos minutos para evitar perfiles poco representativos
+    if "Min" in df_def.columns:
+        df_def["Min"] = df_def["Min"].apply(convertir_float)
+        df_def = df_def[df_def["Min"] >= 450].copy()
+
+    if df_def.empty:
+        raise ValueError("No hay suficientes defensas con minutos mínimos para clustering.")
 
     # 2 Limpieza inicial de columnas base
-    base_feats = ["Entr/90", "Bal aér/90", "Int/90", "Desp", "Pos Gan/90", "% Pase"]
+    base_feats = [
+        "Entr/90",
+        "Rob/90",
+        "Desp",
+        "Bal aér/90",
+        "Pos Gan/90",
+        "% Pase",
+        "Pases prog/90"
+    ]
+    
     cols = [c for c in base_feats if c in df_def.columns]
-    for c in cols:
-        s = df_def[c].astype(str).replace('-', np.nan)
-        s = s.str.replace(r'[^0-9\.]', '', regex=True)
-        df_def[c] = pd.to_numeric(s, errors='coerce')
+
+    df_def = limpiar_metricas_clustering(df_def, cols)
 
     # 3 Derivar métricas adicionales si disponemos de datos
     extras = []
     # Entradas limpiadoras
     if "Ent Cl" in df_def.columns:
-        df_def["Ent Cl"] = pd.to_numeric(df_def["Ent Cl"].astype(str).str.replace(r'[^0-9\.]', '', regex=True), errors='coerce')
+        df_def["Ent Cl"] = df_def["Ent Cl"].apply(convertir_float)
         extras.append("Ent Cl")
-    # Recuperaciones por 90 como métrica extra
-    if "Rob/90" in df_def.columns:
-        df_def["Rob/90"] = pd.to_numeric(df_def["Rob/90"].astype(str).str.replace(r'[^0-9\.]', '', regex=True), errors='coerce')
-        extras.append("Rob/90")
 
     # 4 Reconstruir lista de columnas tras extras
     cols = [c for c in cols + extras if c in df_def.columns]
@@ -524,14 +466,14 @@ def cluster_defenders(df, k=4):
 
     # 8 Mapear nombres sin repeticiones
     pretty_def = {
-        'Entr/90':    'Entradas ganadas / 90′',
-        'Bal aér/90': 'Duelos aéreos ganados / 90′',
-        'Int/90':     'Intercepciones / 90′',
-        'Desp':       'Despejes totales',
-        'Pos Gan/90': 'Recuperaciones de posición / 90′',
-        '% Pase':     'Precisión de pase',
-        'Ent Cl':     'Entradas limpiadoras',
-        'Rob/90':     'Recuperaciones / 90′'
+        "Entr/90": "Entradas / 90′",
+        "Rob/90": "Robos / 90′",
+        "Desp": "Despejes totales",
+        "Bal aér/90": "Balones aéreos ganados / 90′",
+        "Pos Gan/90": "Posesiones ganadas / 90′",
+        "% Pase": "Precisión de pase",
+        "Pases prog/90": "Pases progresivos / 90′",
+        "Ent Cl": "Entradas clave"
     }
     centers = km.cluster_centers_
     n_clusters = centers.shape[0]
@@ -586,32 +528,33 @@ def cluster_midfielders(df, k=4):
     """
     # 1 Filtrar mediocentros
     df_mid = df[df["Posición"].str.contains(r"\bMC\b", na=False)].copy()
+    # Filtrar jugadores con pocos minutos para evitar perfiles poco representativos
+    if "Min" in df_mid.columns:
+        df_mid["Min"] = df_mid["Min"].apply(convertir_float)
+        df_mid = df_mid[df_mid["Min"] >= 450].copy()
+
+    if df_mid.empty:
+        raise ValueError("No hay suficientes centrocampistas con minutos mínimos para clustering.")
 
     # 2 Métricas base
     base_feats = [
-        "Reg/90", "Pas Clv/90", "% Pase", "Asis/90",
-        "Distancia", "Pas Prog/90", "Rob/90"
+        "Asis/90",
+        "Pas Clv/90",
+        "% Pase",
+        "Pases prog/90",
+        "Reg/90",
+        "Rob/90",
+        "Distancia"
     ]
     cols = [c for c in base_feats if c in df_mid.columns]
     if len(cols) < 2:
         raise ValueError(f"No hay suficientes columnas para mediocentros: {cols}")
 
     # 3 Limpiar y convertir a float
-    for c in cols:
-        s = df_mid[c].astype(str).replace('-', np.nan)
-        s = s.str.replace(r'[^0-9\.]', '', regex=True)
-        df_mid[c] = pd.to_numeric(s, errors='coerce')
+    df_mid = limpiar_metricas_clustering(df_mid, cols)
 
     # 4 Derivar nuevas métricas
     extras = []
-    # Ratio asistencias/regates
-    if "Asis/90" in df_mid.columns and "Reg/90" in df_mid.columns:
-        df_mid["Asis/Reg"] = df_mid["Asis/90"] / df_mid["Reg/90"].replace(0, 1)
-        extras.append("Asis/Reg")
-    # Pases prog por pase clave
-    if "Pas Prog/90" in df_mid.columns and "Pas Clv/90" in df_mid.columns:
-        df_mid["Prog/Clv"] = df_mid["Pas Prog/90"] / df_mid["Pas Clv/90"].replace(0, 1)
-        extras.append("Prog/Clv")
 
     # 5 Reconstruir lista de columnas tras extras
     cols = [c for c in cols + extras if c in df_mid.columns]
@@ -632,15 +575,13 @@ def cluster_midfielders(df, k=4):
 
     # 9 Nombrar clusters sin repetir
     pretty_mid = {
-        'Reg/90':      'Regates completados / 90′',
-        'Pas Clv/90':  'Pases clave / 90′',
-        '% Pase':      'Precisión de pase',
-        'Asis/90':     'Asistencias / 90′',
-        'Distancia':   'Kilómetros recorridos',
-        'Pas Prog/90': 'Pases progresivos / 90′',
-        'Rob/90':      'Recuperaciones (robos) / 90′',
-        'Asis/Reg':    'Asistencias por regate',
-        'Prog/Clv':    'Prog/Clv ratio'
+        "Asis/90": "Asistencias / 90′",
+        "Pas Clv/90": "Pases clave / 90′",
+        "% Pase": "Precisión de pase",
+        "Pases prog/90": "Pases progresivos / 90′",
+        "Reg/90": "Regates completados / 90′",
+        "Rob/90": "Robos / 90′",
+        "Distancia": "Kilómetros recorridos",
     }
     centers = km.cluster_centers_
     n_clusters = centers.shape[0]
@@ -693,30 +634,34 @@ def cluster_forwards(df, k=4):
     """
     # 1 Filtrar delanteros
     df_fw = df[df["Posición"].str.contains(r"\bDL\b", na=False)].copy()
+    # Filtrar jugadores con pocos minutos para evitar perfiles poco representativos
+    if "Min" in df_fw.columns:
+        df_fw["Min"] = df_fw["Min"].apply(convertir_float)
+        df_fw = df_fw[df_fw["Min"] >= 450].copy()
+
+    if df_fw.empty:
+        raise ValueError("No hay suficientes delanteros con minutos mínimos para clustering.")
 
     # 2 Métricas base
-    base_feats = ["Gol/90", "Asis/90", "Reg/90", "% Pase", "Disparos", "Min/Par", "OC/90"]
+    base_feats = [
+        "Gol/90",
+        "xG",
+        "Asis/90",
+        "Disparos",
+        "Tir/90",
+        "Reg/90",
+        "% disparos"
+    ]
     cols = [c for c in base_feats if c in df_fw.columns]
     if len(cols) < 2:
         raise ValueError(f"No hay suficientes columnas para delanteros: {cols}")
 
     # 3 Limpiar y convertir a float
-    for c in cols:
-        s = df_fw[c].astype(str).replace('-', np.nan)
-        s = s.str.replace(r'[^0-9\.]', '', regex=True)
-        df_fw[c] = pd.to_numeric(s, errors='coerce')
+    df_fw = limpiar_metricas_clustering(df_fw, cols)
 
     # 4Derivar métricas adicionales
     extras = []
-    # Ratio de goles por disparo (efectividad)
-    if "Gol/90" in df_fw.columns and "Disparos" in df_fw.columns:
-        df_fw["Conv%"] = df_fw["Gol/90"] / df_fw["Disparos"].replace(0, 1)
-        extras.append("Conv%")
-    # xG por 90 minutos si existe xG y Min/Par
-    if "xG" in df_fw.columns and "Min/Par" in df_fw.columns:
-        df_fw["xG"] = pd.to_numeric(df_fw["xG"].astype(str).str.replace(r'[^0-9\.]','',regex=True), errors='coerce')
-        df_fw["xG/90"] = df_fw["xG"] / (df_fw["Min/Par"].replace(0, 1))
-        extras.append("xG/90")
+
 
     # 5Reconstruir lista de columnas tras extras
     cols = [c for c in cols + extras if c in df_fw.columns]
@@ -737,15 +682,13 @@ def cluster_forwards(df, k=4):
 
     # 9 Nombrar clusters sin repetir
     pretty_fw = {
-        "Gol/90":   "Goles/90′",
-        "Asis/90":  "Asistencias/90′",
-        "Reg/90":   "Regates en 90′",
-        "% Pase":   "Precisión de pase",
+        "Gol/90": "Goles / 90′",
+        "Asis/90": "Asistencias / 90′",
         "Disparos": "Disparos totales",
-        "Min/Par":  "Minutos por gol",
-        "OC/90":    "Ocasiones creadas/90′",
-        "Conv%":    "Efectividad de gol",
-        "xG/90":    "Goles esperados 90′"
+        "Tir/90": "Tiros / 90′",
+        "Reg/90": "Regates / 90′",
+        "% disparos": "Precisión de disparo",
+        "xG": "Goles esperados"
     }
     centers = km.cluster_centers_
     n_clusters = centers.shape[0]
@@ -777,328 +720,3 @@ def cluster_forwards(df, k=4):
     df_out["y_pca"]   = coords[:, 1]
     return df_out, cols, cluster_names
 
-
-
-"""""""""""""""""""""
-
-******   DBSCAN   *******
-
-"""""""""""""""""""""
-
-
-
-
-
-def aplicar_dbscan(df_posicion, cols, eps=1.8, min_samples=5):
-    """
-    Aplica DBSCAN sobre un conjunto de jugadores ya filtrado por posición.
-
-    DBSCAN:
-    - Detecta grupos por densidad.
-    - Marca como ruido/outlier los jugadores con etiqueta -1.
-    - Genera nombres más interpretables para los grupos según las métricas dominantes.
-    """
-
-    df_posicion = df_posicion.copy()
-
-    if df_posicion.empty:
-        raise ValueError("No hay jugadores suficientes para aplicar DBSCAN.")
-
-    if len(cols) < 2:
-        raise ValueError(f"No hay suficientes columnas para DBSCAN: {cols}")
-
-    nombres_metricas = {
-        # Porteros
-        "CS/90": "Porterías imbatidas / 90′",
-        "Enc/90": "Goles encajados / 90′",
-        "Rp %": "Porcentaje de paradas",
-        "Pen. parados": "Penaltis parados",
-        "BDs": "Despejes totales",
-        "Distancia": "Kilómetros recorridos",
-
-        # Defensas
-        "Entr/90": "Entradas ganadas / 90′",
-        "Bal aér/90": "Duelos aéreos ganados / 90′",
-        "Int/90": "Intercepciones / 90′",
-        "Desp": "Despejes totales",
-        "Pos Gan/90": "Recuperaciones de posición / 90′",
-        "% Pase": "Precisión de pase",
-        "Ent Cl": "Entradas limpiadoras",
-        "Rob/90": "Recuperaciones / 90′",
-
-        # Centrocampistas
-        "Reg/90": "Regates completados / 90′",
-        "Pas Clv/90": "Pases clave / 90′",
-        "Asis/90": "Asistencias / 90′",
-        "Pas Prog/90": "Pases progresivos / 90′",
-
-        # Delanteros
-        "Gol/90": "Goles / 90′",
-        "Disparos": "Disparos totales",
-        "Min/Par": "Minutos por partido",
-        "OC/90": "Ocasiones creadas / 90′"
-    }
-
-    # Limpiar columnas numéricas
-    for c in cols:
-        s = df_posicion[c].astype(str).replace("-", np.nan)
-        s = s.str.replace(r"[^0-9\.]", "", regex=True)
-        df_posicion.loc[:, c] = pd.to_numeric(s, errors="coerce")
-
-    # Eliminar columnas con demasiados nulos
-    df_posicion = df_posicion.dropna(axis=1, thresh=len(df_posicion) * 0.7).copy()
-    cols = [c for c in cols if c in df_posicion.columns]
-
-    if len(cols) < 2:
-        raise ValueError(f"No hay suficientes columnas válidas para DBSCAN: {cols}")
-
-    # Rellenar nulos y asegurar datos numéricos
-    df_posicion[cols] = df_posicion[cols].apply(pd.to_numeric, errors="coerce")
-    df_posicion[cols] = df_posicion[cols].replace([np.inf, -np.inf], np.nan)
-
-    medianas = df_posicion[cols].median(numeric_only=True)
-    df_posicion[cols] = df_posicion[cols].fillna(medianas)
-    df_posicion[cols] = df_posicion[cols].fillna(0)
-
-    if len(df_posicion) < 2:
-        raise ValueError("No hay suficientes jugadores para representar DBSCAN.")
-
-    # Escalado
-    scaler = StandardScaler()
-    X = scaler.fit_transform(df_posicion[cols].values)
-
-    # DataFrame escalado para interpretar los grupos
-    X_escalado = pd.DataFrame(X, columns=cols)
-
-    # DBSCAN
-    dbscan = DBSCAN(eps=eps, min_samples=min_samples)
-    labels_originales = dbscan.fit_predict(X)
-
-    # PCA para pintar en 2D
-    coords = PCA(n_components=2, random_state=0).fit_transform(X)
-
-    df_out = df_posicion.reset_index(drop=True).copy()
-    df_out["cluster_original"] = labels_originales
-
-    # Convertimos etiquetas DBSCAN a índices compatibles con Chart.js
-    etiquetas_unicas = sorted(set(labels_originales))
-
-    cluster_names = []
-    label_map = {}
-    metricas_usadas = set()
-
-    for nueva_etiqueta, etiqueta_original in enumerate(etiquetas_unicas):
-        label_map[int(etiqueta_original)] = nueva_etiqueta
-
-        if etiqueta_original == -1:
-            cluster_names.append("Ruido / perfil atípico")
-            continue
-
-        mascara = labels_originales == etiqueta_original
-        perfil_medio = X_escalado.loc[mascara].mean()
-
-        # Buscamos la métrica donde más destaca el grupo
-        perfil_ordenado = perfil_medio.abs().sort_values(ascending=False)
-
-        metrica_elegida = None
-        for metrica in perfil_ordenado.index:
-            if metrica not in metricas_usadas:
-                metrica_elegida = metrica
-                metricas_usadas.add(metrica)
-                break
-
-        if metrica_elegida is None:
-            metrica_elegida = perfil_medio.abs().idxmax()
-
-        valor = perfil_medio[metrica_elegida]
-        nombre_legible = nombres_metricas.get(metrica_elegida, metrica_elegida)
-
-        if valor >= 0:
-            cluster_names.append(
-                f"Grupo DBSCAN {int(etiqueta_original) + 1} - Alto en {nombre_legible}"
-            )
-        else:
-            cluster_names.append(
-                f"Grupo DBSCAN {int(etiqueta_original) + 1} - Bajo en {nombre_legible}"
-            )
-
-    labels_convertidas = [label_map[int(label)] for label in labels_originales]
-
-    df_out["cluster"] = labels_convertidas
-    df_out["x_pca"] = coords[:, 0]
-    df_out["y_pca"] = coords[:, 1]
-
-    return df_out, cols, cluster_names
-
-@clustering_bp.route("/api/dbscan_fw")
-def api_dbscan_fw():
-    try:
-        eps = request.args.get("eps", default=1.8, type=float)
-        min_samples = request.args.get("min_samples", default=5, type=int)
-
-        df_jugadores = obtener_dataframe_actual()
-
-        df_fw = df_jugadores[
-            df_jugadores["Posición"].str.contains(r"\bDL\b", na=False)
-        ].copy()
-
-        cols = ["Gol/90", "Asis/90", "Reg/90", "% Pase", "Disparos", "Min/Par", "OC/90"]
-        cols = [c for c in cols if c in df_fw.columns]
-
-        df_db, attrs, cluster_names = aplicar_dbscan(
-            df_fw,
-            cols,
-            eps=eps,
-            min_samples=min_samples
-        )
-
-        return jsonify({
-            "jugadores": df_db["Nombre"].tolist(),
-            "labels": df_db["cluster"].astype(int).tolist(),
-            "labelsOriginales": df_db["cluster_original"].astype(int).tolist(),
-            "coords2": df_db[["x_pca", "y_pca"]].astype(float).values.tolist(),
-            "clusterNames": cluster_names,
-            "attrs": attrs
-        })
-
-    except ValueError as ve:
-        return jsonify({"error": f"Parámetro inválido: {ve}"}), 400
-
-    except Exception as e:
-        return jsonify({"error": f"Error al generar DBSCAN: {e}"}), 500
-    
-
-
-
-@clustering_bp.route("/api/dbscan_por")
-def api_dbscan_por():
-    try:
-        eps = request.args.get("eps", default=1.8, type=float)
-        min_samples = request.args.get("min_samples", default=5, type=int)
-
-        df_jugadores = obtener_dataframe_actual()
-
-        df_por = df_jugadores[
-            df_jugadores["Posición"] == "POR"
-        ].copy()
-
-        cols = ["CS/90", "Enc/90", "Rp %", "Pen. parados", "BDs", "Distancia"]
-        cols = [c for c in cols if c in df_por.columns]
-
-        df_db, attrs, cluster_names = aplicar_dbscan(
-            df_por,
-            cols,
-            eps=eps,
-            min_samples=min_samples
-        )
-
-        return jsonify({
-            "jugadores": df_db["Nombre"].tolist(),
-            "labels": df_db["cluster"].astype(int).tolist(),
-            "labelsOriginales": df_db["cluster_original"].astype(int).tolist(),
-            "coords2": df_db[["x_pca", "y_pca"]].astype(float).values.tolist(),
-            "clusterNames": cluster_names,
-            "attrs": attrs
-        })
-
-    except ValueError as ve:
-        return jsonify({"error": f"Parámetro inválido: {ve}"}), 400
-
-    except Exception as e:
-        return jsonify({"error": f"Error al generar DBSCAN de porteros: {e}"}), 500
-
-
-@clustering_bp.route("/api/dbscan_def")
-def api_dbscan_def():
-    try:
-        eps = request.args.get("eps", default=1.8, type=float)
-        min_samples = request.args.get("min_samples", default=5, type=int)
-
-        df_jugadores = obtener_dataframe_actual()
-
-        df_def = df_jugadores[
-            df_jugadores["Posición"].str.contains(r"\bDF\b", na=False)
-        ].copy()
-
-        cols = [
-            "Entr/90",
-            "Bal aér/90",
-            "Int/90",
-            "Desp",
-            "Pos Gan/90",
-            "% Pase",
-            "Ent Cl",
-            "Rob/90"
-        ]
-
-        cols = [c for c in cols if c in df_def.columns]
-
-        df_db, attrs, cluster_names = aplicar_dbscan(
-            df_def,
-            cols,
-            eps=eps,
-            min_samples=min_samples
-        )
-
-        return jsonify({
-            "jugadores": df_db["Nombre"].tolist(),
-            "labels": df_db["cluster"].astype(int).tolist(),
-            "labelsOriginales": df_db["cluster_original"].astype(int).tolist(),
-            "coords2": df_db[["x_pca", "y_pca"]].astype(float).values.tolist(),
-            "clusterNames": cluster_names,
-            "attrs": attrs
-        })
-
-    except ValueError as ve:
-        return jsonify({"error": f"Parámetro inválido: {ve}"}), 400
-
-    except Exception as e:
-        return jsonify({"error": f"Error al generar DBSCAN de defensas: {e}"}), 500
-    
-
-
-@clustering_bp.route("/api/dbscan_mid")
-def api_dbscan_mid():
-    try:
-        eps = request.args.get("eps", default=1.8, type=float)
-        min_samples = request.args.get("min_samples", default=5, type=int)
-
-        df_jugadores = obtener_dataframe_actual()
-
-        df_mid = df_jugadores[
-            df_jugadores["Posición"].str.contains(r"\bMC\b", na=False)
-        ].copy()
-
-        cols = [
-            "Reg/90",
-            "Pas Clv/90",
-            "% Pase",
-            "Asis/90",
-            "Distancia",
-            "Pas Prog/90",
-            "Rob/90"
-        ]
-
-        cols = [c for c in cols if c in df_mid.columns]
-
-        df_db, attrs, cluster_names = aplicar_dbscan(
-            df_mid,
-            cols,
-            eps=eps,
-            min_samples=min_samples
-        )
-
-        return jsonify({
-            "jugadores": df_db["Nombre"].tolist(),
-            "labels": df_db["cluster"].astype(int).tolist(),
-            "labelsOriginales": df_db["cluster_original"].astype(int).tolist(),
-            "coords2": df_db[["x_pca", "y_pca"]].astype(float).values.tolist(),
-            "clusterNames": cluster_names,
-            "attrs": attrs
-        })
-
-    except ValueError as ve:
-        return jsonify({"error": f"Parámetro inválido: {ve}"}), 400
-
-    except Exception as e:
-        return jsonify({"error": f"Error al generar DBSCAN de centrocampistas: {e}"}), 500
