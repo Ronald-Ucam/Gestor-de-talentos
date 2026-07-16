@@ -4,6 +4,12 @@ import pandas as pd
 from bs4 import BeautifulSoup
 
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DEMO_HTML_PATH = os.path.join(BASE_DIR, "BBDD.html")
+DEMO_PICKLE_PATH = os.path.join(BASE_DIR, "jugadores.pkl")
+DEMO_TABLE_PATH = os.path.join(BASE_DIR, "full_table.html")
+
+
 TEXT_COLUMNS = [
     "Inf", "Nombre", "Valor de traspaso", "Sueldo", "Final", "Posición",
     "Club", "Cedido por", "Procedencia", "Nac", "2ª Nac",
@@ -232,7 +238,7 @@ def extraer_tabla_html(html_path=None):
     y extrae la tabla principal sin limpiar todavía los datos.
     """
     if html_path is None:
-        html_path = os.path.join(os.getcwd(), "BBDD.html")
+        html_path = DEMO_HTML_PATH
 
     if not os.path.exists(html_path):
         raise FileNotFoundError(f"No se encontró el archivo HTML: {html_path}")
@@ -391,17 +397,54 @@ def extraer_dataframe_desde_html(html_path=None):
 
 def guardar_dataframe_demo(df):
     """
-    Guarda el DataFrame limpio como demo global de la aplicación.
+    Guarda el DataFrame limpio como demo global de la aplicación
+    y muestra información de diagnóstico útil para Railway.
     """
-    df.to_pickle("jugadores.pkl")
-    print("✔ jugadores.pkl generado correctamente.")
+    print(f"[DEMO] Carpeta del proyecto: {BASE_DIR}")
+    print(f"[DEMO] Archivo fuente: {DEMO_HTML_PATH}")
+    print(f"[DEMO] Jugadores procesados: {len(df)}")
+
+    if "Posición" in df.columns:
+        posiciones = df["Posición"].fillna("").astype(str)
+
+        conteos_roles = {
+            "porteros": int(posiciones.str.contains(r"\bPOR\b", regex=True).sum()),
+            "defensas": int(posiciones.str.contains(r"\bDF\b", regex=True).sum()),
+            "centrocampistas": int(posiciones.str.contains(r"\bMC\b", regex=True).sum()),
+            "delanteros": int(posiciones.str.contains(r"\bDL\b", regex=True).sum()),
+        }
+
+        print(f"[DEMO] Jugadores por rol: {conteos_roles}")
+
+        if "Min" in df.columns:
+            minutos = pd.to_numeric(df["Min"], errors="coerce").fillna(0)
+
+            conteos_minimos = {
+                "porteros": int(
+                    (posiciones.str.contains(r"\bPOR\b", regex=True) & (minutos >= 450)).sum()
+                ),
+                "defensas": int(
+                    (posiciones.str.contains(r"\bDF\b", regex=True) & (minutos >= 450)).sum()
+                ),
+                "centrocampistas": int(
+                    (posiciones.str.contains(r"\bMC\b", regex=True) & (minutos >= 450)).sum()
+                ),
+                "delanteros": int(
+                    (posiciones.str.contains(r"\bDL\b", regex=True) & (minutos >= 450)).sum()
+                ),
+            }
+
+            print(f"[DEMO] Jugadores con 450 minutos o más: {conteos_minimos}")
+
+    df.to_pickle(DEMO_PICKLE_PATH)
+    print(f"✔ jugadores.pkl generado correctamente en: {DEMO_PICKLE_PATH}")
 
     full_html = df.to_html(index=False, classes="table table-striped")
 
-    with open("full_table.html", "w", encoding="utf-8") as f:
+    with open(DEMO_TABLE_PATH, "w", encoding="utf-8") as f:
         f.write(full_html)
 
-    print("✔ full_table.html generado correctamente.")
+    print(f"✔ full_table.html generado correctamente en: {DEMO_TABLE_PATH}")
 
 
 def procesar_BBDD_html(html_path=None, guardar_demo=True):
@@ -428,4 +471,4 @@ def procesar_BBDD_html(html_path=None, guardar_demo=True):
 
 
 if __name__ == "__main__":
-    procesar_BBDD_html(guardar_demo=True)
+    procesar_BBDD_html(DEMO_HTML_PATH, guardar_demo=True)
